@@ -252,7 +252,7 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
           <div className="text-6xl mb-4">📅</div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No appointments yet</h3>
-          <p className="text-gray-500">Click "New Appointment" to get started!</p>
+          <p className="text-gray-500">Click &quot;New Appointment&quot; to get started!</p>
         </div>
       ) : (
         <div className="space-y-4">
