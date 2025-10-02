@@ -27,7 +27,7 @@ export default function Home() {
   const [editingAppointment, setEditingAppointment] = useState(null)
   const [prefilledData, setPrefilledData] = useState(null)
   const [view, setView] = useState('list') // 'list' or 'calendar'
-  const [filter, setFilter] = useState('all') // 'all', 'upcoming', 'completed', 'past'
+  const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
 
   // Load appointments on mount
@@ -91,6 +91,17 @@ export default function Home() {
     setShowForm(false)
   }
 
+  function handleViewChange(newView) {
+    if (showForm || editingAppointment) {
+      if (confirm('You have an unsaved appointment. Discard changes?')) {
+        handleCancelEdit()
+        setView(newView)
+      }
+    } else {
+      setView(newView)
+    }
+  }
+
   function handleCreateAtSlot(date, time) {
     setPrefilledData({
       appointment_date: date,
@@ -132,30 +143,35 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Add Button */}
+      {/* Header with Add/Close Button */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800">
           Appointments ({filteredAppointments.length})
         </h2>
-        <button
-          onClick={() => {
-            if (showForm) {
-              handleCancelEdit()
-            } else {
-              setShowForm(true)
-            }
-          }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
-        >
-          {showForm ? '✕ Cancel' : '+ New Appointment'}
-        </button>
+        {!showForm && !editingAppointment ? (
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
+          >
+            + New Appointment
+          </button>
+        ) : (
+          <button
+            onClick={handleCancelEdit}
+            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
+          >
+            ✕ Close
+          </button>
+        )}
       </div>
 
       {/* View Toggle & Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
-        <ViewToggle view={view} onViewChange={setView} />
-        <FilterButtons filter={filter} onFilterChange={setFilter} />
-      </div>
+      {!showForm && !editingAppointment && (
+        <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
+          <ViewToggle view={view} onViewChange={handleViewChange} />
+          <FilterButtons filter={filter} onFilterChange={setFilter} />
+        </div>
+      )}
 
       {/* Add/Edit Appointment Form */}
       {showForm && (

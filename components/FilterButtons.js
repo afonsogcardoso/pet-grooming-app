@@ -5,15 +5,15 @@
 
 export default function FilterButtons({ filter, onFilterChange }) {
     const filters = [
-        { value: 'all', label: 'All', color: 'blue' },
-        { value: 'upcoming', label: 'Upcoming', color: 'green' },
-        { value: 'completed', label: 'Completed', color: 'purple' },
-        { value: 'past', label: 'Past Due', color: 'orange' }
+        { value: 'upcoming', label: 'Upcoming', color: 'blue' },
+        { value: 'completed', label: 'Completed', color: 'green' },
+        { value: 'past', label: 'Past Due', color: 'red' },
+        { value: 'all', label: 'All', color: 'gray' }
     ]
 
     const getColorClasses = (filterValue, color) => {
         if (filter === filterValue) {
-            return `bg-${color}-500 text-white`
+            return `bg-${color}-600 text-white shadow-lg`
         }
         return 'bg-gray-100 text-gray-700 hover:bg-gray-200'
     }

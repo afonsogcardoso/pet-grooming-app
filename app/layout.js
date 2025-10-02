@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google'
+import Link from 'next/link'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -20,18 +21,18 @@ export default function RootLayout({ children }) {
                   🐾 Pet Grooming Manager
                 </h1>
                 <nav className="flex gap-2">
-                  <a
+                  <Link
                     href="/"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
                     📅 Appointments
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/customers"
                     className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
                     👥 Customers
-                  </a>
+                  </Link>
                 </nav>
               </div>
             </div>

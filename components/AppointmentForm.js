@@ -42,6 +42,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
     useEffect(() => {
         fetchCustomers()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -138,10 +139,11 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             </select>
                         )}
                         <p className="text-xs text-gray-600 mt-1">
-                            Don't see the customer?{' '}
+                            Don&apos;t see the customer?{' '}
                             <a
                                 href="/customers"
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-indigo-600 hover:underline font-semibold"
                             >
                                 Add them here

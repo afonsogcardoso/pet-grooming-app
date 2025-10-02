@@ -17,6 +17,7 @@ export default function PetManager({ customerId, customerName }) {
         if (customerId) {
             fetchPets()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [customerId])
 
     async function fetchPets() {
