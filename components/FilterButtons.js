@@ -13,7 +13,7 @@ export default function FilterButtons({ filter, onFilterChange }) {
 
     const getColorClasses = (filterValue, color) => {
         if (filter === filterValue) {
-            return `bg-${color}-600 text-white shadow-lg`
+            return `bg-${color}-500 text-white shadow-lg`
         }
         return 'bg-gray-100 text-gray-700 hover:bg-gray-200'
     }
