@@ -70,14 +70,20 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                     </div>
 
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-bold text-gray-800 mb-2">Address</label>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                            Address (Service Location) * 📍
+                        </label>
                         <input
                             type="text"
+                            required
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                             className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
-                            placeholder="123 Main St, Lisbon"
+                            placeholder="Full address or Google Maps link"
                         />
+                        <p className="text-xs text-gray-600 mt-1">
+                            📍 Enter full address or paste Google Maps link - used for mobile grooming service location
+                        </p>
                     </div>
                 </div>
 

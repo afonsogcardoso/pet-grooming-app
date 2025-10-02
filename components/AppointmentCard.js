@@ -4,6 +4,7 @@
 // ============================================
 
 import { formatDate, formatTime } from '@/utils/dateUtils'
+import { getGoogleMapsLink, formatAddressForDisplay } from '@/utils/addressUtils'
 
 export default function AppointmentCard({ appointment, onComplete, onDelete, onEdit }) {
     return (
@@ -53,6 +54,20 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                 {formatTime(appointment.appointment_time)}
                             </span>
                         </div>
+                        {appointment.customers?.address && (
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold">📍 Address:</span>
+                                <a
+                                    href={getGoogleMapsLink(appointment.customers.address)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-medium text-indigo-600 hover:underline flex items-center gap-1"
+                                >
+                                    {formatAddressForDisplay(appointment.customers.address)}
+                                    <span className="text-xs">🗺️</span>
+                                </a>
+                            </div>
+                        )}
                         {appointment.notes && (
                             <div className="mt-2 pt-2 border-t border-gray-200">
                                 <span className="font-bold">📝 Notes:</span>

@@ -25,6 +25,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState(null)
+  const [prefilledData, setPrefilledData] = useState(null)
   const [view, setView] = useState('list') // 'list' or 'calendar'
   const [filter, setFilter] = useState('all') // 'all', 'upcoming', 'completed', 'past'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
@@ -86,7 +87,17 @@ export default function Home() {
 
   function handleCancelEdit() {
     setEditingAppointment(null)
+    setPrefilledData(null)
     setShowForm(false)
+  }
+
+  function handleCreateAtSlot(date, time) {
+    setPrefilledData({
+      appointment_date: date,
+      appointment_time: time
+    })
+    setEditingAppointment(null)
+    setShowForm(true)
   }
 
   async function handleMarkCompleted(id) {
@@ -151,7 +162,7 @@ export default function Home() {
         <AppointmentForm
           onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
           onCancel={handleCancelEdit}
-          initialData={editingAppointment}
+          initialData={editingAppointment || prefilledData}
         />
       )}
 
@@ -162,6 +173,7 @@ export default function Home() {
           weekOffset={weekOffset}
           onWeekChange={setWeekOffset}
           onComplete={handleMarkCompleted}
+          onCreateAtSlot={handleCreateAtSlot}
         />
       )}
 

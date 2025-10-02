@@ -22,6 +22,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             service: '',
             appointment_date: '',
             appointment_time: '',
+            duration: 60,
             notes: ''
         }
     )
@@ -205,6 +206,23 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     {service}
                                 </option>
                             ))}
+                        </select>
+                    </div>
+
+                    {/* Duration Selection */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                            Duration *
+                        </label>
+                        <select
+                            required
+                            value={formData.duration}
+                            onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                        >
+                            <option value="30">30 minutes</option>
+                            <option value="60">1 hour (default)</option>
+                            <option value="90">1 hour 30 minutes</option>
                         </select>
                     </div>
 
