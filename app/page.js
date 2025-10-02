@@ -143,52 +143,53 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Add/Close Button */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800">
-          Appointments ({filteredAppointments.length})
+          Appointments ({view === 'list' ? filteredAppointments.length : appointments.length})
         </h2>
-        {!showForm && !editingAppointment ? (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
-          >
-            + New Appointment
-          </button>
-        ) : (
-          <button
-            onClick={handleCancelEdit}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
-          >
-            ✕ Close
-          </button>
-        )}
       </div>
 
       {/* View Toggle & Filters */}
-      {!showForm && !editingAppointment && (
-        <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
-          <ViewToggle view={view} onViewChange={handleViewChange} />
-          <FilterButtons filter={filter} onFilterChange={setFilter} />
+      <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
+        <ViewToggle view={view} onViewChange={handleViewChange} />
+        {view === 'list' && <FilterButtons filter={filter} onFilterChange={setFilter} />}
+      </div>
+
+      {/* Add Appointment Button - Only in List View */}
+      {view === 'list' && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            <span>New Appointment</span>
+          </button>
         </div>
       )}
 
-      {/* Add/Edit Appointment Form */}
+      {/* Add/Edit Appointment Form Modal */}
       {showForm && (
-        <AppointmentForm
-          onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
-          onCancel={handleCancelEdit}
-          initialData={editingAppointment || prefilledData}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="my-8 w-full max-w-4xl">
+            <AppointmentForm
+              onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
+              onCancel={handleCancelEdit}
+              initialData={editingAppointment || prefilledData}
+            />
+          </div>
+        </div>
       )}
 
       {/* Calendar View */}
       {view === 'calendar' && (
         <CalendarView
-          appointments={filteredAppointments}
+          appointments={appointments}
           weekOffset={weekOffset}
           onWeekChange={setWeekOffset}
           onComplete={handleMarkCompleted}
+          onEdit={handleEditAppointment}
           onCreateAtSlot={handleCreateAtSlot}
         />
       )}

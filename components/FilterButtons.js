@@ -5,10 +5,9 @@
 
 export default function FilterButtons({ filter, onFilterChange }) {
     const filters = [
+        { value: 'all', label: 'All', color: 'gray' },
         { value: 'upcoming', label: 'Upcoming', color: 'blue' },
-        { value: 'completed', label: 'Completed', color: 'green' },
-        { value: 'past', label: 'Past Due', color: 'red' },
-        { value: 'all', label: 'All', color: 'gray' }
+        { value: 'completed', label: 'Completed', color: 'green' }
     ]
 
     const getColorClasses = (filterValue, color) => {
@@ -19,7 +18,7 @@ export default function FilterButtons({ filter, onFilterChange }) {
     }
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
             {filters.map(({ value, label, color }) => (
                 <button
                     key={value}

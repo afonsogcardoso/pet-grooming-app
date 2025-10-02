@@ -6,7 +6,7 @@
 import { getWeekDates, getWeekRangeText, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink } from '@/utils/addressUtils'
 
-export default function CalendarView({ appointments, weekOffset, onWeekChange, onComplete, onCreateAtSlot }) {
+export default function CalendarView({ appointments, weekOffset, onWeekChange, onComplete, onEdit, onCreateAtSlot }) {
     const weekDates = getWeekDates(weekOffset)
 
     // Time slots from 8 AM to 6 PM in 30-minute intervals
@@ -30,18 +30,8 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
     }
 
     const handleAppointmentClick = (apt) => {
-        if (apt.status === 'completed') {
-            alert(`Completed: ${apt.customer_name} - ${apt.pet_name}`)
-            return
-        }
-
-        if (
-            confirm(
-                `${apt.customer_name} - ${apt.pet_name}\n${formatTime(apt.appointment_time)}\n${apt.service}\n\nMark as completed?`
-            )
-        ) {
-            onComplete(apt.id)
-        }
+        // Open edit modal for any appointment
+        onEdit(apt)
     }
 
     const handleSlotClick = (date, time) => {
@@ -121,7 +111,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             {/* Instructions */}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                 <p className="text-sm font-semibold text-blue-900">
-                    💡 Click on any empty time slot to create a new appointment
+                    💡 Click on any empty time slot to create a new appointment, or click an existing appointment to edit it
                 </p>
             </div>
 
