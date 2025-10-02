@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-    loadCustomerSummary,
+    loadCustomers,
     createCustomer,
     updateCustomer,
     deleteCustomer,
@@ -32,7 +32,7 @@ export default function CustomerManager() {
 
     async function fetchCustomers() {
         setLoading(true)
-        const { data, error } = await loadCustomerSummary()
+        const { data, error } = await loadCustomers()
 
         if (error) {
             console.error('Error loading customers:', error)
@@ -78,7 +78,8 @@ export default function CustomerManager() {
         if (error) {
             alert('Error updating customer: ' + error.message)
         } else {
-            fetchCustomers()
+            // Refetch all customers to get updated counts
+            await fetchCustomers()
             setEditingCustomer(null)
             setShowForm(false)
         }

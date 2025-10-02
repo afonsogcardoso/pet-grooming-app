@@ -71,10 +71,8 @@ export default function Home() {
     if (error) {
       alert('Error updating appointment: ' + error.message)
     } else {
-      // Update the appointment in the list
-      setAppointments(
-        appointments.map((apt) => (apt.id === editingAppointment.id ? data[0] : apt))
-      )
+      // Refetch all appointments to get updated data with relations (customer address, etc.)
+      await fetchAppointments()
       setEditingAppointment(null)
       setShowForm(false)
     }

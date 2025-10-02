@@ -13,20 +13,19 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     const [showCustomerModal, setShowCustomerModal] = useState(false)
     const [showPetModal, setShowPetModal] = useState(false)
 
-    const [formData, setFormData] = useState(
-        initialData || {
-            customer_id: '',
-            pet_id: '',
-            customer_name: '',
-            pet_name: '',
-            phone: '',
-            service: '',
-            appointment_date: '',
-            appointment_time: '',
-            duration: 60,
-            notes: ''
-        }
-    )
+    const [formData, setFormData] = useState({
+        customer_id: initialData?.customer_id || '',
+        pet_id: initialData?.pet_id || '',
+        customer_name: initialData?.customer_name || '',
+        pet_name: initialData?.pet_name || '',
+        phone: initialData?.phone || '',
+        service: initialData?.service || '',
+        appointment_date: initialData?.appointment_date || '',
+        appointment_time: initialData?.appointment_time || '',
+        duration: initialData?.duration || 60,
+        notes: initialData?.notes || '',
+        status: initialData?.status || 'scheduled'
+    })
 
     // Customer modal form data
     const [customerFormData, setCustomerFormData] = useState({
@@ -43,7 +42,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         breed: '',
         age: '',
         weight: '',
-        medical_notes: ''
+        medical_notes: '' // Ensure this is never null
     })
 
     const isEditing = !!initialData
@@ -75,6 +74,30 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         fetchCustomers()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    // Update form data when initialData changes (e.g., when editing a different appointment)
+    useEffect(() => {
+        if (initialData) {
+            // Format time to HH:MM (remove seconds if present)
+            const formattedTime = initialData.appointment_time
+                ? initialData.appointment_time.substring(0, 5)
+                : '';
+
+            setFormData({
+                customer_id: initialData.customer_id || '',
+                pet_id: initialData.pet_id || '',
+                customer_name: initialData.customer_name || '',
+                pet_name: initialData.pet_name || '',
+                phone: initialData.phone || '',
+                service: initialData.service || '',
+                appointment_date: initialData.appointment_date || '',
+                appointment_time: formattedTime,
+                duration: initialData.duration || 60,
+                notes: initialData.notes || '',
+                status: initialData.status || 'scheduled'
+            })
+        }
+    }, [initialData])
 
     useEffect(() => {
         if (formData.customer_id) {
@@ -385,7 +408,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                     <div>
                         <label className="block text-sm font-bold text-gray-800 mb-2">Notes</label>
                         <textarea
-                            value={formData.notes}
+                            value={formData.notes || ''}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                             rows="3"
                             className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
@@ -466,7 +489,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             <div>
                                 <label className="block text-sm font-bold text-gray-800 mb-2">Notes</label>
                                 <textarea
-                                    value={customerFormData.notes}
+                                    value={customerFormData.notes || ''}
                                     onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
                                     rows="2"
                                     className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
@@ -572,7 +595,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     Medical Notes
                                 </label>
                                 <textarea
-                                    value={petFormData.medical_notes}
+                                    value={petFormData.medical_notes || ''}
                                     onChange={(e) => setPetFormData({ ...petFormData, medical_notes: e.target.value })}
                                     rows="2"
                                     className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
