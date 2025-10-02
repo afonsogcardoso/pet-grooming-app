@@ -1,13 +1,21 @@
 // ============================================
 // FILE: components/AppointmentForm.js
-// Add/edit appointment form component
+// Add/edit appointment form component with customer/pet selection
 // ============================================
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { loadCustomers, loadPetsByCustomer } from '@/lib/customerService'
 
 export default function AppointmentForm({ onSubmit, onCancel, initialData = null }) {
+    const [customers, setCustomers] = useState([])
+    const [pets, setPets] = useState([])
+    const [loadingCustomers, setLoadingCustomers] = useState(true)
+    const [loadingPets, setLoadingPets] = useState(false)
+
     const [formData, setFormData] = useState(
         initialData || {
+            customer_id: '',
+            pet_id: '',
             customer_name: '',
             pet_name: '',
             phone: '',
@@ -31,6 +39,67 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         'Other'
     ]
 
+    useEffect(() => {
+        fetchCustomers()
+    }, [])
+
+    useEffect(() => {
+        if (formData.customer_id) {
+            fetchPets(formData.customer_id)
+        } else {
+            setPets([])
+            setFormData((prev) => ({ ...prev, pet_id: '' }))
+        }
+    }, [formData.customer_id])
+
+    async function fetchCustomers() {
+        setLoadingCustomers(true)
+        const { data, error } = await loadCustomers()
+
+        if (error) {
+            console.error('Error loading customers:', error)
+        } else {
+            setCustomers(data)
+            // If editing and has customer_id, fetch pets
+            if (initialData?.customer_id) {
+                fetchPets(initialData.customer_id)
+            }
+        }
+        setLoadingCustomers(false)
+    }
+
+    async function fetchPets(customerId) {
+        setLoadingPets(true)
+        const { data, error } = await loadPetsByCustomer(customerId)
+
+        if (error) {
+            console.error('Error loading pets:', error)
+        } else {
+            setPets(data)
+        }
+        setLoadingPets(false)
+    }
+
+    function handleCustomerChange(customerId) {
+        const customer = customers.find((c) => c.id === customerId)
+        setFormData({
+            ...formData,
+            customer_id: customerId,
+            customer_name: customer?.name || '',
+            phone: customer?.phone || '',
+            pet_id: '' // Reset pet selection
+        })
+    }
+
+    function handlePetChange(petId) {
+        const pet = pets.find((p) => p.id === petId)
+        setFormData({
+            ...formData,
+            pet_id: petId,
+            pet_name: pet?.name || ''
+        })
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         onSubmit(formData)
@@ -43,50 +112,83 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Customer Selection */}
                     <div>
                         <label className="block text-sm font-bold text-gray-800 mb-2">
-                            Customer Name *
+                            Customer *
                         </label>
-                        <input
-                            type="text"
-                            required
-                            value={formData.customer_name}
-                            onChange={(e) =>
-                                setFormData({ ...formData, customer_name: e.target.value })
-                            }
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
-                            placeholder="John Doe"
-                        />
+                        {loadingCustomers ? (
+                            <div className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                Loading customers...
+                            </div>
+                        ) : (
+                            <select
+                                required
+                                value={formData.customer_id}
+                                onChange={(e) => handleCustomerChange(e.target.value)}
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                            >
+                                <option value="">Select a customer...</option>
+                                {customers.map((customer) => (
+                                    <option key={customer.id} value={customer.id}>
+                                        {customer.name} - {customer.phone}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        <p className="text-xs text-gray-600 mt-1">
+                            Don't see the customer?{' '}
+                            <a
+                                href="/customers"
+                                target="_blank"
+                                className="text-indigo-600 hover:underline font-semibold"
+                            >
+                                Add them here
+                            </a>
+                        </p>
                     </div>
 
+                    {/* Pet Selection */}
                     <div>
-                        <label className="block text-sm font-bold text-gray-800 mb-2">
-                            Pet Name *
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            value={formData.pet_name}
-                            onChange={(e) => setFormData({ ...formData, pet_name: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
-                            placeholder="Max"
-                        />
+                        <label className="block text-sm font-bold text-gray-800 mb-2">Pet *</label>
+                        {!formData.customer_id ? (
+                            <div className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                Select a customer first
+                            </div>
+                        ) : loadingPets ? (
+                            <div className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                Loading pets...
+                            </div>
+                        ) : pets.length === 0 ? (
+                            <div className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                No pets found. Add one in{' '}
+                                <a
+                                    href="/customers"
+                                    target="_blank"
+                                    className="text-indigo-600 hover:underline font-semibold"
+                                >
+                                    Customers
+                                </a>
+                            </div>
+                        ) : (
+                            <select
+                                required
+                                value={formData.pet_id}
+                                onChange={(e) => handlePetChange(e.target.value)}
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                            >
+                                <option value="">Select a pet...</option>
+                                {pets.map((pet) => (
+                                    <option key={pet.id} value={pet.id}>
+                                        {pet.name}
+                                        {pet.breed && ` (${pet.breed})`}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-bold text-gray-800 mb-2">
-                            Phone Number *
-                        </label>
-                        <input
-                            type="tel"
-                            required
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
-                            placeholder="+351 912 345 678"
-                        />
-                    </div>
-
+                    {/* Service Selection */}
                     <div>
                         <label className="block text-sm font-bold text-gray-800 mb-2">
                             Service *
@@ -106,6 +208,21 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                         </select>
                     </div>
 
+                    {/* Phone Display (read-only) */}
+                    <div>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                            Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            value={formData.phone}
+                            readOnly
+                            className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg text-lg bg-gray-50 text-gray-700 font-medium cursor-not-allowed"
+                            placeholder="Will autofill from customer"
+                        />
+                    </div>
+
+                    {/* Date */}
                     <div>
                         <label className="block text-sm font-bold text-gray-800 mb-2">Date *</label>
                         <input
@@ -119,6 +236,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                         />
                     </div>
 
+                    {/* Time */}
                     <div>
                         <label className="block text-sm font-bold text-gray-800 mb-2">Time *</label>
                         <input
@@ -133,6 +251,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                     </div>
                 </div>
 
+                {/* Notes */}
                 <div>
                     <label className="block text-sm font-bold text-gray-800 mb-2">Notes</label>
                     <textarea
