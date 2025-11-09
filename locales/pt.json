@@ -5,7 +5,9 @@
     "nav": {
       "appointments": "Agendamentos",
       "customers": "Clientes",
-      "services": "Serviços"
+      "services": "Serviços",
+      "menu": "Menu",
+      "close": "Fechar"
     }
   },
   "language": {

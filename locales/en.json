@@ -5,7 +5,9 @@
     "nav": {
       "appointments": "Appointments",
       "customers": "Customers",
-      "services": "Services"
+      "services": "Services",
+      "menu": "Menu",
+      "close": "Close"
     }
   },
   "language": {

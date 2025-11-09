@@ -5,6 +5,7 @@
 
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { getWeekDates, getWeekRangeText, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink } from '@/utils/addressUtils'
 import { useTranslation } from '@/components/TranslationProvider'
@@ -12,6 +13,30 @@ import { useTranslation } from '@/components/TranslationProvider'
 export default function CalendarView({ appointments, weekOffset, onWeekChange, onComplete, onEdit, onCreateAtSlot }) {
     const { t, resolvedLocale } = useTranslation()
     const weekDates = getWeekDates(weekOffset)
+    const [compactView, setCompactView] = useState(false)
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (typeof window !== 'undefined') {
+                setCompactView(window.innerWidth < 768)
+            }
+        }
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    const datesToRender = useMemo(() => {
+        if (!compactView) return weekDates
+        const today = new Date()
+        const todayStr = today.toDateString()
+        const idx = weekDates.findIndex((date) => date.toDateString() === todayStr)
+        if (idx === -1) {
+            return weekDates.slice(0, 3)
+        }
+        const start = Math.min(Math.max(idx, 0), Math.max(0, weekDates.length - 3))
+        return weekDates.slice(start, start + 3)
+    }, [compactView, weekDates])
 
     // Time slots from 8 AM to 6 PM in 30-minute intervals
     const timeSlots = [
@@ -79,6 +104,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
         return apt
     }
 
+    const dayCount = datesToRender.length
+    const gridTemplateStyle = { gridTemplateColumns: `repeat(${dayCount + 1}, minmax(0, 1fr))` }
+
     return (
         <div className="bg-white rounded-lg shadow-md p-4">
             {/* Week Navigation */}
@@ -121,13 +149,13 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
 
             {/* Calendar Grid with Time Slots */}
             <div className="overflow-x-auto">
-                <div className="min-w-[900px]">
+                <div className={compactView ? 'min-w-full' : 'min-w-[900px]'}>
                     {/* Day Headers */}
-                    <div className="grid grid-cols-8 gap-1 mb-2">
+                    <div className="grid gap-1 mb-2" style={gridTemplateStyle}>
                         <div className="text-center font-bold text-gray-700 p-2">
                             {t('calendar.timeColumn')}
                         </div>
-                        {weekDates.map((date, i) => {
+                        {datesToRender.map((date, i) => {
                             const isToday = date.toDateString() === new Date().toDateString()
                             return (
                                 <div key={i} className="text-center">
@@ -149,14 +177,14 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
 
                     {/* Time Slots Grid */}
                     {timeSlots.map((time) => (
-                        <div key={time} className="grid grid-cols-8 gap-1 mb-1">
+                        <div key={time} className="grid gap-1 mb-1" style={gridTemplateStyle}>
                             {/* Time Label */}
                             <div className="text-center text-sm font-bold text-gray-700 p-2 bg-gray-100 rounded flex items-center justify-center">
                                 {formatTime(time, resolvedLocale)}
                             </div>
 
                             {/* Day Cells */}
-                            {weekDates.map((date, i) => {
+                            {datesToRender.map((date, i) => {
                                 const apt = getAppointmentAtSlot(date, time)
                                 const isToday = date.toDateString() === new Date().toDateString()
 

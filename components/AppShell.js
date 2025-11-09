@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -30,6 +30,11 @@ export default function AppShell({ children }) {
   const { t } = useTranslation()
   const [logoError, setLogoError] = useState(false)
   const logoPath = '/brand-logo.png'
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
 
   return (
     <div className="min-h-screen brand-background">
@@ -57,8 +62,24 @@ export default function AppShell({ children }) {
                 <p className="text-sm text-gray-500">{t('app.description')}</p>
               </div>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-              <nav className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 w-full sm:w-auto">
+              <div className="flex items-center justify-between sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className="text-brand-primary border border-brand-primary rounded-full px-3 py-1 text-sm font-semibold flex items-center gap-2"
+                  aria-expanded={menuOpen}
+                  aria-controls="primary-nav"
+                >
+                  ☰ {menuOpen ? t('app.nav.close') ?? 'Fechar' : t('app.nav.menu') ?? 'Menu'}
+                </button>
+              </div>
+              <nav
+                id="primary-nav"
+                className={`${
+                  menuOpen ? 'flex' : 'hidden'
+                } flex-col sm:flex sm:flex-row flex-wrap gap-2`}
+              >
                 {navItems.map(({ href, labelKey, icon }) => {
                   const isActive = pathname === href
                   const baseClasses =
