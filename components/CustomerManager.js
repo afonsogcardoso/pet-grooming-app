@@ -157,7 +157,7 @@ export default function CustomerManager() {
                             setSelectedCustomer(null)
                         }
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
+                    className="btn-brand shadow-brand-glow py-4 px-8 text-lg"
                 >
                     {showForm ? t('customersPage.buttons.cancelForm') : t('customersPage.buttons.new')}
                 </button>
@@ -172,11 +172,11 @@ export default function CustomerManager() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder={t('customersPage.searchPlaceholder')}
-                        className="flex-1 px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                        className="flex-1 px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                     />
                     <button
                         onClick={handleSearch}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-200"
+                        className="btn-brand py-3 px-6 shadow transition duration-200"
                     >
                         🔍 {t('customersPage.search')}
                     </button>
@@ -229,7 +229,7 @@ export default function CustomerManager() {
                         </div>
 
                         {selectedCustomer.notes && (
-                            <div className="mb-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                            <div className="mb-4 p-3 bg-brand-secondary-soft rounded border-l-4 border-brand-secondary">
                                 <p className="font-bold text-sm text-gray-700">
                                     {t('customersPage.selected.notes')}
                                 </p>
@@ -238,27 +238,27 @@ export default function CustomerManager() {
                         )}
 
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                            <div className="bg-blue-50 p-3 rounded">
-                                <p className="text-sm font-bold text-blue-900">
+                            <div className="bg-brand-primary-soft p-3 rounded">
+                                <p className="text-sm font-bold text-brand-primary">
                                     {t('customersPage.selected.pets')}
                                 </p>
-                                <p className="text-2xl font-bold text-blue-600">
+                                <p className="text-2xl font-bold text-brand-primary">
                                     {selectedCustomer.pet_count || 0}
                                 </p>
                             </div>
-                            <div className="bg-purple-50 p-3 rounded">
-                                <p className="text-sm font-bold text-purple-900">
+                            <div className="bg-brand-secondary-soft p-3 rounded">
+                                <p className="text-sm font-bold text-brand-secondary">
                                     {t('customersPage.selected.appointments')}
                                 </p>
-                                <p className="text-2xl font-bold text-purple-600">
+                                <p className="text-2xl font-bold text-brand-secondary">
                                     {selectedCustomer.appointment_count || 0}
                                 </p>
                             </div>
-                            <div className="bg-green-50 p-3 rounded">
-                                <p className="text-sm font-bold text-green-900">
+                            <div className="bg-brand-accent-soft p-3 rounded">
+                                <p className="text-sm font-bold text-brand-accent">
                                     {t('customersPage.selected.lastVisit')}
                                 </p>
-                                <p className="text-sm font-bold text-green-600">
+                                <p className="text-sm font-bold text-brand-accent">
                                     {selectedCustomer.last_appointment_date
                                         ? formatDate(selectedCustomer.last_appointment_date, resolvedLocale)
                                         : t('customersPage.selected.never')}
@@ -302,7 +302,7 @@ export default function CustomerManager() {
                                                 </p>
                                             </div>
                                             {apt.status === 'completed' && (
-                                                <span className="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
+                                                <span className="bg-brand-accent text-white text-xs font-semibold px-2 py-1 rounded">
                                                     ✓
                                                 </span>
                                             )}
@@ -346,7 +346,7 @@ export default function CustomerManager() {
                                                     e.stopPropagation()
                                                     handleEditCustomer(customer)
                                                 }}
-                                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-xs transition duration-200"
+                                                className="btn-brand-outlined py-1 px-2 text-xs transition duration-200"
                                             >
                                                 ✏️
                                             </button>
@@ -366,7 +366,7 @@ export default function CustomerManager() {
                                         <div>📱 {customer.phone}</div>
                                         {customer.email && <div>✉️ {customer.email}</div>}
                                         <div className="flex gap-4 mt-2 text-xs">
-                                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
+                                            <span className="bg-brand-primary-soft text-brand-primary px-2 py-1 rounded font-semibold">
                                                 {t('customersPage.cards.petBadge', { count: customer.pet_count || 0 })}
                                             </span>
                                             <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">

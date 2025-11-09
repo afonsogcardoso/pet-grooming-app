@@ -15,7 +15,7 @@ export default function ViewToggle({ view, onViewChange }) {
             <button
                 onClick={() => onViewChange('list')}
                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition duration-200 ${view === 'list'
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-brand-primary text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
             >
@@ -24,7 +24,7 @@ export default function ViewToggle({ view, onViewChange }) {
             <button
                 onClick={() => onViewChange('calendar')}
                 className={`flex-1 py-3 px-4 rounded-lg font-semibold transition duration-200 ${view === 'calendar'
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-brand-primary text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
             >

@@ -107,7 +107,7 @@ export default function ServiceManager() {
           {t('servicesPage.headingWithCount', { count: services.length })}
         </h2>
         <button
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
+          className="btn-brand shadow-brand-glow py-3 px-6"
           onClick={() => {
             if (showForm) {
               setShowForm(false)
@@ -128,7 +128,7 @@ export default function ServiceManager() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('servicesPage.searchPlaceholder')}
-          className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+          className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
         />
       </div>
 
@@ -160,7 +160,7 @@ export default function ServiceManager() {
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="bg-white rounded-lg shadow-md p-4 border-l-4 border-indigo-500 hover:shadow-lg transition"
+              className="bg-white rounded-lg shadow-md p-4 border-l-4 border-brand-primary hover:shadow-lg transition"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
@@ -171,7 +171,7 @@ export default function ServiceManager() {
                 </div>
                 <span
                   className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    service.active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'
+                    service.active ? 'bg-brand-accent-soft text-brand-accent' : 'bg-gray-200 text-gray-600'
                   }`}
                 >
                   {service.active ? t('servicesPage.badges.active') : t('servicesPage.badges.inactive')}
@@ -200,7 +200,7 @@ export default function ServiceManager() {
                     setEditingService(service)
                     setShowForm(true)
                   }}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                  className="flex-1 btn-brand-outlined py-2 px-4 text-center"
                 >
                   {t('servicesPage.buttons.edit')}
                 </button>

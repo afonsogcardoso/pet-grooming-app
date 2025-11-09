@@ -43,7 +43,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                             required
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('customerForm.placeholders.name')}
                         />
                     </div>
@@ -57,7 +57,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                             required
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('customerForm.placeholders.phone')}
                         />
                     </div>
@@ -70,7 +70,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                             type="email"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('customerForm.placeholders.email')}
                         />
                     </div>
@@ -84,7 +84,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                             required
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('customerForm.placeholders.address')}
                         />
                         <p className="text-xs text-gray-600 mt-1">
@@ -101,7 +101,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         rows="3"
-                        className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                        className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                         placeholder={t('customerForm.placeholders.notes')}
                     />
                 </div>
@@ -109,7 +109,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                 <div className="flex gap-2">
                     <button
                         type="submit"
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+                        className="flex-1 btn-brand shadow-brand-glow py-4 px-6 text-xl"
                     >
                         {isEditing ? t('customerForm.buttons.update') : t('customerForm.buttons.save')}
                     </button>

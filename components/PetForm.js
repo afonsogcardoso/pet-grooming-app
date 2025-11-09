@@ -85,7 +85,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
   }
 
   return (
-    <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6 border-2 border-green-500">
+    <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6 border-2 border-brand-accent">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         {isEditing ? t('petForm.title.edit') : t('petForm.title.new')}
       </h3>
@@ -100,7 +100,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('petForm.placeholders.name')}
             />
           </div>
@@ -113,7 +113,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
               type="text"
               value={formData.breed ?? ''}
               onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('petForm.placeholders.breed')}
             />
           </div>
@@ -128,7 +128,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
               max="30"
               value={formData.age ?? ''}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('petForm.placeholders.age')}
             />
           </div>
@@ -144,7 +144,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
               max="200"
               value={formData.weight ?? ''}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('petForm.placeholders.weight')}
             />
           </div>
@@ -158,7 +158,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
             value={formData.medical_notes ?? ''}
             onChange={(e) => setFormData({ ...formData, medical_notes: e.target.value })}
             rows="3"
-            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
             placeholder={t('petForm.placeholders.medicalNotes')}
           />
         </div>
@@ -172,7 +172,7 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
               <img
                 src={photoPreview}
                 alt={formData.name || 'Pet preview'}
-                className="w-20 h-20 rounded-full object-cover border-2 border-green-500"
+                className="w-20 h-20 rounded-full object-cover border-2 border-brand-accent"
               />
               <button
                 type="button"
@@ -189,14 +189,14 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
             type="file"
             accept="image/*"
             onChange={handlePhotoChange}
-            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-accent-soft)] file:text-[color:var(--brand-accent-dark)] hover:file:bg-[color:var(--brand-accent)] hover:file:text-white"
           />
         </div>
 
         <div className="flex gap-2">
           <button
             type="submit"
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+            className="flex-1 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
           >
             {isEditing ? t('petForm.buttons.update') : t('petForm.buttons.save')}
           </button>

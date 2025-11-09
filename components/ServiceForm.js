@@ -45,7 +45,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('servicesForm.placeholders.name')}
             />
           </div>
@@ -57,7 +57,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
             <select
               value={formData.default_duration}
               onChange={(e) => setFormData({ ...formData, default_duration: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
             >
               {DURATIONS.map((value) => (
                 <option key={value} value={value}>
@@ -77,7 +77,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
               step="0.01"
               value={formData.price ?? ''}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
               placeholder={t('servicesForm.placeholders.price')}
             />
           </div>
@@ -91,7 +91,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows="3"
-            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
             placeholder={t('servicesForm.placeholders.description')}
           />
         </div>
@@ -101,7 +101,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
             type="checkbox"
             checked={formData.active}
             onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-            className="w-5 h-5 rounded border-gray-400 text-indigo-600 focus:ring-indigo-500"
+            className="w-5 h-5 rounded border-gray-400 text-brand-primary focus:ring-[color:var(--brand-primary)]"
           />
           {t('servicesForm.labels.active')}
         </label>
@@ -109,7 +109,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
         <div className="flex gap-2">
           <button
             type="submit"
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+            className="flex-1 btn-brand shadow-brand-glow py-4 px-6 text-xl"
           >
             {isEditing ? t('servicesForm.buttons.update') : t('servicesForm.buttons.save')}
           </button>

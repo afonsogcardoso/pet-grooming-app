@@ -113,7 +113,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             <div className="flex items-center justify-between mb-4 gap-2">
                 <button
                     onClick={handlePrevious}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+                    className="btn-brand py-3 px-4"
                 >
                     ← {t('calendar.previous')}
                 </button>
@@ -125,7 +125,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                     {weekOffset !== 0 && (
                         <button
                             onClick={handleToday}
-                            className="text-sm text-indigo-600 hover:underline mt-1"
+                            className="text-sm text-brand-primary hover:underline mt-1"
                         >
                             {t('calendar.today')}
                         </button>
@@ -134,15 +134,15 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
 
                 <button
                     onClick={handleNext}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+                    className="btn-brand py-3 px-4"
                 >
                     {t('calendar.next')} →
                 </button>
             </div>
 
             {/* Instructions */}
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                <p className="text-sm font-semibold text-blue-900">
+            <div className="mb-4 p-3 bg-brand-secondary-soft rounded-lg border-l-4 border-brand-secondary">
+                <p className="text-sm font-semibold text-brand-secondary">
                     {t('calendar.instructions')}
                 </p>
             </div>
@@ -164,7 +164,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                     </div>
                                     <div
                                         className={`text-sm ${isToday
-                                            ? 'bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto font-bold'
+                                            ? 'bg-brand-primary text-white rounded-full w-8 h-8 flex items-center justify-center mx-auto font-bold'
                                             : 'text-gray-600'
                                             }`}
                                     >
@@ -193,9 +193,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                         <div
                                             key={i}
                                             className={`p-2 rounded cursor-pointer hover:shadow-lg transition-all border-2 ${apt.status === 'completed'
-                                                ? 'bg-green-100 border-green-500'
-                                                : 'bg-indigo-100 border-indigo-500'
-                                                } ${isToday ? 'ring-2 ring-blue-400' : ''}`}
+                                                ? 'bg-brand-accent-soft border-brand-accent'
+                                                : 'bg-brand-primary-soft border-brand-primary'
+                                                } ${isToday ? 'ring-2 ring-[color:var(--brand-primary)]' : ''}`}
                                             onClick={() => handleAppointmentClick(apt)}
                                         >
                                             <div className="text-xs font-bold text-gray-800 truncate">
@@ -215,14 +215,14 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                                     href={getGoogleMapsLink(apt.customers.address)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-xs text-indigo-600 hover:underline flex items-center gap-1 mt-1"
+                                                    className="text-xs text-brand-primary hover:underline flex items-center gap-1 mt-1"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     {t('calendar.mapLink')}
                                                 </a>
                                             )}
                                             {apt.status === 'completed' && (
-                                                <div className="text-xs font-bold text-green-700 mt-1">
+                                                <div className="text-xs font-bold text-brand-accent mt-1">
                                                     ✓
                                                 </div>
                                             )}
@@ -232,7 +232,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                     return (
                                         <div
                                             key={i}
-                                            className={`p-2 rounded cursor-pointer hover:bg-gray-200 transition-all border-2 border-dashed border-gray-300 min-h-[80px] flex items-center justify-center ${isToday ? 'bg-blue-50' : 'bg-gray-50'
+                                            className={`p-2 rounded cursor-pointer hover:bg-gray-200 transition-all border-2 border-dashed border-gray-300 min-h-[80px] flex items-center justify-center ${isToday ? 'bg-brand-primary-soft' : 'bg-gray-50'
                                                 }`}
                                             onClick={() => handleSlotClick(date, time)}
                                         >
@@ -251,11 +251,11 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             {/* Legend */}
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-indigo-100 border-2 border-indigo-500 rounded"></div>
+                    <div className="w-4 h-4 bg-brand-primary-soft border-2 border-brand-primary rounded"></div>
                     <span>{t('calendar.legend.scheduled')}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-100 border-2 border-green-500 rounded"></div>
+                    <div className="w-4 h-4 bg-brand-accent-soft border-2 border-brand-accent rounded"></div>
                     <span>{t('calendar.legend.completed')}</span>
                 </div>
                 <div className="flex items-center gap-2">

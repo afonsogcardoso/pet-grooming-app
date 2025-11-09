@@ -162,7 +162,7 @@ export default function PetManager({ customerId, customerName }) {
                 </h3>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow transition duration-200"
+                    className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-2 px-4 rounded-lg shadow transition duration-200"
                 >
                     {showForm ? t('petManager.buttons.cancelForm') : t('petManager.buttons.add')}
                 </button>
@@ -187,7 +187,7 @@ export default function PetManager({ customerId, customerName }) {
                     {pets.map((pet) => (
                         <div
                             key={pet.id}
-                            className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500"
+                            className="bg-white rounded-lg shadow-md p-4 border-l-4 border-brand-accent"
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-3">
@@ -195,10 +195,10 @@ export default function PetManager({ customerId, customerName }) {
                                         <img
                                             src={pet.photo_url}
                                             alt={pet.name}
-                                            className="w-16 h-16 rounded-full object-cover border-2 border-green-500"
+                                            className="w-16 h-16 rounded-full object-cover border-2 border-brand-accent"
                                         />
                                     ) : (
-                                        <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+                                        <div className="w-16 h-16 rounded-full bg-brand-accent-soft text-brand-accent flex items-center justify-center text-2xl">
                                             🐾
                                         </div>
                                     )}
@@ -210,7 +210,7 @@ export default function PetManager({ customerId, customerName }) {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleEditPet(pet)}
-                                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-200"
+                                        className="btn-brand-outlined text-sm py-1 px-3 text-center"
                                     >
                                         ✏️
                                     </button>

@@ -19,8 +19,8 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
     return (
         <div
             className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${appointment.status === 'completed'
-                ? 'border-green-500 bg-green-50'
-                : 'border-indigo-500'
+                ? 'border-brand-accent bg-brand-accent-soft'
+                : 'border-brand-primary'
                 }`}
         >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -30,7 +30,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                             {appointment.customer_name}
                         </h3>
                         {appointment.status === 'completed' && (
-                            <span className="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
+                            <span className="bg-brand-accent text-white text-xs font-semibold px-2 py-1 rounded">
                                 ✓ {t('appointmentCard.statusCompleted')}
                             </span>
                         )}
@@ -51,7 +51,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                 <span className="font-bold">{t('appointmentCard.labels.phone')}:</span>
                                 <a
                                     href={`tel:${appointment.phone}`}
-                                    className="font-medium text-indigo-600 hover:underline"
+                                    className="font-medium text-brand-primary hover:underline"
                                 >
                                     {appointment.phone}
                                 </a>
@@ -63,7 +63,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="font-bold">{t('appointmentCard.labels.date')}:</span>
-                            <span className="font-bold text-indigo-600">
+                            <span className="font-bold text-brand-primary">
                                 {t('appointmentCard.dateTime', { date: dateText, time: timeText })}
                             </span>
                         </div>
@@ -74,7 +74,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                     href={getGoogleMapsLink(appointment.customers.address)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="font-medium text-indigo-600 hover:underline flex items-center gap-1"
+                                    className="font-medium text-brand-primary hover:underline flex items-center gap-1"
                                 >
                                     {formatAddressForDisplay(appointment.customers.address, {
                                         mapLabel,
@@ -96,14 +96,14 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                 <div className="flex sm:flex-col gap-2">
                     <button
                         onClick={() => onEdit(appointment)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-5 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                        className="btn-brand-outlined py-3 px-5 text-sm whitespace-nowrap shadow-md text-center"
                     >
                         ✏️ {t('appointmentCard.buttons.edit')}
                     </button>
                     {appointment.status !== 'completed' && (
                         <button
                             onClick={() => onComplete(appointment.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-5 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                            className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-5 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
                         >
                             ✓ {t('appointmentCard.buttons.complete')}
                         </button>

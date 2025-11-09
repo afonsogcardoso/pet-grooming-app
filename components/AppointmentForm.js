@@ -294,7 +294,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={formData.customer_id}
                                         onChange={(e) => handleCustomerChange(e.target.value)}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">
                                             {t('appointmentForm.placeholders.selectCustomer')}
@@ -309,7 +309,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 <button
                                     type="button"
                                     onClick={() => setShowCustomerModal(true)}
-                                    className="px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
+                                    className="px-4 py-4 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
                                     title={t('appointmentForm.tooltips.addCustomer')}
                                 >
                                     {t('appointmentForm.buttons.add')}
@@ -336,7 +336,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={formData.pet_id}
                                         onChange={(e) => handlePetChange(e.target.value)}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">
                                             {t('appointmentForm.placeholders.selectPet')}
@@ -359,7 +359,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         setShowPetModal(true)
                                     }}
                                     disabled={!formData.customer_id}
-                                    className="px-4 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    className="px-4 py-4 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap disabled:bg-gray-400 disabled:cursor-not-allowed"
                                     title={t('appointmentForm.tooltips.addPet')}
                                 >
                                     {t('appointmentForm.buttons.add')}
@@ -386,7 +386,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={formData.service}
                                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">{t('appointmentForm.placeholders.selectService')}</option>
                                         {formData.service &&
@@ -403,7 +403,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 <button
                                     type="button"
                                     onClick={() => setShowServiceModal(true)}
-                                    className="px-4 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
+                                    className="px-4 py-4 bg-brand-primary hover:bg-brand-primary-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
                                     title={t('appointmentForm.tooltips.addService')}
                                 >
                                     {t('appointmentForm.buttons.add')}
@@ -420,7 +420,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 required
                                 value={formData.duration}
                                 onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                             >
                                 <option value="30">{t('appointmentForm.durationOptions.minutes30')}</option>
                                 <option value="60">{t('appointmentForm.durationOptions.hour')}</option>
@@ -454,7 +454,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_date: e.target.value })
                                 }
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                             />
                         </div>
 
@@ -469,7 +469,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_time: e.target.value })
                                 }
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                             >
                                 <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
                                 {generateTimeSlots().map((time) => (
@@ -490,14 +490,14 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             value={formData.notes || ''}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                             rows="3"
-                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('appointmentForm.placeholders.notes')}
                         />
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+                        className="w-full btn-brand shadow-brand-glow py-4 px-6 text-xl"
                     >
                         {isEditing ? t('appointmentForm.buttons.update') : t('appointmentForm.buttons.save')}
                     </button>
@@ -522,7 +522,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={customerFormData.name}
                                         onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.name')}
                                     />
                                 </div>
@@ -536,7 +536,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={customerFormData.phone}
                                         onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.phone')}
                                     />
                                 </div>
@@ -549,7 +549,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         type="email"
                                         value={customerFormData.email}
                                         onChange={(e) => setCustomerFormData({ ...customerFormData, email: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.email')}
                                     />
                                 </div>
@@ -563,7 +563,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={customerFormData.address}
                                         onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.address')}
                                     />
                                     <p className="text-xs text-gray-600 mt-1">
@@ -580,7 +580,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     value={customerFormData.notes || ''}
                                     onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
                                     rows="2"
-                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                     placeholder={t('customerForm.placeholders.notes')}
                                 />
                             </div>
@@ -588,7 +588,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
+                                    className="flex-1 btn-brand shadow-brand-glow py-3 px-6"
                                 >
                                     {t('customerForm.buttons.save')}
                                 </button>
@@ -632,7 +632,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={petFormData.name}
                                         onChange={(e) => setPetFormData({ ...petFormData, name: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('petForm.placeholders.name')}
                                     />
                                 </div>
@@ -645,7 +645,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         type="text"
                                         value={petFormData.breed}
                                         onChange={(e) => setPetFormData({ ...petFormData, breed: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('petForm.placeholders.breed')}
                                     />
                                 </div>
@@ -660,7 +660,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         max="30"
                                         value={petFormData.age}
                                         onChange={(e) => setPetFormData({ ...petFormData, age: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('petForm.placeholders.age')}
                                     />
                                 </div>
@@ -676,7 +676,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         max="200"
                                         value={petFormData.weight}
                                         onChange={(e) => setPetFormData({ ...petFormData, weight: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('petForm.placeholders.weight')}
                                     />
                                 </div>
@@ -690,7 +690,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     value={petFormData.medical_notes || ''}
                                     onChange={(e) => setPetFormData({ ...petFormData, medical_notes: e.target.value })}
                                     rows="2"
-                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base bg-white text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                     placeholder={t('petForm.placeholders.medicalNotes')}
                                 />
                             </div>
@@ -698,7 +698,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
+                                    className="flex-1 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
                                 >
                                     {t('petForm.buttons.save')}
                                 </button>
@@ -741,7 +741,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={serviceFormData.name}
                                         onChange={(e) => setServiceFormData({ ...serviceFormData, name: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('servicesForm.placeholders.name')}
                                     />
                                 </div>
@@ -757,7 +757,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                                 default_duration: parseInt(e.target.value)
                                             })
                                         }
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                     >
                                         {[30, 45, 60, 75, 90, 120].map((value) => (
                                             <option key={value} value={value}>
@@ -776,7 +776,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         step="0.01"
                                         value={serviceFormData.price}
                                         onChange={(e) => setServiceFormData({ ...serviceFormData, price: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('servicesForm.placeholders.price')}
                                     />
                                 </div>
@@ -791,14 +791,14 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         setServiceFormData({ ...serviceFormData, description: e.target.value })
                                     }
                                     rows="3"
-                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white text-gray-900 font-medium"
+                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                     placeholder={t('servicesForm.placeholders.description')}
                                 />
                             </div>
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
+                                    className="flex-1 btn-brand shadow-brand-glow py-3 px-6"
                                 >
                                     {t('servicesForm.buttons.save')}
                                 </button>

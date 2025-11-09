@@ -163,7 +163,7 @@ export default function Home() {
         <div className="flex justify-center">
           <button
             onClick={() => setShowForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center gap-2"
+            className="btn-brand shadow-brand-glow py-3 px-6 flex items-center gap-2"
           >
             <span className="text-xl">+</span>
             <span>{t('appointmentsPage.newButton')}</span>

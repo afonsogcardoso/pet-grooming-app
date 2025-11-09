@@ -10,12 +10,12 @@ export default function LanguageSwitcher() {
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-      <span>{t('language.label')}:</span>
+    <div className="nav-language">
       <select
+        aria-label={t('language.label')}
         value={locale}
         onChange={(e) => setLocale(e.target.value)}
-        className="border border-gray-300 rounded px-2 py-1 bg-white text-gray-800"
+        className="nav-language-select"
       >
         {availableLocales.map((code) => (
           <option key={code} value={code}>
@@ -23,6 +23,6 @@ export default function LanguageSwitcher() {
           </option>
         ))}
       </select>
-    </label>
+    </div>
   )
 }
