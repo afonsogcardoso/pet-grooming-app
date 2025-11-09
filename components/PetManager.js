@@ -7,8 +7,11 @@
 
 import { useState, useEffect } from 'react'
 import { loadPetsByCustomer, createPet, updatePet, deletePet } from '@/lib/customerService'
+import { supabase } from '@/lib/supabase'
 import PetForm from './PetForm'
 import { useTranslation } from '@/components/TranslationProvider'
+
+const PET_PHOTO_BUCKET = 'pet-photos'
 
 export default function PetManager({ customerId, customerName }) {
     const { t } = useTranslation()
@@ -37,27 +40,54 @@ export default function PetManager({ customerId, customerName }) {
         setLoading(false)
     }
 
-    async function handleCreatePet(formData) {
+    async function handleCreatePet(formData, { photoFile } = {}) {
         const { data, error } = await createPet(formData)
 
         if (error) {
             alert(t('petManager.errors.create', { message: error.message }))
-        } else {
-            setPets([...pets, ...data])
-            setShowForm(false)
+            return
         }
+
+        const created = data?.[0]
+
+        if (photoFile && created) {
+            const photoUrl = await uploadPetPhoto(photoFile, created.id)
+            if (photoUrl) {
+                await updatePet(created.id, { photo_url: photoUrl })
+            }
+        }
+
+        await fetchPets()
+        setShowForm(false)
     }
 
-    async function handleUpdatePet(formData) {
-        const { data, error } = await updatePet(editingPet.id, formData)
+    async function handleUpdatePet(formData, { photoFile, removePhoto } = {}) {
+        const payload = { ...formData }
+        if (removePhoto) {
+            payload.photo_url = null
+        }
+
+        const { data, error } = await updatePet(editingPet.id, payload)
 
         if (error) {
             alert(t('petManager.errors.update', { message: error.message }))
-        } else {
-            setPets(pets.map((pet) => (pet.id === editingPet.id ? data[0] : pet)))
-            setEditingPet(null)
-            setShowForm(false)
+            return
         }
+
+        if (removePhoto && editingPet.photo_url) {
+            await deletePetPhoto(editingPet.photo_url)
+        }
+
+        if (photoFile) {
+            const photoUrl = await uploadPetPhoto(photoFile, editingPet.id)
+            if (photoUrl) {
+                await updatePet(editingPet.id, { photo_url: photoUrl })
+            }
+        }
+
+        await fetchPets()
+        setEditingPet(null)
+        setShowForm(false)
     }
 
     async function handleDeletePet(id, petName) {
@@ -80,6 +110,44 @@ export default function PetManager({ customerId, customerName }) {
     function handleCancelForm() {
         setEditingPet(null)
         setShowForm(false)
+    }
+
+    async function uploadPetPhoto(file, petId) {
+        try {
+            const fileExt = file.name.split('.').pop()
+            const uniqueId =
+                typeof crypto !== 'undefined' && crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : `${Date.now()}`
+            const filePath = `pets/${petId}-${uniqueId}.${fileExt}`
+            const { error } = await supabase.storage.from(PET_PHOTO_BUCKET).upload(filePath, file, {
+                upsert: true
+            })
+            if (error) {
+                console.error('Upload error', error)
+                alert(t('petManager.errors.photoUpload', { message: error.message }))
+                return null
+            }
+            const { data } = supabase.storage.from(PET_PHOTO_BUCKET).getPublicUrl(filePath)
+            return data?.publicUrl || null
+        } catch (err) {
+            console.error('Unexpected upload error', err)
+            alert(t('petManager.errors.photoUpload', { message: err.message }))
+            return null
+        }
+    }
+
+    async function deletePetPhoto(photoUrl) {
+        const path = extractStoragePath(photoUrl)
+        if (!path) return
+        await supabase.storage.from(PET_PHOTO_BUCKET).remove([path])
+    }
+
+    function extractStoragePath(url) {
+        if (!url) return null
+        const marker = `${PET_PHOTO_BUCKET}/`
+        const parts = url.split(marker)
+        return parts[1] || null
     }
 
     if (loading) {
@@ -122,7 +190,23 @@ export default function PetManager({ customerId, customerName }) {
                             className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500"
                         >
                             <div className="flex justify-between items-start mb-2">
-                                <h4 className="text-lg font-bold text-gray-800">{pet.name}</h4>
+                                <div className="flex items-center gap-3">
+                                    {pet.photo_url ? (
+                                        <img
+                                            src={pet.photo_url}
+                                            alt={pet.name}
+                                            className="w-16 h-16 rounded-full object-cover border-2 border-green-500"
+                                        />
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+                                            🐾
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-800">{pet.name}</h4>
+                                        {pet.breed && <p className="text-sm text-gray-500">{pet.breed}</p>}
+                                    </div>
+                                </div>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => handleEditPet(pet)}

@@ -24,7 +24,7 @@ function formatTemplate(template, variables = {}) {
 }
 
 export function TranslationProvider({ children }) {
-  const [locale, setLocale] = useState('en')
+  const [locale, setLocale] = useState('pt')
 
   useEffect(() => {
     const stored =

@@ -3,9 +3,9 @@
     "title": "🐾 Gestor de Tosquias",
     "description": "Organiza a agenda do serviço móvel",
     "nav": {
-      "appointments": "📅 Agendamentos",
-      "customers": "👥 Clientes",
-      "services": "🧴 Serviços"
+      "appointments": "Agendamentos",
+      "customers": "Clientes",
+      "services": "Serviços"
     }
   },
   "language": {
@@ -215,7 +215,8 @@
       "breed": "Raça",
       "age": "Idade (anos)",
       "weight": "Peso (kg)",
-      "medicalNotes": "Notas médicas"
+      "medicalNotes": "Notas médicas",
+      "photo": "Fotografia"
     },
     "placeholders": {
       "name": "Max",
@@ -224,10 +225,14 @@
       "weight": "25,5",
       "medicalNotes": "Alergias, medicação, necessidades especiais..."
     },
+    "helpers": {
+      "photo": "Imagens quadradas até 5 MB funcionam melhor."
+    },
     "buttons": {
       "save": "💾 Guardar animal",
       "update": "💾 Atualizar animal",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "removePhoto": "Remover fotografia"
     },
     "errors": {
       "create": "Erro ao criar animal: {{message}}"
@@ -294,7 +299,8 @@
       "load": "Erro ao carregar animais: {{message}}",
       "create": "Erro ao criar animal: {{message}}",
       "update": "Erro ao atualizar animal: {{message}}",
-      "delete": "Erro ao eliminar animal: {{message}}"
+      "delete": "Erro ao eliminar animal: {{message}}",
+      "photoUpload": "Erro ao carregar fotografia: {{message}}"
     }
   },
   "calendar": {

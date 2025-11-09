@@ -175,6 +175,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                             </div>
                                             <div className="text-xs text-gray-700 truncate">
                                                 {apt.pet_name}
+                                                {apt.pets?.breed && (
+                                                    <span className="text-gray-500"> ({apt.pets.breed})</span>
+                                                )}
                                             </div>
                                             <div className="text-xs text-gray-600 truncate">
                                                 {apt.service}

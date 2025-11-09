@@ -39,7 +39,12 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                     <div className="text-gray-700 space-y-1 text-base">
                         <div className="flex items-center gap-2">
                             <span className="font-bold">{t('appointmentCard.labels.pet')}:</span>
-                            <span className="font-medium">{appointment.pet_name}</span>
+                            <span className="font-medium">
+                                {appointment.pet_name}
+                                {appointment.pets?.breed && (
+                                    <span className="text-gray-500 font-normal text-sm"> ({appointment.pets.breed})</span>
+                                )}
+                            </span>
                         </div>
                         {appointment.phone && (
                             <div className="flex items-center gap-2">

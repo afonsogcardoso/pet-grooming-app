@@ -30,7 +30,7 @@ export default function ServiceForm({ initialData = null, onSubmit, onCancel }) 
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-indigo-500">
+    <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6 border-2 border-indigo-500">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         {isEditing ? t('servicesForm.titleEdit') : t('servicesForm.titleNew')}
       </h3>

@@ -11,20 +11,17 @@ const navItems = [
   {
     href: '/',
     labelKey: 'app.nav.appointments',
-    activeClasses: 'bg-indigo-600 text-white',
-    inactiveClasses: 'bg-gray-100 text-indigo-700 hover:bg-gray-200'
+    icon: '📅'
   },
   {
     href: '/customers',
     labelKey: 'app.nav.customers',
-    activeClasses: 'bg-green-600 text-white',
-    inactiveClasses: 'bg-gray-100 text-green-700 hover:bg-gray-200'
+    icon: '👥'
   },
   {
     href: '/services',
     labelKey: 'app.nav.services',
-    activeClasses: 'bg-amber-500 text-white',
-    inactiveClasses: 'bg-gray-100 text-amber-700 hover:bg-gray-200'
+    icon: '🧴'
   }
 ]
 
@@ -62,15 +59,21 @@ export default function AppShell({ children }) {
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
               <nav className="flex flex-wrap gap-2">
-                {navItems.map(({ href, labelKey, activeClasses, inactiveClasses }) => {
+                {navItems.map(({ href, labelKey, icon }) => {
                   const isActive = pathname === href
+                  const baseClasses =
+                    'flex items-center gap-1.5 rounded-full font-semibold transition duration-200 border text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2 whitespace-nowrap'
+                  const activeClasses = 'bg-brand-primary text-white border-brand-primary shadow-brand-glow'
+                  const inactiveClasses =
+                    'bg-white/80 text-brand-primary border-brand-primary hover:bg-brand-primary-soft'
                   return (
                     <Link
                       key={href}
                       href={href}
-                      className={`font-bold py-2 px-4 rounded-lg transition duration-200 ${isActive ? activeClasses : inactiveClasses}`}
+                      className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
                     >
-                      {t(labelKey)}
+                      <span className="text-lg leading-none">{icon}</span>
+                      <span>{t(labelKey)}</span>
                     </Link>
                   )
                 })}

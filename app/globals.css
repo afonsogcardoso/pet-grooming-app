@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --brand-primary: #5c6ac4;
-  --brand-primary-dark: #4b59a8;
-  --brand-primary-soft: #eef0ff;
-  --brand-secondary: #ffb347;
-  --brand-secondary-soft: #fff3e0;
-  --brand-accent: #2ec4b6;
-  --brand-accent-dark: #76624e;
-  --brand-accent-soft: #e8fffb;
-  --brand-surface: #e7f8f7;
-  --brand-gradient: linear-gradient(135deg, rgba(92, 106, 196, 0.95), rgba(46, 196, 182, 0.85));
+  --brand-primary: #4fafa9;
+  --brand-primary-dark: #3d8b86;
+  --brand-primary-soft: #e7f8f7;
+  --brand-secondary: #76624e;
+  --brand-secondary-soft: #fdf6de;
+  --brand-accent: #f4d58d;
+  --brand-accent-dark: #c9a65c;
+  --brand-accent-soft: #fff7e0;
+  --brand-surface: #fdfcf9;
+  --brand-gradient: linear-gradient(140deg, rgba(79, 175, 169, 0.95), rgba(118, 98, 78, 0.85));
 
   --background: var(--brand-surface);
   --foreground: #101428;
@@ -25,7 +25,7 @@
 
 @media (prefers-color-scheme: dark) {
 :root {
-    --background: #4fafa9;
+    --background: #1d2b2a;
     --foreground: #f4f4f5;
   }
 }
@@ -43,6 +43,28 @@ body {
 header,
 .card-surface {
   background-color: var(--background);
+}
+
+.modal-card {
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .modal-card {
+    font-size: 0.95rem;
+  }
+  .modal-card h3 {
+    font-size: 1.15rem;
+  }
+  .modal-card input,
+  .modal-card select,
+  .modal-card textarea {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+  .modal-card button {
+    font-size: 1rem;
+  }
 }
 
 @layer utilities {
@@ -98,7 +120,7 @@ header,
 }
 .text-blue-900,
 .text-blue-600 {
-  color: var(--brand-primary-dark) !important;
+  color: var(--brand-secondary) !important;
 }
 
 .bg-green-500,
@@ -118,4 +140,12 @@ header,
 }
 .border-green-500 {
   border-color: var(--brand-accent) !important;
+}
+
+.bg-yellow-500,
+.bg-yellow-600 {
+  background-color: var(--brand-secondary) !important;
+}
+.text-yellow-700 {
+  color: var(--brand-secondary) !important;
 }

@@ -3,9 +3,9 @@
     "title": "🐾 Pet Grooming Manager",
     "description": "Manage your mobile grooming schedule",
     "nav": {
-      "appointments": "📅 Appointments",
-      "customers": "👥 Customers",
-      "services": "🧴 Services"
+      "appointments": "Appointments",
+      "customers": "Customers",
+      "services": "Services"
     }
   },
   "language": {
@@ -215,7 +215,8 @@
       "breed": "Breed",
       "age": "Age (years)",
       "weight": "Weight (kg)",
-      "medicalNotes": "Medical Notes"
+      "medicalNotes": "Medical Notes",
+      "photo": "Photo"
     },
     "placeholders": {
       "name": "Max",
@@ -224,10 +225,14 @@
       "weight": "25.5",
       "medicalNotes": "Allergies, medications, special needs..."
     },
+    "helpers": {
+      "photo": "Square images up to 5MB look best."
+    },
     "buttons": {
       "save": "💾 Save Pet",
       "update": "💾 Update Pet",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "removePhoto": "Remove photo"
     },
     "errors": {
       "create": "Error creating pet: {{message}}"
@@ -294,7 +299,8 @@
       "load": "Error loading pets: {{message}}",
       "create": "Error creating pet: {{message}}",
       "update": "Error updating pet: {{message}}",
-      "delete": "Error deleting pet: {{message}}"
+      "delete": "Error deleting pet: {{message}}",
+      "photoUpload": "Error uploading photo: {{message}}"
     }
   },
   "calendar": {

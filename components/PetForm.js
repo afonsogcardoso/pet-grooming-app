@@ -5,7 +5,7 @@
 // Add/edit pet form component
 // ============================================
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 
 export default function PetForm({ customerId, onSubmit, onCancel, initialData = null }) {
@@ -20,8 +20,36 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
       medical_notes: ''
     }
   )
+  const [photoPreview, setPhotoPreview] = useState(initialData?.photo_url || '')
+  const [photoFile, setPhotoFile] = useState(null)
+  const [removePhoto, setRemovePhoto] = useState(false)
+  const previewUrlRef = useRef(null)
 
   const isEditing = !!initialData
+
+  useEffect(() => {
+    setFormData(
+      initialData || {
+        customer_id: customerId,
+        name: '',
+        breed: '',
+        age: '',
+        weight: '',
+        medical_notes: ''
+      }
+    )
+    setPhotoPreview(initialData?.photo_url || '')
+    setPhotoFile(null)
+    setRemovePhoto(false)
+  }, [customerId, initialData])
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+      }
+    }
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -30,11 +58,34 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
       age: formData.age ? parseInt(formData.age, 10) : null,
       weight: formData.weight ? parseFloat(formData.weight) : null
     }
-    onSubmit(submitData)
+    onSubmit(submitData, { photoFile, removePhoto })
+  }
+
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+    const blobUrl = URL.createObjectURL(file)
+    previewUrlRef.current = blobUrl
+    setPhotoFile(file)
+    setPhotoPreview(blobUrl)
+    setRemovePhoto(false)
+  }
+
+  const handleRemovePhoto = () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+      previewUrlRef.current = null
+    }
+    setPhotoPreview('')
+    setPhotoFile(null)
+    setRemovePhoto(true)
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-green-500">
+    <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6 border-2 border-green-500">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         {isEditing ? t('petForm.title.edit') : t('petForm.title.new')}
       </h3>
@@ -109,6 +160,36 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
             rows="3"
             className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
             placeholder={t('petForm.placeholders.medicalNotes')}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-800 mb-2">
+            {t('petForm.labels.photo')}
+          </label>
+          {photoPreview ? (
+            <div className="flex items-center gap-3 mb-3">
+              <img
+                src={photoPreview}
+                alt={formData.name || 'Pet preview'}
+                className="w-20 h-20 rounded-full object-cover border-2 border-green-500"
+              />
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                className="text-sm font-semibold text-red-600 hover:text-red-700"
+              >
+                {t('petForm.buttons.removePhoto')}
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 mb-3">{t('petForm.helpers.photo')}</p>
+          )}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
           />
         </div>
 

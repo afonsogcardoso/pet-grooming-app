@@ -27,7 +27,7 @@ export default function Home() {
   const [showForm, setShowForm] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState(null)
   const [prefilledData, setPrefilledData] = useState(null)
-  const [view, setView] = useState('list') // 'list' or 'calendar'
+  const [view, setView] = useState('calendar') // 'list' or 'calendar'
   const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
   const { t } = useTranslation()
