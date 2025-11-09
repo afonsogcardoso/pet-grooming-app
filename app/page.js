@@ -173,13 +173,18 @@ export default function Home() {
 
       {/* Add/Edit Appointment Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="my-8 w-full max-w-4xl">
-            <AppointmentForm
-              onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
-              onCancel={handleCancelEdit}
-              initialData={editingAppointment || prefilledData}
-            />
+        <div
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black bg-opacity-50 px-3 py-4 sm:px-6 sm:py-10 overflow-y-auto"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="w-full max-w-4xl">
+            <div className="max-h-[95vh] overflow-y-auto">
+              <AppointmentForm
+                onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
+                onCancel={handleCancelEdit}
+                initialData={editingAppointment || prefilledData}
+              />
+            </div>
           </div>
         </div>
       )}
