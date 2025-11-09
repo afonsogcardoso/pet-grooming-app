@@ -76,9 +76,8 @@ export default function AppShell({ children }) {
               </div>
               <nav
                 id="primary-nav"
-                className={`${
-                  menuOpen ? 'flex' : 'hidden'
-                } flex-col sm:flex sm:flex-row flex-wrap gap-2`}
+                className={`${menuOpen ? 'flex' : 'hidden'
+                  } flex-col sm:flex sm:flex-row flex-wrap gap-2`}
               >
                 {navItems.map(({ href, labelKey, icon }) => {
                   const isActive = pathname === href
@@ -98,8 +97,8 @@ export default function AppShell({ children }) {
                     </Link>
                   )
                 })}
+                <LanguageSwitcher />
               </nav>
-              <LanguageSwitcher />
             </div>
           </div>
         </div>
