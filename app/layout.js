@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google'
-import Link from 'next/link'
 import './globals.css'
+import { TranslationProvider } from '@/components/TranslationProvider'
+import AppShell from '@/components/AppShell'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -13,34 +14,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center py-4">
-                <h1 className="text-2xl font-bold text-indigo-600">
-                  🐾 Pet Grooming Manager
-                </h1>
-                <nav className="flex gap-2">
-                  <Link
-                    href="/"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-                  >
-                    📅 Appointments
-                  </Link>
-                  <Link
-                    href="/customers"
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-                  >
-                    👥 Customers
-                  </Link>
-                </nav>
-              </div>
-            </div>
-          </header>
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {children}
-          </main>
-        </div>
+        <TranslationProvider>
+          <AppShell>{children}</AppShell>
+        </TranslationProvider>
       </body>
     </html>
   )

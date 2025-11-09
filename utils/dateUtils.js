@@ -6,28 +6,35 @@
 /**
  * Format a date string to a readable format
  * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * @param {string} locale - Locale string, defaults to en-US
  * @returns {string} Formatted date like "Mon, Jan 15"
  */
-export function formatDate(dateStr) {
-    const date = new Date(dateStr + 'T00:00:00')
-    return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-    })
+export function formatDate(dateStr, locale = 'en-US') {
+  if (!dateStr) return ''
+  const date = new Date(`${dateStr}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return dateStr
+  return date.toLocaleDateString(locale, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 
 /**
- * Format a time string to 12-hour format
+ * Format a time string to locale-specific format
  * @param {string} timeStr - Time string in HH:MM format
- * @returns {string} Formatted time like "2:30 PM"
+ * @param {string} locale - Locale string, defaults to en-US
+ * @returns {string} Formatted time like "2:30 PM" or "14:30"
  */
-export function formatTime(timeStr) {
-    const [hours, minutes] = timeStr.split(':')
-    const hour = parseInt(hours)
-    const ampm = hour >= 12 ? 'PM' : 'AM'
-    const displayHour = hour % 12 || 12
-    return `${displayHour}:${minutes} ${ampm}`
+export function formatTime(timeStr, locale = 'en-US') {
+  if (!timeStr) return ''
+  const [hours = '0', minutes = '0'] = timeStr.split(':')
+  const date = new Date()
+  date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0)
+  return date.toLocaleTimeString(locale, {
+    hour: 'numeric',
+    minute: '2-digit'
+  })
 }
 
 /**
@@ -58,13 +65,13 @@ export function getWeekDates(weekOffset = 0) {
  * @param {number} weekOffset - Number of weeks to offset
  * @returns {string} Formatted range like "Jan 15 - Jan 21, 2024"
  */
-export function getWeekRangeText(weekOffset = 0) {
-    const week = getWeekDates(weekOffset)
-    const start = week[0]
-    const end = week[6]
-    const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    return `${startStr} - ${endStr}`
+export function getWeekRangeText(weekOffset = 0, locale = 'en-US') {
+  const week = getWeekDates(weekOffset)
+  const start = week[0]
+  const end = week[6]
+  const startStr = start.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+  const endStr = end.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${startStr} - ${endStr}`
 }
 
 /**

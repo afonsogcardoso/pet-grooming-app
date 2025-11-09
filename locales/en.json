@@ -1,0 +1,314 @@
+{
+  "app": {
+    "title": "🐾 Pet Grooming Manager",
+    "description": "Manage your mobile grooming schedule",
+    "nav": {
+      "appointments": "📅 Appointments",
+      "customers": "👥 Customers",
+      "services": "🧴 Services"
+    }
+  },
+  "language": {
+    "label": "Language",
+    "options": {
+      "en": "English",
+      "pt": "Português (Portugal)"
+    }
+  },
+  "appointmentsPage": {
+    "headingWithCount": "Appointments ({{count}})",
+    "newButton": "New Appointment",
+    "loading": "Loading appointments...",
+    "confirmDiscard": "You have an unsaved appointment. Discard the changes?",
+    "confirmDelete": "Delete this appointment?",
+    "errors": {
+      "load": "Error loading appointments: {{message}}",
+      "create": "Error creating appointment: {{message}}",
+      "update": "Error updating appointment: {{message}}",
+      "updateStatus": "Error updating appointment status: {{message}}",
+      "delete": "Error deleting appointment: {{message}}"
+    }
+  },
+  "viewToggle": {
+    "list": "List View",
+    "calendar": "Week View"
+  },
+  "filterButtons": {
+    "all": "All",
+    "upcoming": "Upcoming",
+    "completed": "Completed"
+  },
+  "appointmentList": {
+    "emptyAllTitle": "No appointments yet",
+    "emptyFilteredTitle": "No {{filter}} appointments",
+    "emptyAllDescription": "Click “New Appointment” to get started!",
+    "emptyFilteredDescription": "Try changing the filter above"
+  },
+  "appointmentCard": {
+    "addressLink": "📍 Map",
+    "addressMissing": "No address",
+    "statusCompleted": "Completed",
+    "labels": {
+      "pet": "🐕 Pet",
+      "phone": "📱 Phone",
+      "service": "✂️ Service",
+      "date": "📅 Date",
+      "address": "📍 Address",
+      "notes": "📝 Notes"
+    },
+    "dateTime": "{{date}} at {{time}}",
+    "buttons": {
+      "edit": "Edit",
+      "complete": "Complete",
+      "delete": "Delete"
+    }
+  },
+  "appointmentForm": {
+    "title": {
+      "new": "New Appointment",
+      "edit": "Edit Appointment"
+    },
+    "actions": {
+      "close": "Close"
+    },
+    "fields": {
+      "customer": "Customer *",
+      "pet": "Pet *",
+      "service": "Service *",
+      "duration": "Duration *",
+      "phone": "Phone Number",
+      "date": "Date *",
+      "time": "Time *",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "selectCustomer": "Select a customer...",
+      "selectPet": "Select a pet...",
+      "selectService": "Select a service...",
+      "selectTime": "Select a time...",
+      "selectCustomerFirst": "Select a customer first",
+      "phone": "Will autofill from customer",
+      "notes": "Any special requests or notes...",
+      "noServices": "No services available. Add one below."
+    },
+    "loaders": {
+      "customers": "Loading customers...",
+      "pets": "Loading pets...",
+      "services": "Loading services..."
+    },
+    "tooltips": {
+      "addCustomer": "Add new customer",
+      "addPet": "Add new pet",
+      "addService": "Add new service"
+    },
+    "buttons": {
+      "add": "+ New",
+      "save": "💾 Save Appointment",
+      "update": "💾 Update Appointment"
+    },
+    "durationOptions": {
+      "minutes30": "30 minutes",
+      "hour": "1 hour (default)",
+      "hourThirty": "1 hour 30 minutes"
+    },
+    "messages": {
+      "selectCustomerFirst": "Please select a customer first"
+    }
+  },
+  "servicesForm": {
+    "modalTitle": "Add Service",
+    "titleNew": "Add Service",
+    "titleEdit": "Edit Service",
+    "labels": {
+      "name": "Service Name *",
+      "description": "Description",
+      "duration": "Default Duration",
+      "price": "Price (optional)",
+      "active": "Service available for booking"
+    },
+    "placeholders": {
+      "name": "e.g. Full Groom",
+      "description": "Describe what’s included...",
+      "price": "40.00"
+    },
+    "durationOption": "{{minutes}} minutes",
+    "buttons": {
+      "save": "💾 Save Service",
+      "update": "💾 Update Service",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "create": "Error creating service: {{message}}"
+    }
+  },
+  "servicesPage": {
+    "headingWithCount": "Services ({{count}})",
+    "loading": "Loading services...",
+    "searchPlaceholder": "Search services by name or description...",
+    "buttons": {
+      "new": "+ New Service",
+      "cancelForm": "✕ Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "disable": "Disable",
+      "enable": "Enable"
+    },
+    "labels": {
+      "price": "Price",
+      "priceUnset": "Not set"
+    },
+    "badges": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "durationLabel": "{{minutes}} min slot",
+    "emptyTitle": "No services yet",
+    "emptyDescription": "Use “New Service” to add your first offering.",
+    "emptySearchTitle": "No matches",
+    "emptySearchDescription": "Try a different search term.",
+    "confirmDelete": "Delete {{name}}? This cannot be undone.",
+    "errors": {
+      "load": "Error loading services: {{message}}",
+      "create": "Error creating service: {{message}}",
+      "update": "Error updating service: {{message}}",
+      "delete": "Error deleting service: {{message}}"
+    }
+  },
+  "customerForm": {
+    "title": {
+      "new": "New Customer",
+      "edit": "Edit Customer"
+    },
+    "labels": {
+      "name": "Customer Name *",
+      "phone": "Phone Number *",
+      "email": "Email",
+      "address": "Address (service location) * 📍",
+      "notes": "Notes"
+    },
+    "placeholders": {
+      "name": "John Doe",
+      "phone": "+351 912 345 678",
+      "email": "john@example.com",
+      "address": "Full address or Google Maps link",
+      "notes": "Any special notes about this customer..."
+    },
+    "helpers": {
+      "address": "📍 Enter full address or paste a Google Maps link"
+    },
+    "buttons": {
+      "save": "💾 Save Customer",
+      "update": "💾 Update Customer",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "create": "Error creating customer: {{message}}"
+    }
+  },
+  "petForm": {
+    "title": {
+      "new": "🐾 Add New Pet",
+      "edit": "✏️ Edit Pet"
+    },
+    "labels": {
+      "name": "Pet Name *",
+      "breed": "Breed",
+      "age": "Age (years)",
+      "weight": "Weight (kg)",
+      "medicalNotes": "Medical Notes"
+    },
+    "placeholders": {
+      "name": "Max",
+      "breed": "Golden Retriever",
+      "age": "5",
+      "weight": "25.5",
+      "medicalNotes": "Allergies, medications, special needs..."
+    },
+    "buttons": {
+      "save": "💾 Save Pet",
+      "update": "💾 Update Pet",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "create": "Error creating pet: {{message}}"
+    }
+  },
+  "customersPage": {
+    "headingWithCount": "Customers ({{count}})",
+    "loading": "Loading customers...",
+    "searchPlaceholder": "Search by name or phone...",
+    "search": "Search",
+    "clear": "Clear",
+    "buttons": {
+      "new": "+ New Customer",
+      "cancelForm": "✕ Cancel",
+      "close": "Close"
+    },
+    "empty": {
+      "title": "No customers yet",
+      "description": "Click “New Customer” to get started!"
+    },
+    "selected": {
+      "notes": "Notes:",
+      "pets": "Pets",
+      "appointments": "Appointments",
+      "lastVisit": "Last Visit",
+      "never": "Never"
+    },
+    "history": {
+      "heading": "Appointment History",
+      "loading": "Loading...",
+      "empty": "No appointments yet",
+      "dateTime": "{{date}} at {{time}}"
+    },
+    "cards": {
+      "petBadge": "🐾 {{count}} pets",
+      "appointmentBadge": "📅 {{count}} appts"
+    },
+    "confirmDelete": "Delete {{name}} and all their pets/appointments? This cannot be undone.",
+    "errors": {
+      "load": "Error loading customers: {{message}}",
+      "search": "Error searching customers: {{message}}",
+      "create": "Error creating customer: {{message}}",
+      "update": "Error updating customer: {{message}}",
+      "delete": "Error deleting customer: {{message}}"
+    }
+  },
+  "petManager": {
+    "title": "🐾 Pets for {{name}}",
+    "loading": "Loading pets...",
+    "empty": "No pets yet. Add one above!",
+    "buttons": {
+      "add": "+ Add Pet",
+      "cancelForm": "✕ Cancel"
+    },
+    "labels": {
+      "breed": "Breed",
+      "age": "Age",
+      "years": "years",
+      "weight": "Weight",
+      "medicalNotes": "Medical Notes"
+    },
+    "confirmDelete": "Delete {{name}}? This action cannot be undone.",
+    "errors": {
+      "load": "Error loading pets: {{message}}",
+      "create": "Error creating pet: {{message}}",
+      "update": "Error updating pet: {{message}}",
+      "delete": "Error deleting pet: {{message}}"
+    }
+  },
+  "calendar": {
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Back to This Week",
+    "instructions": "💡 Click an empty time slot to create a new appointment, or click an existing one to edit it",
+    "timeColumn": "Time",
+    "mapLink": "📍 Map",
+    "add": "+ Add",
+    "legend": {
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "available": "Available (click to book)"
+    }
+  }
+}

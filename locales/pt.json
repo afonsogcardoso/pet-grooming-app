@@ -1,0 +1,314 @@
+{
+  "app": {
+    "title": "🐾 Gestor de Tosquias",
+    "description": "Organiza a agenda do serviço móvel",
+    "nav": {
+      "appointments": "📅 Agendamentos",
+      "customers": "👥 Clientes",
+      "services": "🧴 Serviços"
+    }
+  },
+  "language": {
+    "label": "Idioma",
+    "options": {
+      "en": "Inglês",
+      "pt": "Português (Portugal)"
+    }
+  },
+  "appointmentsPage": {
+    "headingWithCount": "Agendamentos ({{count}})",
+    "newButton": "Novo agendamento",
+    "loading": "A carregar agendamentos...",
+    "confirmDiscard": "Tens um agendamento por guardar. Queres descartar as alterações?",
+    "confirmDelete": "Eliminar este agendamento?",
+    "errors": {
+      "load": "Erro ao carregar agendamentos: {{message}}",
+      "create": "Erro ao criar agendamento: {{message}}",
+      "update": "Erro ao atualizar agendamento: {{message}}",
+      "updateStatus": "Erro ao atualizar o estado: {{message}}",
+      "delete": "Erro ao eliminar agendamento: {{message}}"
+    }
+  },
+  "viewToggle": {
+    "list": "Vista em lista",
+    "calendar": "Vista semanal"
+  },
+  "filterButtons": {
+    "all": "Todos",
+    "upcoming": "Próximos",
+    "completed": "Concluídos"
+  },
+  "appointmentList": {
+    "emptyAllTitle": "Ainda não tens agendamentos",
+    "emptyFilteredTitle": "Sem agendamentos {{filter}}",
+    "emptyAllDescription": "Clica em “Novo agendamento” para começar!",
+    "emptyFilteredDescription": "Experimenta alterar o filtro acima"
+  },
+  "appointmentCard": {
+    "addressLink": "📍 Mapa",
+    "addressMissing": "Sem morada",
+    "statusCompleted": "Concluído",
+    "labels": {
+      "pet": "🐕 Animal",
+      "phone": "📱 Telefone",
+      "service": "✂️ Serviço",
+      "date": "📅 Data",
+      "address": "📍 Morada",
+      "notes": "📝 Notas"
+    },
+    "dateTime": "{{date}} às {{time}}",
+    "buttons": {
+      "edit": "Editar",
+      "complete": "Concluir",
+      "delete": "Eliminar"
+    }
+  },
+  "appointmentForm": {
+    "title": {
+      "new": "Novo agendamento",
+      "edit": "Editar agendamento"
+    },
+    "actions": {
+      "close": "Fechar"
+    },
+    "fields": {
+      "customer": "Cliente *",
+      "pet": "Animal *",
+      "service": "Serviço *",
+      "duration": "Duração *",
+      "phone": "Telefone",
+      "date": "Data *",
+      "time": "Hora *",
+      "notes": "Notas"
+    },
+    "placeholders": {
+      "selectCustomer": "Escolhe um cliente...",
+      "selectPet": "Escolhe um animal...",
+      "selectService": "Escolhe um serviço...",
+      "selectTime": "Escolhe uma hora...",
+      "selectCustomerFirst": "Escolhe primeiro um cliente",
+      "phone": "Preenche automaticamente pelo cliente",
+      "notes": "Instruções ou notas especiais...",
+      "noServices": "Ainda não existem serviços. Adiciona um abaixo."
+    },
+    "loaders": {
+      "customers": "A carregar clientes...",
+      "pets": "A carregar animais...",
+      "services": "A carregar serviços..."
+    },
+    "tooltips": {
+      "addCustomer": "Adicionar novo cliente",
+      "addPet": "Adicionar novo animal",
+      "addService": "Adicionar novo serviço"
+    },
+    "buttons": {
+      "add": "+ Novo",
+      "save": "💾 Guardar agendamento",
+      "update": "💾 Atualizar agendamento"
+    },
+    "durationOptions": {
+      "minutes30": "30 minutos",
+      "hour": "1 hora (padrão)",
+      "hourThirty": "1 hora e 30 minutos"
+    },
+    "messages": {
+      "selectCustomerFirst": "Escolhe primeiro um cliente"
+    }
+  },
+  "servicesForm": {
+    "modalTitle": "Adicionar serviço",
+    "titleNew": "Adicionar serviço",
+    "titleEdit": "Editar serviço",
+    "labels": {
+      "name": "Nome do serviço *",
+      "description": "Descrição",
+      "duration": "Duração padrão",
+      "price": "Preço (opcional)",
+      "active": "Serviço disponível para marcações"
+    },
+    "placeholders": {
+      "name": "ex: Grooming completo",
+      "description": "Descreve o que está incluído...",
+      "price": "40.00"
+    },
+    "durationOption": "{{minutes}} minutos",
+    "buttons": {
+      "save": "💾 Guardar serviço",
+      "update": "💾 Atualizar serviço",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "create": "Erro ao criar serviço: {{message}}"
+    }
+  },
+  "servicesPage": {
+    "headingWithCount": "Serviços ({{count}})",
+    "loading": "A carregar serviços...",
+    "searchPlaceholder": "Procura por nome ou descrição...",
+    "buttons": {
+      "new": "+ Novo serviço",
+      "cancelForm": "✕ Cancelar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "disable": "Desativar",
+      "enable": "Ativar"
+    },
+    "labels": {
+      "price": "Preço",
+      "priceUnset": "Sem preço"
+    },
+    "badges": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "durationLabel": "{{minutes}} min",
+    "emptyTitle": "Ainda não tens serviços",
+    "emptyDescription": "Usa “Novo serviço” para adicionar a primeira oferta.",
+    "emptySearchTitle": "Sem resultados",
+    "emptySearchDescription": "Tenta outro termo.",
+    "confirmDelete": "Eliminar {{name}}? Esta ação não pode ser desfeita.",
+    "errors": {
+      "load": "Erro ao carregar serviços: {{message}}",
+      "create": "Erro ao criar serviço: {{message}}",
+      "update": "Erro ao atualizar serviço: {{message}}",
+      "delete": "Erro ao eliminar serviço: {{message}}"
+    }
+  },
+  "customerForm": {
+    "title": {
+      "new": "Novo cliente",
+      "edit": "Editar cliente"
+    },
+    "labels": {
+      "name": "Nome do cliente *",
+      "phone": "Telefone *",
+      "email": "Email",
+      "address": "Morada (local do serviço) * 📍",
+      "notes": "Notas"
+    },
+    "placeholders": {
+      "name": "João Silva",
+      "phone": "+351 912 345 678",
+      "email": "joao@example.com",
+      "address": "Morada completa ou link do Google Maps",
+      "notes": "Notas importantes sobre este cliente..."
+    },
+    "helpers": {
+      "address": "📍 Introduz a morada completa ou cola um link do Google Maps"
+    },
+    "buttons": {
+      "save": "💾 Guardar cliente",
+      "update": "💾 Atualizar cliente",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "create": "Erro ao criar cliente: {{message}}"
+    }
+  },
+  "petForm": {
+    "title": {
+      "new": "🐾 Adicionar novo animal",
+      "edit": "✏️ Editar animal"
+    },
+    "labels": {
+      "name": "Nome do animal *",
+      "breed": "Raça",
+      "age": "Idade (anos)",
+      "weight": "Peso (kg)",
+      "medicalNotes": "Notas médicas"
+    },
+    "placeholders": {
+      "name": "Max",
+      "breed": "Golden Retriever",
+      "age": "5",
+      "weight": "25,5",
+      "medicalNotes": "Alergias, medicação, necessidades especiais..."
+    },
+    "buttons": {
+      "save": "💾 Guardar animal",
+      "update": "💾 Atualizar animal",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "create": "Erro ao criar animal: {{message}}"
+    }
+  },
+  "customersPage": {
+    "headingWithCount": "Clientes ({{count}})",
+    "loading": "A carregar clientes...",
+    "searchPlaceholder": "Procura por nome ou telefone...",
+    "search": "Pesquisar",
+    "clear": "Limpar",
+    "buttons": {
+      "new": "+ Novo cliente",
+      "cancelForm": "✕ Cancelar",
+      "close": "Fechar"
+    },
+    "empty": {
+      "title": "Ainda não tens clientes",
+      "description": "Clica em “Novo cliente” para começar!"
+    },
+    "selected": {
+      "notes": "Notas:",
+      "pets": "Animais",
+      "appointments": "Agendamentos",
+      "lastVisit": "Última visita",
+      "never": "Nunca"
+    },
+    "history": {
+      "heading": "Histórico de agendamentos",
+      "loading": "A carregar...",
+      "empty": "Sem agendamentos",
+      "dateTime": "{{date}} às {{time}}"
+    },
+    "cards": {
+      "petBadge": "🐾 {{count}} animais",
+      "appointmentBadge": "📅 {{count}} agendamentos"
+    },
+    "confirmDelete": "Eliminar {{name}} e todos os respetivos animais/agendamentos? Não é possível desfazer.",
+    "errors": {
+      "load": "Erro ao carregar clientes: {{message}}",
+      "search": "Erro na pesquisa de clientes: {{message}}",
+      "create": "Erro ao criar cliente: {{message}}",
+      "update": "Erro ao atualizar cliente: {{message}}",
+      "delete": "Erro ao eliminar cliente: {{message}}"
+    }
+  },
+  "petManager": {
+    "title": "🐾 Animais de {{name}}",
+    "loading": "A carregar animais...",
+    "empty": "Ainda não há animais. Adiciona um acima!",
+    "buttons": {
+      "add": "+ Adicionar animal",
+      "cancelForm": "✕ Cancelar"
+    },
+    "labels": {
+      "breed": "Raça",
+      "age": "Idade",
+      "years": "anos",
+      "weight": "Peso",
+      "medicalNotes": "Notas médicas"
+    },
+    "confirmDelete": "Eliminar {{name}}? Esta ação não pode ser desfeita.",
+    "errors": {
+      "load": "Erro ao carregar animais: {{message}}",
+      "create": "Erro ao criar animal: {{message}}",
+      "update": "Erro ao atualizar animal: {{message}}",
+      "delete": "Erro ao eliminar animal: {{message}}"
+    }
+  },
+  "calendar": {
+    "previous": "Anterior",
+    "next": "Seguinte",
+    "today": "Voltar a esta semana",
+    "instructions": "💡 Clica num horário vazio para criar um agendamento ou num existente para editar",
+    "timeColumn": "Hora",
+    "mapLink": "📍 Mapa",
+    "add": "+ Adicionar",
+    "legend": {
+      "scheduled": "Agendado",
+      "completed": "Concluído",
+      "available": "Disponível (clica para marcar)"
+    }
+  }
+}

@@ -3,11 +3,16 @@
 // Filter button row component
 // ============================================
 
+'use client'
+
+import { useTranslation } from '@/components/TranslationProvider'
+
 export default function FilterButtons({ filter, onFilterChange }) {
+    const { t } = useTranslation()
     const filters = [
-        { value: 'all', label: 'All', color: 'gray' },
-        { value: 'upcoming', label: 'Upcoming', color: 'blue' },
-        { value: 'completed', label: 'Completed', color: 'green' }
+        { value: 'all', label: t('filterButtons.all'), color: 'gray' },
+        { value: 'upcoming', label: t('filterButtons.upcoming'), color: 'blue' },
+        { value: 'completed', label: t('filterButtons.completed'), color: 'green' }
     ]
 
     const getColorClasses = (filterValue, color) => {

@@ -18,6 +18,7 @@ import FilterButtons from '@/components/FilterButtons'
 import AppointmentForm from '@/components/AppointmentForm'
 import AppointmentList from '@/components/AppointmentList'
 import CalendarView from '@/components/CalendarView'
+import { useTranslation } from '@/components/TranslationProvider'
 
 export default function Home() {
   const [appointments, setAppointments] = useState([])
@@ -29,6 +30,7 @@ export default function Home() {
   const [view, setView] = useState('list') // 'list' or 'calendar'
   const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
+  const { t } = useTranslation()
 
   // Load appointments on mount
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function Home() {
 
     if (error) {
       console.error('Error loading appointments:', error)
-      alert('Error loading appointments: ' + error.message)
+      alert(t('appointmentsPage.errors.load', { message: error.message }))
     } else {
       setAppointments(data)
     }
@@ -58,7 +60,7 @@ export default function Home() {
     const { data, error } = await createAppointment(formData)
 
     if (error) {
-      alert('Error creating appointment: ' + error.message)
+      alert(t('appointmentsPage.errors.create', { message: error.message }))
     } else {
       setAppointments([...appointments, ...data])
       setShowForm(false)
@@ -69,7 +71,7 @@ export default function Home() {
     const { data, error } = await updateAppointment(editingAppointment.id, formData)
 
     if (error) {
-      alert('Error updating appointment: ' + error.message)
+      alert(t('appointmentsPage.errors.update', { message: error.message }))
     } else {
       // Refetch all appointments to get updated data with relations (customer address, etc.)
       await fetchAppointments()
@@ -91,7 +93,7 @@ export default function Home() {
 
   function handleViewChange(newView) {
     if (showForm || editingAppointment) {
-      if (confirm('You have an unsaved appointment. Discard changes?')) {
+      if (confirm(t('appointmentsPage.confirmDiscard'))) {
         handleCancelEdit()
         setView(newView)
       }
@@ -113,19 +115,19 @@ export default function Home() {
     const { error } = await updateAppointmentStatus(id, 'completed')
 
     if (error) {
-      alert('Error updating appointment: ' + error.message)
+      alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
     } else {
       fetchAppointments()
     }
   }
 
   async function handleDeleteAppointment(id) {
-    if (!confirm('Delete this appointment?')) return
+    if (!confirm(t('appointmentsPage.confirmDelete'))) return
 
     const { error } = await deleteAppointmentService(id)
 
     if (error) {
-      alert('Error deleting appointment: ' + error.message)
+      alert(t('appointmentsPage.errors.delete', { message: error.message }))
     } else {
       setAppointments(appointments.filter((apt) => apt.id !== id))
     }
@@ -134,17 +136,19 @@ export default function Home() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="text-xl text-gray-600">Loading appointments...</div>
+        <div className="text-xl text-gray-600">{t('appointmentsPage.loading')}</div>
       </div>
     )
   }
+
+  const displayedCount = view === 'list' ? filteredAppointments.length : appointments.length
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-800">
-          Appointments ({view === 'list' ? filteredAppointments.length : appointments.length})
+          {t('appointmentsPage.headingWithCount', { count: displayedCount })}
         </h2>
       </div>
 
@@ -162,7 +166,7 @@ export default function Home() {
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-200 flex items-center gap-2"
           >
             <span className="text-xl">+</span>
-            <span>New Appointment</span>
+            <span>{t('appointmentsPage.newButton')}</span>
           </button>
         </div>
       )}

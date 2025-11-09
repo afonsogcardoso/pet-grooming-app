@@ -3,6 +3,8 @@
 // Customer list with search, add, edit, delete, and pet management
 // ============================================
 
+'use client'
+
 import { useState, useEffect } from 'react'
 import {
     loadCustomers,
@@ -15,8 +17,10 @@ import {
 import { formatDate, formatTime } from '@/utils/dateUtils'
 import CustomerForm from './CustomerForm'
 import PetManager from './PetManager'
+import { useTranslation } from '@/components/TranslationProvider'
 
 export default function CustomerManager() {
+    const { t, resolvedLocale } = useTranslation()
     const [customers, setCustomers] = useState([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
@@ -36,7 +40,7 @@ export default function CustomerManager() {
 
         if (error) {
             console.error('Error loading customers:', error)
-            alert('Error loading customers: ' + error.message)
+            alert(t('customersPage.errors.load', { message: error.message }))
         } else {
             setCustomers(data)
         }
@@ -54,7 +58,7 @@ export default function CustomerManager() {
 
         if (error) {
             console.error('Error searching customers:', error)
-            alert('Error searching customers: ' + error.message)
+            alert(t('customersPage.errors.search', { message: error.message }))
         } else {
             setCustomers(data)
         }
@@ -65,7 +69,7 @@ export default function CustomerManager() {
         const { data, error } = await createCustomer(formData)
 
         if (error) {
-            alert('Error creating customer: ' + error.message)
+            alert(t('customersPage.errors.create', { message: error.message }))
         } else {
             fetchCustomers()
             setShowForm(false)
@@ -76,7 +80,7 @@ export default function CustomerManager() {
         const { data, error } = await updateCustomer(editingCustomer.id, formData)
 
         if (error) {
-            alert('Error updating customer: ' + error.message)
+            alert(t('customersPage.errors.update', { message: error.message }))
         } else {
             // Refetch all customers to get updated counts
             await fetchCustomers()
@@ -86,13 +90,13 @@ export default function CustomerManager() {
     }
 
     async function handleDeleteCustomer(id, name) {
-        if (!confirm(`Delete ${name} and all their pets/appointments? This cannot be undone.`))
+        if (!confirm(t('customersPage.confirmDelete', { name })))
             return
 
         const { error } = await deleteCustomer(id)
 
         if (error) {
-            alert('Error deleting customer: ' + error.message)
+            alert(t('customersPage.errors.delete', { message: error.message }))
         } else {
             fetchCustomers()
             if (selectedCustomer?.id === id) {
@@ -132,7 +136,7 @@ export default function CustomerManager() {
     if (loading) {
         return (
             <div className="text-center py-12">
-                <div className="text-xl text-gray-600">Loading customers...</div>
+                <div className="text-xl text-gray-600">{t('customersPage.loading')}</div>
             </div>
         )
     }
@@ -142,7 +146,7 @@ export default function CustomerManager() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h2 className="text-2xl font-bold text-gray-800">
-                    👥 Customers ({customers.length})
+                    {t('customersPage.headingWithCount', { count: customers.length })}
                 </h2>
                 <button
                     onClick={() => {
@@ -155,7 +159,7 @@ export default function CustomerManager() {
                     }}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition duration-200 text-lg"
                 >
-                    {showForm ? '✕ Cancel' : '+ New Customer'}
+                    {showForm ? t('customersPage.buttons.cancelForm') : t('customersPage.buttons.new')}
                 </button>
             </div>
 
@@ -167,14 +171,14 @@ export default function CustomerManager() {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder="Search by name or phone..."
+                        placeholder={t('customersPage.searchPlaceholder')}
                         className="flex-1 px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg bg-white text-gray-900 font-medium"
                     />
                     <button
                         onClick={handleSearch}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-200"
                     >
-                        🔍 Search
+                        🔍 {t('customersPage.search')}
                     </button>
                     {searchTerm && (
                         <button
@@ -184,7 +188,7 @@ export default function CustomerManager() {
                             }}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-200"
                         >
-                            Clear
+                            {t('customersPage.clear')}
                         </button>
                     )}
                 </div>
@@ -220,36 +224,44 @@ export default function CustomerManager() {
                                 onClick={() => setSelectedCustomer(null)}
                                 className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                             >
-                                ✕ Close
+                                ✕ {t('customersPage.buttons.close')}
                             </button>
                         </div>
 
                         {selectedCustomer.notes && (
                             <div className="mb-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
-                                <p className="font-bold text-sm text-gray-700">Notes:</p>
+                                <p className="font-bold text-sm text-gray-700">
+                                    {t('customersPage.selected.notes')}
+                                </p>
                                 <p className="text-gray-700">{selectedCustomer.notes}</p>
                             </div>
                         )}
 
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                             <div className="bg-blue-50 p-3 rounded">
-                                <p className="text-sm font-bold text-blue-900">Pets</p>
+                                <p className="text-sm font-bold text-blue-900">
+                                    {t('customersPage.selected.pets')}
+                                </p>
                                 <p className="text-2xl font-bold text-blue-600">
                                     {selectedCustomer.pet_count || 0}
                                 </p>
                             </div>
                             <div className="bg-purple-50 p-3 rounded">
-                                <p className="text-sm font-bold text-purple-900">Appointments</p>
+                                <p className="text-sm font-bold text-purple-900">
+                                    {t('customersPage.selected.appointments')}
+                                </p>
                                 <p className="text-2xl font-bold text-purple-600">
                                     {selectedCustomer.appointment_count || 0}
                                 </p>
                             </div>
                             <div className="bg-green-50 p-3 rounded">
-                                <p className="text-sm font-bold text-green-900">Last Visit</p>
+                                <p className="text-sm font-bold text-green-900">
+                                    {t('customersPage.selected.lastVisit')}
+                                </p>
                                 <p className="text-sm font-bold text-green-600">
                                     {selectedCustomer.last_appointment_date
-                                        ? formatDate(selectedCustomer.last_appointment_date)
-                                        : 'Never'}
+                                        ? formatDate(selectedCustomer.last_appointment_date, resolvedLocale)
+                                        : t('customersPage.selected.never')}
                                 </p>
                             </div>
                         </div>
@@ -264,12 +276,12 @@ export default function CustomerManager() {
                     {/* Appointment History */}
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <h3 className="text-lg font-bold text-gray-800 mb-4">
-                            📅 Appointment History
+                            📅 {t('customersPage.history.heading')}
                         </h3>
                         {loadingHistory ? (
-                            <p className="text-center text-gray-600">Loading...</p>
+                            <p className="text-center text-gray-600">{t('customersPage.history.loading')}</p>
                         ) : customerHistory.length === 0 ? (
-                            <p className="text-center text-gray-600">No appointments yet</p>
+                            <p className="text-center text-gray-600">{t('customersPage.history.empty')}</p>
                         ) : (
                             <div className="space-y-2">
                                 {customerHistory.map((apt) => (
@@ -283,8 +295,10 @@ export default function CustomerManager() {
                                                     {apt.pets?.name || apt.pet_name} - {apt.service}
                                                 </p>
                                                 <p className="text-sm text-gray-600">
-                                                    {formatDate(apt.appointment_date)} at{' '}
-                                                    {formatTime(apt.appointment_time)}
+                                                    {t('customersPage.history.dateTime', {
+                                                        date: formatDate(apt.appointment_date, resolvedLocale),
+                                                        time: formatTime(apt.appointment_time, resolvedLocale)
+                                                    })}
                                                 </p>
                                             </div>
                                             {apt.status === 'completed' && (
@@ -308,9 +322,11 @@ export default function CustomerManager() {
                         <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
                             <div className="text-6xl mb-4">👥</div>
                             <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                                No customers yet
+                                {t('customersPage.empty.title')}
                             </h3>
-                            <p className="text-gray-500">Click &quot;New Customer&quot; to get started!</p>
+                            <p className="text-gray-500">
+                                {t('customersPage.empty.description')}
+                            </p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -351,10 +367,12 @@ export default function CustomerManager() {
                                         {customer.email && <div>✉️ {customer.email}</div>}
                                         <div className="flex gap-4 mt-2 text-xs">
                                             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
-                                                🐾 {customer.pet_count || 0} pets
+                                                {t('customersPage.cards.petBadge', { count: customer.pet_count || 0 })}
                                             </span>
                                             <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold">
-                                                📅 {customer.appointment_count || 0} appts
+                                                {t('customersPage.cards.appointmentBadge', {
+                                                    count: customer.appointment_count || 0
+                                                })}
                                             </span>
                                         </div>
                                     </div>

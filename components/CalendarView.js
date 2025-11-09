@@ -3,10 +3,14 @@
 // Calendar week view with time slots - click to create appointments
 // ============================================
 
+'use client'
+
 import { getWeekDates, getWeekRangeText, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink } from '@/utils/addressUtils'
+import { useTranslation } from '@/components/TranslationProvider'
 
 export default function CalendarView({ appointments, weekOffset, onWeekChange, onComplete, onEdit, onCreateAtSlot }) {
+    const { t, resolvedLocale } = useTranslation()
     const weekDates = getWeekDates(weekOffset)
 
     // Time slots from 8 AM to 6 PM in 30-minute intervals
@@ -83,19 +87,19 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                     onClick={handlePrevious}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
                 >
-                    ← Previous
+                    ← {t('calendar.previous')}
                 </button>
 
                 <div className="text-center flex-1">
                     <div className="font-bold text-gray-800 text-lg">
-                        {getWeekRangeText(weekOffset)}
+                        {getWeekRangeText(weekOffset, resolvedLocale)}
                     </div>
                     {weekOffset !== 0 && (
                         <button
                             onClick={handleToday}
                             className="text-sm text-indigo-600 hover:underline mt-1"
                         >
-                            Back to This Week
+                            {t('calendar.today')}
                         </button>
                     )}
                 </div>
@@ -104,14 +108,14 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                     onClick={handleNext}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
                 >
-                    Next →
+                    {t('calendar.next')} →
                 </button>
             </div>
 
             {/* Instructions */}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
                 <p className="text-sm font-semibold text-blue-900">
-                    💡 Click on any empty time slot to create a new appointment, or click an existing appointment to edit it
+                    {t('calendar.instructions')}
                 </p>
             </div>
 
@@ -120,7 +124,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                 <div className="min-w-[900px]">
                     {/* Day Headers */}
                     <div className="grid grid-cols-8 gap-1 mb-2">
-                        <div className="text-center font-bold text-gray-700 p-2">Time</div>
+                        <div className="text-center font-bold text-gray-700 p-2">
+                            {t('calendar.timeColumn')}
+                        </div>
                         {weekDates.map((date, i) => {
                             const isToday = date.toDateString() === new Date().toDateString()
                             return (
@@ -146,7 +152,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                         <div key={time} className="grid grid-cols-8 gap-1 mb-1">
                             {/* Time Label */}
                             <div className="text-center text-sm font-bold text-gray-700 p-2 bg-gray-100 rounded flex items-center justify-center">
-                                {formatTime(time)}
+                                {formatTime(time, resolvedLocale)}
                             </div>
 
                             {/* Day Cells */}
@@ -181,7 +187,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                                     className="text-xs text-indigo-600 hover:underline flex items-center gap-1 mt-1"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
-                                                    📍 Map
+                                                    {t('calendar.mapLink')}
                                                 </a>
                                             )}
                                             {apt.status === 'completed' && (
@@ -200,7 +206,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                             onClick={() => handleSlotClick(date, time)}
                                         >
                                             <span className="text-xs text-gray-400 hover:text-gray-600">
-                                                + Add
+                                                {t('calendar.add')}
                                             </span>
                                         </div>
                                     )
@@ -215,15 +221,15 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             <div className="mt-4 flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-indigo-100 border-2 border-indigo-500 rounded"></div>
-                    <span>Scheduled</span>
+                    <span>{t('calendar.legend.scheduled')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-100 border-2 border-green-500 rounded"></div>
-                    <span>Completed</span>
+                    <span>{t('calendar.legend.completed')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded"></div>
-                    <span>Available (Click to book)</span>
+                    <span>{t('calendar.legend.available')}</span>
                 </div>
             </div>
         </div>

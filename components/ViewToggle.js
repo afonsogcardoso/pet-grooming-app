@@ -3,7 +3,13 @@
 // View toggle buttons component
 // ============================================
 
+'use client'
+
+import { useTranslation } from '@/components/TranslationProvider'
+
 export default function ViewToggle({ view, onViewChange }) {
+    const { t } = useTranslation()
+
     return (
         <div className="flex gap-2">
             <button
@@ -13,7 +19,7 @@ export default function ViewToggle({ view, onViewChange }) {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
             >
-                📋 List View
+                📋 {t('viewToggle.list')}
             </button>
             <button
                 onClick={() => onViewChange('calendar')}
@@ -22,7 +28,7 @@ export default function ViewToggle({ view, onViewChange }) {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
             >
-                📅 Week View
+                📅 {t('viewToggle.calendar')}
             </button>
         </div>
     )
