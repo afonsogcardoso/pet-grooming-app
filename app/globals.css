@@ -16,6 +16,9 @@
   --font-heading: --font-lilita;
   --font-body: --font-podkova;
 }
+html, :host {
+  line-height: 1;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -58,9 +61,9 @@ h6,
 .modal-card input,
 .modal-card select,
 .modal-card textarea {
-  padding-top: 0.85rem;
-  padding-bottom: 0.85rem;
-  min-height: 3.25rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  min-height: 3rem;
 }
 
 .modal-card button {
@@ -73,7 +76,7 @@ h6,
 
 @media (max-width: 640px) {
   .modal-card {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .modal-card h3 {
@@ -87,10 +90,10 @@ h6,
   .modal-card input,
   .modal-card select,
   .modal-card textarea {
-    padding-top: 0.65rem;
-    padding-bottom: 0.65rem;
-    min-height: 3rem;
-    font-size: 0.95rem;
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+    min-height: 2.7rem;
+    font-size: 0.85rem;
   }
 
   .modal-card button {
