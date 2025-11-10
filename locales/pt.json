@@ -311,6 +311,42 @@
       "photoUpload": "Erro ao carregar fotografia: {{message}}"
     }
   },
+  "account": {
+    "status": {
+      "loading": "A carregar a sua conta...",
+      "subtext": "Estamos a verificar as suas associações.",
+      "error": "Não foi possível carregar os dados da conta.",
+      "retry": "Tentar novamente"
+    },
+    "empty": {
+      "title": "Sem acesso a contas",
+      "description": "Peça a um administrador para o convidar ou crie um tenant no Supabase."
+    },
+    "select": {
+      "title": "Escolha uma conta",
+      "description": "Selecione o workspace que pretende gerir agora.",
+      "plan": "Plano {{plan}}",
+      "activeBadge": "Ativa",
+      "untitled": "Conta sem nome"
+    }
+  },
+  "login": {
+    "title": "Iniciar sessão",
+    "description": "Aceda ao seu workspace com as credenciais do Supabase.",
+    "fields": {
+      "email": "Email",
+      "password": "Palavra-passe"
+    },
+    "actions": {
+      "submit": "Entrar",
+      "loading": "A autenticar..."
+    },
+    "success": "Login efetuado! A redirecionar...",
+    "help": {
+      "noAccount": "Precisa de acesso?",
+      "contact": "Contacte um administrador"
+    }
+  },
   "calendar": {
     "previous": "Anterior",
     "next": "Seguinte",

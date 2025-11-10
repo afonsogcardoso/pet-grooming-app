@@ -311,6 +311,42 @@
       "photoUpload": "Error uploading photo: {{message}}"
     }
   },
+  "account": {
+    "status": {
+      "loading": "Loading your workspace...",
+      "subtext": "Hang tight while we check your memberships.",
+      "error": "We couldn't load your account data.",
+      "retry": "Try again"
+    },
+    "empty": {
+      "title": "No account access yet",
+      "description": "Ask an administrator to invite you or create a tenant in Supabase."
+    },
+    "select": {
+      "title": "Choose an account",
+      "description": "Select which workspace you want to manage right now.",
+      "plan": "{{plan}} plan",
+      "activeBadge": "Active",
+      "untitled": "Untitled account"
+    }
+  },
+  "login": {
+    "title": "Sign in",
+    "description": "Access your grooming workspace with your Supabase credentials.",
+    "fields": {
+      "email": "Email address",
+      "password": "Password"
+    },
+    "actions": {
+      "submit": "Login",
+      "loading": "Signing you in..."
+    },
+    "success": "Login successful! Redirecting...",
+    "help": {
+      "noAccount": "Need access?",
+      "contact": "Contact an administrator"
+    }
+  },
   "calendar": {
     "previous": "Previous",
     "next": "Next",

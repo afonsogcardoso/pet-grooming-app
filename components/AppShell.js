@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import LanguageSwitcher from './LanguageSwitcher'
+import AccountGate from './AccountGate'
 import { useTranslation } from './TranslationProvider'
 
 const navItems = [
@@ -35,6 +36,9 @@ export default function AppShell({ children }) {
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
+
+  const publicRoutes = ['/login']
+  const isPublicRoute = publicRoutes.some((route) => pathname?.startsWith(route))
 
   return (
     <div className="min-h-screen brand-background">
@@ -101,7 +105,7 @@ export default function AppShell({ children }) {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+        {isPublicRoute ? children : <AccountGate>{children}</AccountGate>}
       </main>
     </div>
   )

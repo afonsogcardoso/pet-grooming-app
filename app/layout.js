@@ -2,6 +2,7 @@ import { Lilita_One, Podkova } from 'next/font/google'
 import './globals.css'
 import { TranslationProvider } from '@/components/TranslationProvider'
 import AppShell from '@/components/AppShell'
+import { AccountProvider } from '@/components/AccountProvider'
 
 const podkova = Podkova({
   subsets: ['latin'],
@@ -25,7 +26,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${podkova.variable} ${lilitaOne.variable}`}>
         <TranslationProvider>
-          <AppShell>{children}</AppShell>
+          <AccountProvider>
+            <AppShell>{children}</AppShell>
+          </AccountProvider>
         </TranslationProvider>
       </body>
     </html>
