@@ -5,7 +5,7 @@
 // Manage grooming services (create, edit, disable)
 // ============================================
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   loadServices,
   createService,
@@ -23,11 +23,7 @@ export default function ServiceManager() {
   const [editingService, setEditingService] = useState(null)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    fetchServices()
-  }, [])
-
-  async function fetchServices() {
+  const fetchServices = useCallback(async () => {
     setLoading(true)
     const { data, error } = await loadServices({ includeInactive: true })
 
@@ -38,7 +34,11 @@ export default function ServiceManager() {
       setServices(data)
     }
     setLoading(false)
-  }
+  }, [t])
+
+  useEffect(() => {
+    fetchServices()
+  }, [fetchServices])
 
   async function handleCreateService(formData) {
     const { data, error } = await createService(formData)

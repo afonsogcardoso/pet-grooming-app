@@ -5,6 +5,7 @@
 // Add/edit pet form component
 // ============================================
 
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 
@@ -169,10 +170,13 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
           </label>
           {photoPreview ? (
             <div className="flex items-center gap-3 mb-3">
-              <img
+              <Image
                 src={photoPreview}
                 alt={formData.name || 'Pet preview'}
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full object-cover border-2 border-brand-accent"
+                unoptimized
               />
               <button
                 type="button"

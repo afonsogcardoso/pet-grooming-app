@@ -5,6 +5,7 @@
 
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { loadPetsByCustomer, createPet, updatePet, deletePet } from '@/lib/customerService'
 import { supabase } from '@/lib/supabase'
@@ -192,10 +193,13 @@ export default function PetManager({ customerId, customerName }) {
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-3">
                                     {pet.photo_url ? (
-                                        <img
+                                        <Image
                                             src={pet.photo_url}
                                             alt={pet.name}
+                                            width={64}
+                                            height={64}
                                             className="w-16 h-16 rounded-full object-cover border-2 border-brand-accent"
+                                            unoptimized
                                         />
                                     ) : (
                                         <div className="w-16 h-16 rounded-full bg-brand-accent-soft text-brand-accent flex items-center justify-center text-2xl">

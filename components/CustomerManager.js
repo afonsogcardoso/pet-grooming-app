@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     loadCustomers,
     createCustomer,
@@ -30,11 +30,7 @@ export default function CustomerManager() {
     const [customerHistory, setCustomerHistory] = useState([])
     const [loadingHistory, setLoadingHistory] = useState(false)
 
-    useEffect(() => {
-        fetchCustomers()
-    }, [])
-
-    async function fetchCustomers() {
+    const fetchCustomers = useCallback(async () => {
         setLoading(true)
         const { data, error } = await loadCustomers()
 
@@ -45,11 +41,15 @@ export default function CustomerManager() {
             setCustomers(data)
         }
         setLoading(false)
-    }
+    }, [t])
+
+    useEffect(() => {
+        fetchCustomers()
+    }, [fetchCustomers])
 
     async function handleSearch() {
         if (!searchTerm.trim()) {
-            fetchCustomers()
+            await fetchCustomers()
             return
         }
 
@@ -71,7 +71,7 @@ export default function CustomerManager() {
         if (error) {
             alert(t('customersPage.errors.create', { message: error.message }))
         } else {
-            fetchCustomers()
+            await fetchCustomers()
             setShowForm(false)
         }
     }
@@ -98,7 +98,7 @@ export default function CustomerManager() {
         if (error) {
             alert(t('customersPage.errors.delete', { message: error.message }))
         } else {
-            fetchCustomers()
+            await fetchCustomers()
             if (selectedCustomer?.id === id) {
                 setSelectedCustomer(null)
             }
@@ -182,9 +182,9 @@ export default function CustomerManager() {
                     </button>
                     {searchTerm && (
                         <button
-                            onClick={() => {
+                            onClick={async () => {
                                 setSearchTerm('')
-                                fetchCustomers()
+                                await fetchCustomers()
                             }}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-200"
                         >

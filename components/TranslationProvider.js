@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import en from '@/locales/en.json'
 import pt from '@/locales/pt.json'
 
@@ -40,13 +40,13 @@ export function TranslationProvider({ children }) {
     }
   }, [locale])
 
-  const t = (key, variables = {}) => {
+  const t = useCallback((key, variables = {}) => {
     const path = key.split('.')
     const localeValue = getValueFromObject(translations[locale], path)
     const fallbackValue = getValueFromObject(translations.en, path)
     const value = localeValue ?? fallbackValue ?? key
     return typeof value === 'string' ? formatTemplate(value, variables) : value
-  }
+  }, [locale])
 
   const value = useMemo(
     () => ({
@@ -56,7 +56,7 @@ export function TranslationProvider({ children }) {
       t,
       availableLocales: Object.keys(translations)
     }),
-    [locale]
+    [locale, t]
   )
 
   return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>

@@ -3,6 +3,7 @@
 // ============================================
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { loadCustomers, loadPetsByCustomer, createCustomer, createPet } from '@/lib/customerService'
 import { loadServices, createService } from '@/lib/serviceService'
@@ -431,10 +432,13 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
                         {selectedPetInfo?.photo_url && (
                             <div className="md:col-span-2 flex items-center gap-4 bg-brand-primary-soft border border-brand-primary rounded-2xl p-4 shadow-inner">
-                                <img
+                                <Image
                                     src={selectedPetInfo.photo_url}
                                     alt={selectedPetInfo.name || 'Pet'}
+                                    width={80}
+                                    height={80}
                                     className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
+                                    unoptimized
                                 />
                                 <div>
                                     <p className="text-xs font-semibold uppercase text-brand-primary">

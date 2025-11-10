@@ -5,6 +5,7 @@
 
 'use client'
 
+import Image from 'next/image'
 import { useMemo } from 'react'
 import { getWeekDates, getWeekRangeText, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink } from '@/utils/addressUtils'
@@ -183,11 +184,13 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                         >
                                             {petPhoto && (
                                                 <div className="flex justify-center mb-1">
-                                                    <img
+                                                    <Image
                                                         src={petPhoto}
                                                         alt={t('appointmentCard.labels.petPhotoAlt', { pet: petName })}
+                                                        width={40}
+                                                        height={40}
                                                         className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-                                                        loading="lazy"
+                                                        unoptimized
                                                     />
                                                 </div>
                                             )}

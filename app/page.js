@@ -4,7 +4,7 @@
 // ============================================
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   loadAppointments,
   createAppointment,
@@ -32,18 +32,7 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
   const { t } = useTranslation()
 
-  // Load appointments on mount
-  useEffect(() => {
-    fetchAppointments()
-  }, [])
-
-  // Filter appointments whenever they change or filter changes
-  useEffect(() => {
-    const filtered = filterAppointments(appointments, filter)
-    setFilteredAppointments(filtered)
-  }, [appointments, filter])
-
-  async function fetchAppointments() {
+  const fetchAppointments = useCallback(async () => {
     setLoading(true)
     const { data, error } = await loadAppointments()
 
@@ -54,7 +43,18 @@ export default function Home() {
       setAppointments(data)
     }
     setLoading(false)
-  }
+  }, [t])
+
+  // Load appointments on mount
+  useEffect(() => {
+    fetchAppointments()
+  }, [fetchAppointments])
+
+  // Filter appointments whenever they change or filter changes
+  useEffect(() => {
+    const filtered = filterAppointments(appointments, filter)
+    setFilteredAppointments(filtered)
+  }, [appointments, filter])
 
   async function handleCreateAppointment(formData) {
     const { data, error } = await createAppointment(formData)
@@ -117,7 +117,7 @@ export default function Home() {
     if (error) {
       alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
     } else {
-      fetchAppointments()
+      await fetchAppointments()
     }
   }
 

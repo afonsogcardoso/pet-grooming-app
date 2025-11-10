@@ -5,6 +5,7 @@
 
 'use client'
 
+import Image from 'next/image'
 import { formatDate, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink, formatAddressForDisplay } from '@/utils/addressUtils'
 import { useTranslation } from '@/components/TranslationProvider'
@@ -35,13 +36,15 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                     <div className="flex items-start gap-4">
                         {petPhoto && (
                             <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-primary bg-brand-primary-soft flex-shrink-0 shadow-sm">
-                                <img
+                                <Image
                                     src={petPhoto}
                                     alt={t('appointmentCard.labels.petPhotoAlt', {
                                         pet: petName
                                     })}
+                                    width={80}
+                                    height={80}
                                     className="w-full h-full object-cover"
-                                    loading="lazy"
+                                    unoptimized
                                 />
                             </div>
                         )}

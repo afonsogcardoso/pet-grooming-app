@@ -24,16 +24,6 @@ export default function AccountGate({ children }) {
     authenticated
   } = useAccount()
 
-  useEffect(() => {
-    if (!loading && !authenticated) {
-      router.replace('/login')
-    }
-  }, [authenticated, loading, router])
-
-  if (!authenticated && !loading) {
-    return null
-  }
-
   const membershipCards = useMemo(
     () =>
       memberships.map((entry) => {
@@ -70,6 +60,16 @@ export default function AccountGate({ children }) {
       }),
     [memberships, membership, selectAccount, t]
   )
+
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      router.replace('/login')
+    }
+  }, [authenticated, loading, router])
+
+  if (!authenticated && !loading) {
+    return null
+  }
 
   if (loading) {
     return (
