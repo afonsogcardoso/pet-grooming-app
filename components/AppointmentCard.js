@@ -123,21 +123,21 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                 <div className="flex sm:flex-col gap-2">
                     <button
                         onClick={() => onEdit(appointment)}
-                        className="btn-brand-outlined py-3 px-5 text-sm whitespace-nowrap shadow-md text-center"
+                        className="btn-brand-outlined py-3 px-3 text-sm whitespace-nowrap shadow-md text-center"
                     >
                         ✏️ {t('appointmentCard.buttons.edit')}
                     </button>
                     {appointment.status !== 'completed' && (
                         <button
                             onClick={() => onComplete(appointment.id)}
-                            className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-5 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                            className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
                         >
                             ✓ {t('appointmentCard.buttons.complete')}
                         </button>
                     )}
                     <button
                         onClick={() => onDelete(appointment.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-5 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
                     >
                         🗑 {t('appointmentCard.buttons.delete')}
                     </button>
