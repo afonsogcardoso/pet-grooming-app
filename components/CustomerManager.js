@@ -5,6 +5,7 @@
 
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useCallback } from 'react'
 import {
     loadCustomers,
@@ -29,6 +30,7 @@ export default function CustomerManager() {
     const [searchTerm, setSearchTerm] = useState('')
     const [customerHistory, setCustomerHistory] = useState([])
     const [loadingHistory, setLoadingHistory] = useState(false)
+    const [activeHistoryAppointment, setActiveHistoryAppointment] = useState(null)
 
     const fetchCustomers = useCallback(async () => {
         setLoading(true)
@@ -102,6 +104,10 @@ export default function CustomerManager() {
             if (selectedCustomer?.id === id) {
                 setSelectedCustomer(null)
             }
+            if (editingCustomer?.id === id) {
+                setEditingCustomer(null)
+                setShowForm(false)
+            }
         }
     }
 
@@ -120,6 +126,7 @@ export default function CustomerManager() {
         setSelectedCustomer(customer)
         setShowForm(false)
         setEditingCustomer(null)
+        setActiveHistoryAppointment(null)
 
         // Load customer's appointment history
         setLoadingHistory(true)
@@ -199,6 +206,11 @@ export default function CustomerManager() {
                 <CustomerForm
                     onSubmit={editingCustomer ? handleUpdateCustomer : handleCreateCustomer}
                     onCancel={handleCancelForm}
+                    onDelete={
+                        editingCustomer
+                            ? () => handleDeleteCustomer(editingCustomer.id, editingCustomer.name)
+                            : undefined
+                    }
                     initialData={editingCustomer}
                 />
             )}
@@ -207,11 +219,24 @@ export default function CustomerManager() {
             {selectedCustomer && (
                 <div className="space-y-4">
                     <div className="bg-white rounded-lg shadow-md p-6">
-                        <div className="flex justify-between items-start mb-4">
+                        <div className="flex justify-between items-start mb-4 gap-3 flex-wrap">
                             <div>
-                                <h3 className="text-2xl font-bold text-gray-800">
-                                    {selectedCustomer.name}
-                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => handleEditCustomer(selectedCustomer)}
+                                    className="group text-left"
+                                    title={t('customerForm.title.edit')}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-2xl font-bold text-gray-800">
+                                            {selectedCustomer.name}
+                                        </h3>
+                                        <span className="text-brand-primary text-xl">✏️</span>
+                                    </div>
+                                    <span className="text-xs text-brand-primary opacity-0 group-hover:opacity-100 transition">
+                                        Clique para editar
+                                    </span>
+                                </button>
                                 <p className="text-gray-600 flex flex-wrap gap-2">
                                     <span>📱 {selectedCustomer.phone}</span>
                                     {selectedCustomer.email && <span>• ✉️ {selectedCustomer.email}</span>}
@@ -225,12 +250,20 @@ export default function CustomerManager() {
                                     <p className="text-gray-600">📍 {selectedCustomer.address}</p>
                                 )}
                             </div>
-                            <button
-                                onClick={() => setSelectedCustomer(null)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-                            >
-                                ✕ {t('customersPage.buttons.close')}
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleEditCustomer(selectedCustomer)}
+                                    className="btn-brand-outlined py-2 px-4 text-sm"
+                                >
+                                    ✏️ {t('customerForm.title.edit')}
+                                </button>
+                                <button
+                                    onClick={() => setSelectedCustomer(null)}
+                                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                                >
+                                    ✕ {t('customersPage.buttons.close')}
+                                </button>
+                            </div>
                         </div>
 
                         {selectedCustomer.notes && (
@@ -290,9 +323,10 @@ export default function CustomerManager() {
                         ) : (
                             <div className="space-y-2">
                                 {customerHistory.map((apt) => (
-                                    <div
+                                    <button
                                         key={apt.id}
-                                        className="p-3 bg-gray-50 rounded border-l-4"
+                                        onClick={() => setActiveHistoryAppointment(apt)}
+                                        className="w-full p-3 bg-gray-50 rounded border-l-4 border-brand-primary/40 text-left hover:bg-brand-primary-soft transition cursor-pointer"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -312,7 +346,7 @@ export default function CustomerManager() {
                                                 </span>
                                             )}
                                         </div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         )}
@@ -340,31 +374,18 @@ export default function CustomerManager() {
                                     key={customer.id}
                                     className="bg-white rounded-lg shadow-md p-4 border-l-4 hover:shadow-lg transition cursor-pointer"
                                     onClick={() => handleViewCustomer(customer)}
+                                    onDoubleClick={(e) => {
+                                        e.stopPropagation()
+                                        handleEditCustomer(customer)
+                                    }}
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <h4 className="text-lg font-bold text-gray-800">
                                             {customer.name}
                                         </h4>
-                                        <div className="flex gap-1">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleEditCustomer(customer)
-                                                }}
-                                                className="btn-brand-outlined py-1 px-2 text-xs transition duration-200"
-                                            >
-                                                ✏️
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    handleDeleteCustomer(customer.id, customer.name)
-                                                }}
-                                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-xs transition duration-200"
-                                            >
-                                                🗑
-                                            </button>
-                                        </div>
+                                        <span className="text-xs text-gray-400 font-semibold uppercase">
+                                            Ver detalhes
+                                        </span>
                                     </div>
 
                                     <div className="text-sm text-gray-700 space-y-1">
@@ -389,6 +410,91 @@ export default function CustomerManager() {
                         </div>
                     )}
                 </>
+            )}
+
+            {activeHistoryAppointment && (
+                <div
+                    className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 py-6"
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) {
+                            setActiveHistoryAppointment(null)
+                        }
+                    }}
+                >
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-brand-primary/30 relative">
+                        <button
+                            onClick={() => setActiveHistoryAppointment(null)}
+                            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold"
+                            aria-label={t('customersPage.buttons.close')}
+                        >
+                            ✕
+                        </button>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            📋 {t('customersPage.history.heading')}
+                        </h3>
+                        <div className="space-y-3 text-gray-700">
+                            <div>
+                                <span className="font-bold">{t('appointmentCard.labels.pet')}:</span>{' '}
+                                {activeHistoryAppointment.pets?.name || t('appointmentCard.unknownPet')}
+                            </div>
+                            <div>
+                                <span className="font-bold">{t('appointmentCard.labels.service')}:</span>{' '}
+                                {activeHistoryAppointment.services?.name || t('appointmentCard.unknownService')}
+                            </div>
+                            <div>
+                                <span className="font-bold">Data / hora:</span>{' '}
+                                {t('customersPage.history.dateTime', {
+                                    date: formatDate(activeHistoryAppointment.appointment_date, resolvedLocale),
+                                    time: formatTime(activeHistoryAppointment.appointment_time, resolvedLocale)
+                                })}
+                            </div>
+                            {activeHistoryAppointment.notes && (
+                                <div>
+                                    <span className="font-bold">{t('appointmentCard.labels.notes')}:</span>
+                                    <p className="text-gray-600">{activeHistoryAppointment.notes}</p>
+                                </div>
+                            )}
+                            {(activeHistoryAppointment.before_photo_url || activeHistoryAppointment.after_photo_url) && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {activeHistoryAppointment.before_photo_url && (
+                                        <div className="text-center">
+                                            <p className="text-xs font-semibold text-gray-500 mb-1">
+                                                {t('appointmentCard.labels.before')}
+                                            </p>
+                                            <div className="relative w-full h-40 rounded-lg border border-gray-200 overflow-hidden">
+                                                <Image
+                                                    src={activeHistoryAppointment.before_photo_url}
+                                                    alt={t('appointmentCard.labels.before')}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="(max-width: 640px) 100vw, 50vw"
+                                                    unoptimized
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {activeHistoryAppointment.after_photo_url && (
+                                        <div className="text-center">
+                                            <p className="text-xs font-semibold text-gray-500 mb-1">
+                                                {t('appointmentCard.labels.after')}
+                                            </p>
+                                            <div className="relative w-full h-40 rounded-lg border border-gray-200 overflow-hidden">
+                                                <Image
+                                                    src={activeHistoryAppointment.after_photo_url}
+                                                    alt={t('appointmentCard.labels.after')}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="(max-width: 640px) 100vw, 50vw"
+                                                    unoptimized
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     )

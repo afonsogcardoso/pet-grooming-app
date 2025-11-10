@@ -224,7 +224,8 @@
     "buttons": {
       "save": "💾 Save Customer",
       "update": "💾 Update Customer",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "delete": "Delete Customer"
     },
     "errors": {
       "create": "Error creating customer: {{message}}"
@@ -257,6 +258,7 @@
       "save": "💾 Save Pet",
       "update": "💾 Update Pet",
       "cancel": "Cancel",
+      "delete": "Delete Pet",
       "removePhoto": "Remove photo"
     },
     "errors": {

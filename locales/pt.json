@@ -224,7 +224,8 @@
     "buttons": {
       "save": "💾 Guardar cliente",
       "update": "💾 Atualizar cliente",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "delete": "Apagar cliente"
     },
     "errors": {
       "create": "Erro ao criar cliente: {{message}}"
@@ -257,6 +258,7 @@
       "save": "💾 Guardar animal",
       "update": "💾 Atualizar animal",
       "cancel": "Cancelar",
+      "delete": "Apagar animal",
       "removePhoto": "Remover fotografia"
     },
     "errors": {

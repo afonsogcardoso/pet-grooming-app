@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 
-export default function CustomerForm({ onSubmit, onCancel, initialData = null }) {
+export default function CustomerForm({ onSubmit, onCancel, onDelete, initialData = null }) {
     const { t } = useTranslation()
     const buildState = (data = {}) => ({
         name: data.name || '',
@@ -126,20 +126,31 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                     />
                 </div>
 
-                <div className="flex gap-2">
-                    <button
-                        type="submit"
-                        className="flex-1 btn-brand shadow-brand-glow py-4 px-6 text-xl"
-                    >
-                        {isEditing ? t('customerForm.buttons.update') : t('customerForm.buttons.save')}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
-                    >
-                        {t('customerForm.buttons.cancel')}
-                    </button>
+                <div className="flex flex-col gap-3">
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            className="flex-1 btn-brand shadow-brand-glow py-4 px-6 text-xl"
+                        >
+                            {isEditing ? t('customerForm.buttons.update') : t('customerForm.buttons.save')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+                        >
+                            {t('customerForm.buttons.cancel')}
+                        </button>
+                    </div>
+                    {isEditing && onDelete && (
+                        <button
+                            type="button"
+                            onClick={onDelete}
+                            className="w-full bg-red-100 text-red-700 font-bold py-3 px-4 rounded-lg border border-red-300 hover:bg-red-200 transition text-base"
+                        >
+                            🗑 {t('customerForm.buttons.delete')}
+                        </button>
+                    )}
                 </div>
             </form>
         </div>

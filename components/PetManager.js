@@ -92,15 +92,24 @@ export default function PetManager({ customerId, customerName }) {
         setShowForm(false)
     }
 
-    async function handleDeletePet(id, petName) {
-        if (!confirm(t('petManager.confirmDelete', { name: petName }))) return
+    async function handleDeletePet(pet) {
+        if (!pet) return
+        if (!confirm(t('petManager.confirmDelete', { name: pet.name }))) return
 
-        const { error } = await deletePet(id)
+        if (pet.photo_url) {
+            await deletePetPhoto(pet.photo_url)
+        }
+
+        const { error } = await deletePet(pet.id)
 
         if (error) {
             alert(t('petManager.errors.delete', { message: error.message }))
         } else {
-            setPets(pets.filter((pet) => pet.id !== id))
+            await fetchPets()
+            if (editingPet?.id === pet.id) {
+                setEditingPet(null)
+                setShowForm(false)
+            }
         }
     }
 
@@ -179,6 +188,7 @@ export default function PetManager({ customerId, customerName }) {
                     customerId={customerId}
                     onSubmit={editingPet ? handleUpdatePet : handleCreatePet}
                     onCancel={handleCancelForm}
+                    onDelete={editingPet ? () => handleDeletePet(editingPet) : undefined}
                     initialData={editingPet}
                 />
             )}
@@ -193,7 +203,8 @@ export default function PetManager({ customerId, customerName }) {
                     {pets.map((pet) => (
                         <div
                             key={pet.id}
-                            className="bg-white rounded-lg shadow-md p-4 border-l-4 border-brand-accent"
+                            className="bg-white rounded-lg shadow-md p-4 border-l-4 border-brand-accent cursor-pointer hover:shadow-lg transition"
+                            onClick={() => handleEditPet(pet)}
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-3">
@@ -215,20 +226,6 @@ export default function PetManager({ customerId, customerName }) {
                                         <h4 className="text-lg font-bold text-gray-800">{pet.name}</h4>
                                         {pet.breed && <p className="text-sm text-gray-500">{pet.breed}</p>}
                                     </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleEditPet(pet)}
-                                        className="btn-brand-outlined text-sm py-1 px-3 text-center"
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeletePet(pet.id, pet.name)}
-                                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm transition duration-200"
-                                    >
-                                        🗑
-                                    </button>
                                 </div>
                             </div>
 

@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 import BreedSelect from '@/components/BreedSelect'
 
-export default function PetForm({ customerId, onSubmit, onCancel, initialData = null }) {
+export default function PetForm({ customerId, onSubmit, onCancel, onDelete, initialData = null }) {
   const { t } = useTranslation()
   const [formData, setFormData] = useState(
     initialData || {
@@ -196,20 +196,31 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
           />
         </div>
 
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            className="flex-1 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
-          >
-            {isEditing ? t('petForm.buttons.update') : t('petForm.buttons.save')}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
-          >
-            {t('petForm.buttons.cancel')}
-          </button>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="flex-1 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+            >
+              {isEditing ? t('petForm.buttons.update') : t('petForm.buttons.save')}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg shadow-lg transition duration-200 text-xl"
+            >
+              {t('petForm.buttons.cancel')}
+            </button>
+          </div>
+          {isEditing && onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="w-full bg-red-100 text-red-700 font-bold py-3 px-4 rounded-lg border border-red-300 hover:bg-red-200 transition text-base"
+            >
+              🗑 {t('petForm.buttons.delete')}
+            </button>
+          )}
         </div>
       </form>
     </div>
