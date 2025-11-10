@@ -189,6 +189,12 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                 const isToday = date.toDateString() === new Date().toDateString()
 
                                 if (apt) {
+                                    const customerName = apt.customers?.name || t('appointmentCard.unknownCustomer')
+                                    const petName = apt.pets?.name || t('appointmentCard.unknownPet')
+                                    const petBreed = apt.pets?.breed
+                                    const petPhoto = apt.pets?.photo_url
+                                    const serviceName = apt.services?.name || t('appointmentCard.unknownService')
+                                    const address = apt.customers?.address
                                     return (
                                         <div
                                             key={i}
@@ -198,21 +204,31 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                                 } ${isToday ? 'ring-2 ring-[color:var(--brand-primary)]' : ''}`}
                                             onClick={() => handleAppointmentClick(apt)}
                                         >
+                                            {petPhoto && (
+                                                <div className="flex justify-center mb-1">
+                                                    <img
+                                                        src={petPhoto}
+                                                        alt={t('appointmentCard.labels.petPhotoAlt', { pet: petName })}
+                                                        className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            )}
                                             <div className="text-xs font-bold text-gray-800 truncate">
-                                                {apt.customer_name}
+                                                {customerName}
                                             </div>
                                             <div className="text-xs text-gray-700 truncate">
-                                                {apt.pet_name}
-                                                {apt.pets?.breed && (
-                                                    <span className="text-gray-500"> ({apt.pets.breed})</span>
+                                                {petName}
+                                                {petBreed && (
+                                                    <span className="text-gray-500"> ({petBreed})</span>
                                                 )}
                                             </div>
                                             <div className="text-xs text-gray-600 truncate">
-                                                {apt.service}
+                                                {serviceName}
                                             </div>
-                                            {apt.customers?.address && (
+                                            {address && (
                                                 <a
-                                                    href={getGoogleMapsLink(apt.customers.address)}
+                                                    href={getGoogleMapsLink(address)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-brand-primary hover:underline flex items-center gap-1 mt-1"

@@ -292,7 +292,7 @@ export default function CustomerManager() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <p className="font-bold text-gray-800">
-                                                    {apt.pets?.name || apt.pet_name} - {apt.service}
+                                                    {apt.pets?.name || t('appointmentCard.unknownPet')} - {apt.services?.name || t('appointmentCard.unknownService')}
                                                 </p>
                                                 <p className="text-sm text-gray-600">
                                                     {t('customersPage.history.dateTime', {

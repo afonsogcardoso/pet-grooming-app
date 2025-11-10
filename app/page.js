@@ -62,7 +62,7 @@ export default function Home() {
     if (error) {
       alert(t('appointmentsPage.errors.create', { message: error.message }))
     } else {
-      setAppointments([...appointments, ...data])
+      await fetchAppointments()
       setShowForm(false)
     }
   }

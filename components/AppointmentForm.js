@@ -8,6 +8,20 @@ import { loadCustomers, loadPetsByCustomer, createCustomer, createPet } from '@/
 import { loadServices, createService } from '@/lib/serviceService'
 import { useTranslation } from '@/components/TranslationProvider'
 
+const formatTimeValue = (value) => (value ? value.substring(0, 5) : '')
+
+const buildInitialFormState = (data) => ({
+    customer_id: data?.customer_id || '',
+    pet_id: data?.pet_id || '',
+    service_id: data?.service_id || data?.services?.id || '',
+    phone: data?.customers?.phone || '',
+    appointment_date: data?.appointment_date || '',
+    appointment_time: formatTimeValue(data?.appointment_time),
+    duration: data?.duration || 60,
+    notes: data?.notes || '',
+    status: data?.status || 'scheduled'
+})
+
 export default function AppointmentForm({ onSubmit, onCancel, initialData = null }) {
     const { t } = useTranslation()
     const [customers, setCustomers] = useState([])
@@ -20,19 +34,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     const [showPetModal, setShowPetModal] = useState(false)
     const [showServiceModal, setShowServiceModal] = useState(false)
 
-    const [formData, setFormData] = useState({
-        customer_id: initialData?.customer_id || '',
-        pet_id: initialData?.pet_id || '',
-        customer_name: initialData?.customer_name || '',
-        pet_name: initialData?.pet_name || '',
-        phone: initialData?.phone || '',
-        service: initialData?.service || '',
-        appointment_date: initialData?.appointment_date || '',
-        appointment_time: initialData?.appointment_time || '',
-        duration: initialData?.duration || 60,
-        notes: initialData?.notes || '',
-        status: initialData?.status || 'scheduled'
-    })
+    const [formData, setFormData] = useState(() => buildInitialFormState(initialData))
 
     // Customer modal form data
     const [customerFormData, setCustomerFormData] = useState({
@@ -82,24 +84,9 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     // Update form data when initialData changes (e.g., when editing a different appointment)
     useEffect(() => {
         if (initialData) {
-            // Format time to HH:MM (remove seconds if present)
-            const formattedTime = initialData.appointment_time
-                ? initialData.appointment_time.substring(0, 5)
-                : '';
-
-            setFormData({
-                customer_id: initialData.customer_id || '',
-                pet_id: initialData.pet_id || '',
-                customer_name: initialData.customer_name || '',
-                pet_name: initialData.pet_name || '',
-                phone: initialData.phone || '',
-                service: initialData.service || '',
-                appointment_date: initialData.appointment_date || '',
-                appointment_time: formattedTime,
-                duration: initialData.duration || 60,
-                notes: initialData.notes || '',
-                status: initialData.status || 'scheduled'
-            })
+            setFormData(buildInitialFormState(initialData))
+        } else {
+            setFormData(buildInitialFormState(null))
         }
     }, [initialData])
 
@@ -152,24 +139,30 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         setLoadingPets(false)
     }
 
-    function handleCustomerChange(customerId) {
-        const customer = customers.find((c) => c.id === customerId)
-        setFormData({
-            ...formData,
+    function handleCustomerChange(customerId, customerOverride = null) {
+        const customer = customerOverride || customers.find((c) => c.id === customerId)
+        setFormData((prev) => ({
+            ...prev,
             customer_id: customerId,
-            customer_name: customer?.name || '',
             phone: customer?.phone || '',
             pet_id: '' // Reset pet selection
-        })
+        }))
     }
 
     function handlePetChange(petId) {
-        const pet = pets.find((p) => p.id === petId)
-        setFormData({
-            ...formData,
-            pet_id: petId,
-            pet_name: pet?.name || ''
-        })
+        setFormData((prev) => ({
+            ...prev,
+            pet_id: petId
+        }))
+    }
+
+    function handleServiceChange(serviceId) {
+        const service = services.find((s) => s.id === serviceId)
+        setFormData((prev) => ({
+            ...prev,
+            service_id: serviceId,
+            duration: service?.default_duration || prev.duration
+        }))
     }
 
     async function handleCreateCustomer(e) {
@@ -179,11 +172,9 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         if (error) {
             alert(t('customerForm.errors.create', { message: error.message }))
         } else {
-            // Add new customer to list
             const newCustomer = data[0]
-            setCustomers([...customers, newCustomer])
-            // Auto-select the new customer
-            handleCustomerChange(newCustomer.id)
+            setCustomers((prev) => [...prev, newCustomer].sort((a, b) => a.name.localeCompare(b.name)))
+            handleCustomerChange(newCustomer.id, newCustomer)
             // Reset modal form
             setCustomerFormData({
                 name: '',
@@ -212,6 +203,11 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         } else {
             const newService = data[0]
             setServices((prev) => [...prev, newService].sort((a, b) => a.name.localeCompare(b.name)))
+            setFormData((prev) => ({
+                ...prev,
+                service_id: newService.id,
+                duration: newService.default_duration || prev.duration
+            }))
             setServiceFormData({
                 name: '',
                 description: '',
@@ -257,7 +253,19 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        onSubmit(formData)
+
+        const payload = {
+            customer_id: formData.customer_id || null,
+            pet_id: formData.pet_id || null,
+            service_id: formData.service_id || null,
+            appointment_date: formData.appointment_date,
+            appointment_time: formData.appointment_time,
+            duration: formData.duration,
+            notes: formData.notes,
+            status: formData.status
+        }
+
+        onSubmit(payload)
     }
 
     return (
@@ -384,17 +392,13 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 ) : (
                                     <select
                                         required
-                                        value={formData.service}
-                                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+                                        value={formData.service_id}
+                                        onChange={(e) => handleServiceChange(e.target.value)}
                                         className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">{t('appointmentForm.placeholders.selectService')}</option>
-                                        {formData.service &&
-                                            !services.some((service) => service.name === formData.service) && (
-                                                <option value={formData.service}>{formData.service}</option>
-                                            )}
                                         {services.map((service) => (
-                                            <option key={service.id} value={service.name}>
+                                            <option key={service.id} value={service.id}>
                                                 {service.name}
                                             </option>
                                         ))}

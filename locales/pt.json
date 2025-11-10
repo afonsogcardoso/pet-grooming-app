@@ -56,14 +56,18 @@
       "service": "✂️ Serviço",
       "date": "📅 Data",
       "address": "📍 Morada",
-      "notes": "📝 Notas"
+      "notes": "📝 Notas",
+      "petPhotoAlt": "Fotografia de {{pet}}"
     },
     "dateTime": "{{date}} às {{time}}",
     "buttons": {
       "edit": "Editar",
       "complete": "Concluir",
       "delete": "Eliminar"
-    }
+    },
+    "unknownCustomer": "Cliente desconhecido",
+    "unknownPet": "Animal desconhecido",
+    "unknownService": "Serviço"
   },
   "appointmentForm": {
     "title": {
