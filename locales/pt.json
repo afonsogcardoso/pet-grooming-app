@@ -328,6 +328,9 @@
       "plan": "Plano {{plan}}",
       "activeBadge": "Ativa",
       "untitled": "Conta sem nome"
+    },
+    "actions": {
+      "logout": "Terminar sessão"
     }
   },
   "login": {

@@ -328,6 +328,9 @@
       "plan": "{{plan}} plan",
       "activeBadge": "Active",
       "untitled": "Untitled account"
+    },
+    "actions": {
+      "logout": "Sign out"
     }
   },
   "login": {

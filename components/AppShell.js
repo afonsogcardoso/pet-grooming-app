@@ -7,6 +7,9 @@ import { usePathname } from 'next/navigation'
 import LanguageSwitcher from './LanguageSwitcher'
 import AccountGate from './AccountGate'
 import { useTranslation } from './TranslationProvider'
+import { supabase } from '@/lib/supabase'
+import { clearStoredAccountId } from '@/lib/accountHelpers'
+import { useAccount } from './AccountProvider'
 
 const navItems = [
   {
@@ -29,6 +32,7 @@ const navItems = [
 export default function AppShell({ children }) {
   const pathname = usePathname()
   const { t } = useTranslation()
+  const { authenticated } = useAccount()
   const [logoError, setLogoError] = useState(false)
   const logoPath = '/brand-logo.png'
   const [menuOpen, setMenuOpen] = useState(false)
@@ -99,6 +103,18 @@ export default function AppShell({ children }) {
                 )
               })}
               <LanguageSwitcher />
+              {authenticated && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await supabase.auth.signOut()
+                    clearStoredAccountId()
+                  }}
+                  className="nav-link bg-white/80 text-red-600 border border-red-200 hover:bg-red-50 font-semibold px-4 py-2 rounded-full text-sm"
+                >
+                  {t('account.actions.logout')}
+                </button>
+              )}
             </nav>
           </div>
         </div>
