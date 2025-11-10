@@ -165,29 +165,29 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                     </div>
                 </div>
 
-                <div className="flex sm:flex-col gap-2">
+                <div className="flex flex-wrap gap-2 justify-end">
                     <button
                         onClick={() => onEdit(appointment)}
-                        className="btn-brand-outlined py-3 px-3 text-sm whitespace-nowrap shadow-md text-center"
+                        className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold border border-brand-primary text-brand-primary rounded-full bg-white hover:bg-brand-primary-soft transition"
                     >
                         ✏️
-                        <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.edit')}</span>
+                        <span className="hidden sm:inline">{t('appointmentCard.buttons.edit')}</span>
                     </button>
                     {appointment.status !== 'completed' && (
                         <button
                             onClick={() => onComplete(appointment.id)}
-                            className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                            className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-full bg-brand-accent text-brand-secondary hover:bg-brand-accent-dark hover:text-white transition"
                         >
                             ✓
-                            <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.complete')}</span>
+                            <span className="hidden sm:inline">{t('appointmentCard.buttons.complete')}</span>
                         </button>
                     )}
                     <button
                         onClick={() => onDelete(appointment.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
+                        className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-full border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition"
                     >
                         🗑
-                        <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.delete')}</span>
+                        <span className="hidden sm:inline">{t('appointmentCard.buttons.delete')}</span>
                     </button>
                 </div>
             </div>

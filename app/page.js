@@ -210,7 +210,7 @@ export default function Home() {
 
   const displayedCount = view === 'list' ? filteredAppointments.length : appointments.length
 
-  return (
+  const pageContent = (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -238,24 +238,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Add/Edit Appointment Form Modal */}
-      {showForm && (
-        <div
-          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black bg-opacity-50 px-3 py-4 sm:px-6 sm:py-10 overflow-y-auto"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="w-full max-w-4xl">
-            <div className="max-h-[95vh] overflow-y-auto">
-              <AppointmentForm
-                onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
-                onCancel={handleCancelEdit}
-                initialData={editingAppointment || prefilledData}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Calendar View */}
       {view === 'calendar' && (
         <CalendarView
@@ -279,6 +261,29 @@ export default function Home() {
         />
       )}
     </div>
+  )
+
+  return (
+    <>
+      {pageContent}
+      {/* Add/Edit Appointment Form Modal */}
+      {showForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-brand-primary/20 backdrop-blur-md px-3 py-4 sm:px-10 sm:py-12 overflow-y-auto"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-brand-primary/30">
+            <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-8">
+              <AppointmentForm
+                onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
+                onCancel={handleCancelEdit}
+                initialData={editingAppointment || prefilledData}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 function generatePhotoPath(tag) {

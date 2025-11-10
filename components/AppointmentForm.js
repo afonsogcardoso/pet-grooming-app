@@ -373,7 +373,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
     return (
         <>
-            <div className="modal-card bg-white rounded-lg shadow-xl p-5 sm:p-6 border-2 border-indigo-500">
+            <div className="modal-card bg-white rounded-lg p-5 sm:p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-gray-800">
                         {isEditing ? t('appointmentForm.title.edit') : t('appointmentForm.title.new')}
@@ -441,7 +441,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         required
                                         value={formData.customer_id}
                                         onChange={(e) => handleCustomerChange(e.target.value)}
-                                className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
+                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">
                                             {t('appointmentForm.placeholders.selectCustomer')}
@@ -717,7 +717,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             {/* Customer Creation Modal */}
             {showCustomerModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="modal-card bg-white rounded-lg shadow-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
                             {t('customerForm.title.new')}
                         </h3>
@@ -827,7 +827,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             {/* Pet Creation Modal */}
             {showPetModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="modal-card bg-white rounded-lg shadow-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
                             {t('petForm.title.new')}
                         </h3>
@@ -921,9 +921,9 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                             breed: '',
                                             age: '',
                                             weight: '',
-                                        medical_notes: ''
-                                    })
-                                }}
+                                            medical_notes: ''
+                                        })
+                                    }}
                                     className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
                                 >
                                     {t('petForm.buttons.cancel')}
@@ -936,7 +936,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
             {showServiceModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="modal-card bg-white rounded-lg shadow-xl p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
                             {t('servicesForm.modalTitle')}
                         </h3>
@@ -1023,7 +1023,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                         </form>
                     </div>
                 </div>
-    )}
+            )}
         </>
     )
 }

@@ -62,7 +62,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-xl border border-gray-100 rounded-2xl p-8 space-y-6">
+    <div className="max-w-lg mx-auto bg-white border border-gray-100 rounded-2xl p-8 space-y-6">
       <div className="space-y-2 text-center">
         <p className="text-4xl">🔐</p>
         <h1 className="text-2xl font-bold text-gray-900">{t('login.title')}</h1>

@@ -33,7 +33,7 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
     }
 
     return (
-        <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6 border-2 border-indigo-500">
+        <div className="modal-card bg-white rounded-lg shadow-md p-5 sm:p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
                 {isEditing ? t('customerForm.title.edit') : t('customerForm.title.new')}
             </h3>

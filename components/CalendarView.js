@@ -16,13 +16,17 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
     const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset])
     const datesToRender = weekDates
 
-    // Time slots from 8 AM to 6 PM in 30-minute intervals
+    // Time slots from 9 AM to 6 PM in 30-minute intervals
     const timeSlots = [
         '09:00', '09:30', '10:00', '10:30',
         '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
         '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
         '17:00', '17:30', '18:00'
     ]
+    const SLOT_HEIGHT = 80
+    const SLOT_GAP = 4
+    const TOTAL_DAY_HEIGHT = timeSlots.length * SLOT_HEIGHT + SLOT_GAP * (timeSlots.length - 1)
+    const TIME_COLUMN_WIDTH = 120
 
     const handlePrevious = () => {
         onWeekChange(weekOffset - 1)
@@ -41,49 +45,65 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
         onEdit(apt)
     }
 
-    const handleSlotClick = (date, time) => {
-        const dateStr = date.toISOString().split('T')[0]
-        const existingApt = appointments.find(
-            apt => apt.appointment_date === dateStr && apt.appointment_time === time
-        )
-
-        if (existingApt) {
-            handleAppointmentClick(existingApt)
-        } else {
-            if (onCreateAtSlot) {
-                onCreateAtSlot(dateStr, time)
-            }
-        }
+    const normalizeTimeToSlot = (time) => {
+        if (!time) return null
+        const [hour, minute] = time.split(':')
+        if (hour === undefined || minute === undefined) return null
+        return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`
     }
 
-    const getAppointmentAtSlot = (date, time) => {
+    const findAppointmentAtSlot = (date, time) => {
         const dateStr = date.toISOString().split('T')[0]
         // Find appointment that starts at this time
         const apt = appointments.find(
-            apt => apt.appointment_date === dateStr && apt.appointment_time === time
+            apt => apt.appointment_date === dateStr && normalizeTimeToSlot(apt.appointment_time) === time
         )
 
-        // Also check if an earlier appointment spans into this slot
-        if (!apt) {
-            return appointments.find(appt => {
-                if (appt.appointment_date !== dateStr) return false
-                const aptStartTime = appt.appointment_time
-                const duration = appt.duration || 60
-                const [aptHour, aptMin] = aptStartTime.split(':').map(Number)
-                const [slotHour, slotMin] = time.split(':').map(Number)
-                const aptStartMinutes = aptHour * 60 + aptMin
-                const slotMinutes = slotHour * 60 + slotMin
-                const aptEndMinutes = aptStartMinutes + duration
+        if (apt) return apt
 
-                // Check if this slot falls within the appointment duration
-                return slotMinutes >= aptStartMinutes && slotMinutes < aptEndMinutes
-            })
-        }
-        return apt
+        // Check if an earlier appointment spans into this slot
+        return appointments.find(appt => {
+            if (appt.appointment_date !== dateStr) return false
+            const aptStartTime = appt.appointment_time
+            const duration = appt.duration || 60
+            const [aptHour, aptMin] = aptStartTime.split(':').map(Number)
+            const [slotHour, slotMin] = time.split(':').map(Number)
+            const aptStartMinutes = aptHour * 60 + aptMin
+            const slotMinutes = slotHour * 60 + slotMin
+            const aptEndMinutes = aptStartMinutes + duration
+
+            return slotMinutes >= aptStartMinutes && slotMinutes < aptEndMinutes
+        })
     }
 
-    const dayCount = datesToRender.length
-    const gridTemplateStyle = { gridTemplateColumns: `repeat(${dayCount + 1}, minmax(0, 1fr))` }
+    const handleSlotClick = (date, time) => {
+        const dateStr = date.toISOString().split('T')[0]
+        const existingApt = findAppointmentAtSlot(date, time)
+
+        if (existingApt) {
+            handleAppointmentClick(existingApt)
+        } else if (onCreateAtSlot) {
+            onCreateAtSlot(dateStr, time)
+        }
+    }
+
+    const getAppointmentsForDate = (date) => {
+        const dateStr = date.toISOString().split('T')[0]
+        return appointments
+            .filter((apt) => apt.appointment_date === dateStr)
+            .map((apt) => {
+                const normalizedTime = normalizeTimeToSlot(apt.appointment_time)
+                const slotIndex = normalizedTime ? timeSlots.indexOf(normalizedTime) : -1
+                if (slotIndex === -1) return null
+                const duration = Math.max(30, apt.duration || 60)
+                const requestedSpans = Math.ceil(duration / 30)
+                const availableSpans = timeSlots.length - slotIndex
+                const slotsToRender = Math.max(1, Math.min(requestedSpans, availableSpans))
+                return { ...apt, slotIndex, slotsToRender }
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.slotIndex - b.slotIndex)
+    }
 
     return (
         <div className="bg-white rounded-lg shadow-md p-4">
@@ -129,14 +149,17 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             <div className="overflow-x-auto -mx-2 sm:mx-0">
                 <div className="min-w-[720px] md:min-w-0">
                     {/* Day Headers */}
-                    <div className="grid gap-1 mb-2" style={gridTemplateStyle}>
-                        <div className="text-center font-bold text-gray-700 p-2">
+                    <div className="flex gap-1 mb-2">
+                        <div
+                            className="text-center font-bold text-gray-700 p-2 bg-gray-100 rounded"
+                            style={{ width: TIME_COLUMN_WIDTH }}
+                        >
                             {t('calendar.timeColumn')}
                         </div>
                         {datesToRender.map((date, i) => {
                             const isToday = date.toDateString() === new Date().toDateString()
                             return (
-                                <div key={i} className="text-center">
+                                <div key={i} className="flex-1 text-center">
                                     <div className="font-bold text-gray-700">
                                         {date.toLocaleDateString('en-US', { weekday: 'short' })}
                                     </div>
@@ -154,93 +177,123 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                     </div>
 
                     {/* Time Slots Grid */}
-                    {timeSlots.map((time) => (
-                        <div key={time} className="grid gap-1 mb-1" style={gridTemplateStyle}>
-                            {/* Time Label */}
-                            <div className="text-center text-sm font-bold text-gray-700 p-2 bg-gray-100 rounded flex items-center justify-center">
-                                {formatTime(time, resolvedLocale)}
-                            </div>
-
-                            {/* Day Cells */}
-                            {datesToRender.map((date, i) => {
-                                const apt = getAppointmentAtSlot(date, time)
-                                const isToday = date.toDateString() === new Date().toDateString()
-
-                                if (apt) {
-                                    const customerName = apt.customers?.name || t('appointmentCard.unknownCustomer')
-                                    const petName = apt.pets?.name || t('appointmentCard.unknownPet')
-                                    const petBreed = apt.pets?.breed
-                                    const petPhoto = apt.pets?.photo_url
-                                    const serviceName = apt.services?.name || t('appointmentCard.unknownService')
-                                    const address = apt.customers?.address
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`p-2 rounded cursor-pointer hover:shadow-lg transition-all border-2 ${apt.status === 'completed'
-                                                ? 'bg-brand-accent-soft border-brand-accent'
-                                                : 'bg-brand-primary-soft border-brand-primary'
-                                                } ${isToday ? 'ring-2 ring-[color:var(--brand-primary)]' : ''}`}
-                                            onClick={() => handleAppointmentClick(apt)}
-                                        >
-                                            {petPhoto && (
-                                                <div className="flex justify-center mb-1">
-                                                    <Image
-                                                        src={petPhoto}
-                                                        alt={t('appointmentCard.labels.petPhotoAlt', { pet: petName })}
-                                                        width={40}
-                                                        height={40}
-                                                        className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-                                                        unoptimized
-                                                    />
-                                                </div>
-                                            )}
-                                            <div className="text-xs font-bold text-gray-800 truncate">
-                                                {customerName}
-                                            </div>
-                                            <div className="text-xs text-gray-700 truncate">
-                                                {petName}
-                                                {petBreed && (
-                                                    <span className="text-gray-500"> ({petBreed})</span>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-gray-600 truncate">
-                                                {serviceName}
-                                            </div>
-                                            {address && (
-                                                <a
-                                                    href={getGoogleMapsLink(address)}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-xs text-brand-primary hover:underline flex items-center gap-1 mt-1"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    {t('calendar.mapLink')}
-                                                </a>
-                                            )}
-                                            {apt.status === 'completed' && (
-                                                <div className="text-xs font-bold text-brand-accent mt-1">
-                                                    ✓
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
-                                } else {
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`p-2 rounded cursor-pointer hover:bg-gray-200 transition-all border-2 border-dashed border-gray-300 min-h-[80px] flex items-center justify-center ${isToday ? 'bg-brand-primary-soft' : 'bg-gray-50'
-                                                }`}
-                                            onClick={() => handleSlotClick(date, time)}
-                                        >
-                                            <span className="text-xs text-gray-400 hover:text-gray-600">
-                                                {t('calendar.add')}
-                                            </span>
-                                        </div>
-                                    )
-                                }
-                            })}
+                    <div className="flex gap-1">
+                        {/* Time Labels */}
+                        <div className="flex flex-col gap-1 shrink-0" style={{ width: TIME_COLUMN_WIDTH }}>
+                            {timeSlots.map((time, index) => (
+                                <div
+                                    key={time}
+                                    className="text-center text-sm font-bold text-gray-700 p-2 bg-gray-100 rounded flex items-center justify-center"
+                                    style={{
+                                        height: SLOT_HEIGHT
+                                    }}
+                                >
+                                    {formatTime(time, resolvedLocale)}
+                                </div>
+                            ))}
                         </div>
-                    ))}
+
+                        {/* Day Columns */}
+                        {datesToRender.map((date, columnIndex) => {
+                            const isToday = date.toDateString() === new Date().toDateString()
+                            const appointmentsForDay = getAppointmentsForDate(date)
+                            const dateStr = date.toISOString().split('T')[0]
+
+                            return (
+                                <div key={columnIndex} className="flex-1">
+                                    <div className="relative" style={{ minHeight: TOTAL_DAY_HEIGHT }}>
+                                        <div className="flex flex-col gap-1">
+                                            {timeSlots.map((time, rowIndex) => (
+                                                <div
+                                                    key={`${dateStr}-${time}`}
+                                                    className={`p-2 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-400 transition-all cursor-pointer ${isToday ? 'bg-brand-primary-soft' : 'bg-gray-50'
+                                                        } hover:bg-gray-200 hover:text-gray-600`}
+                                                    style={{
+                                                        height: SLOT_HEIGHT
+                                                    }}
+                                                    onClick={() => handleSlotClick(date, time)}
+                                                >
+                                                    {t('calendar.add')}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {appointmentsForDay.map((apt) => {
+                                            const customerName = apt.customers?.name || t('appointmentCard.unknownCustomer')
+                                            const petName = apt.pets?.name || t('appointmentCard.unknownPet')
+                                            const petBreed = apt.pets?.breed
+                                            const petPhoto = apt.pets?.photo_url
+                                            const serviceName = apt.services?.name || t('appointmentCard.unknownService')
+                                            const address = apt.customers?.address
+                                            const top = apt.slotIndex * (SLOT_HEIGHT + SLOT_GAP)
+                                            const height = apt.slotsToRender * SLOT_HEIGHT + (apt.slotsToRender - 1) * SLOT_GAP
+                                            const isCompact = apt.slotsToRender === 1
+
+                                            return (
+                                                <div
+                                                    key={apt.id}
+                                                    className={`absolute left-0 right-0 p-2 rounded cursor-pointer hover:shadow-lg transition-all border-2 ${apt.status === 'completed'
+                                                        ? 'bg-brand-accent-soft border-brand-accent'
+                                                        : 'bg-brand-primary-soft border-brand-primary'
+                                                        } ${isToday ? 'ring-2 ring-[color:var(--brand-primary)]' : ''}`}
+                                                    style={{
+                                                        top,
+                                                        height
+                                                    }}
+                                                    onClick={() => handleAppointmentClick(apt)}
+                                                >
+                                                    <div className={isCompact ? 'flex items-center gap-3 h-full' : ''}>
+                                                        {petPhoto && (
+                                                            <div className={isCompact ? '' : 'flex justify-center mb-1'}>
+                                                                <Image
+                                                                    src={petPhoto}
+                                                                    alt={t('appointmentCard.labels.petPhotoAlt', { pet: petName })}
+                                                                    width={48}
+                                                                    height={48}
+                                                                    className={`rounded-full object-cover border border-white shadow-sm ${isCompact ? 'w-12 h-12' : 'w-10 h-10 mx-auto'}`}
+                                                                    unoptimized
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className={`flex-1 ${isCompact ? 'min-w-0' : ''}`}>
+                                                            <div className="text-xs font-bold text-gray-800 truncate">
+                                                                {customerName}
+                                                            </div>
+                                                            <div className="text-xs text-gray-700 truncate">
+                                                                {petName}
+                                                                {petBreed && (
+                                                                    <span className="text-gray-500"> ({petBreed})</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-xs text-gray-600 truncate">
+                                                                {serviceName}
+                                                            </div>
+                                                            {address && (
+                                                                <a
+                                                                    href={getGoogleMapsLink(address)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className={`text-xs text-brand-primary hover:underline flex items-center gap-1 ${isCompact ? 'mt-0' : 'mt-1'}`}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    {t('calendar.mapLink')}
+                                                                </a>
+                                                            )}
+                                                            {apt.status === 'completed' && (
+                                                                <div className="text-xs font-bold text-brand-accent mt-1">
+                                                                    ✓
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
 

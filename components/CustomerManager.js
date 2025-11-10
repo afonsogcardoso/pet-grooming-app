@@ -292,7 +292,7 @@ export default function CustomerManager() {
                                 {customerHistory.map((apt) => (
                                     <div
                                         key={apt.id}
-                                        className="p-3 bg-gray-50 rounded border-l-4 border-indigo-500"
+                                        className="p-3 bg-gray-50 rounded border-l-4"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div>
@@ -338,7 +338,7 @@ export default function CustomerManager() {
                             {customers.map((customer) => (
                                 <div
                                     key={customer.id}
-                                    className="bg-white rounded-lg shadow-md p-4 border-l-4 border-indigo-500 hover:shadow-lg transition cursor-pointer"
+                                    className="bg-white rounded-lg shadow-md p-4 border-l-4 hover:shadow-lg transition cursor-pointer"
                                     onClick={() => handleViewCustomer(customer)}
                                 >
                                     <div className="flex justify-between items-start mb-2">
