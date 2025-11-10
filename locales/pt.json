@@ -6,6 +6,7 @@
       "appointments": "Agendamentos",
       "customers": "Clientes",
       "services": "Serviços",
+      "settings": "Configurações",
       "menu": "Menu",
       "close": "Fechar"
     }
@@ -348,6 +349,49 @@
     "help": {
       "noAccount": "Precisa de acesso?",
       "contact": "Contacte um administrador"
+    }
+  },
+  "settings": {
+    "auth": {
+      "required": "Tem de iniciar sessão para gerir esta área.",
+      "noAccess": "Não tem permissões para gerir esta conta.",
+      "hint": "Apenas owners ou admins podem alterar branding e convidar colegas."
+    },
+    "branding": {
+      "title": "Branding e tema",
+      "description": "Personalize o aspeto desta conta em toda a aplicação.",
+      "fields": {
+        "logo": "URL do logo",
+        "primary": "Cor primária",
+        "primarySoft": "Cor primária suave",
+        "accent": "Cor de destaque",
+        "accentSoft": "Cor de destaque suave",
+        "background": "Cor de fundo",
+        "gradient": "Gradiente principal"
+      },
+      "save": "Guardar branding",
+      "saving": "A guardar...",
+      "success": "Branding atualizado!"
+    },
+    "members": {
+      "title": "Membros da conta",
+      "description": "Convide colegas e defina as respetivas permissões.",
+      "fields": {
+        "email": "Email",
+        "password": "Password temporária (opcional)",
+        "passwordPlaceholder": "Deixe em branco para gerar automaticamente",
+        "role": "Função"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Membro"
+      },
+      "invite": "Enviar convite",
+      "inviting": "A convidar...",
+      "inviteSuccess": "Convite enviado e membro criado.",
+      "loading": "A carregar membros...",
+      "empty": "Ainda não existem membros. Convide alguém acima."
     }
   },
   "calendar": {

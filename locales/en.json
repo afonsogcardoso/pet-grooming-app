@@ -6,6 +6,7 @@
       "appointments": "Appointments",
       "customers": "Customers",
       "services": "Services",
+      "settings": "Settings",
       "menu": "Menu",
       "close": "Close"
     }
@@ -348,6 +349,49 @@
     "help": {
       "noAccount": "Need access?",
       "contact": "Contact an administrator"
+    }
+  },
+  "settings": {
+    "auth": {
+      "required": "You must be signed in to manage this area.",
+      "noAccess": "You don't have permission to manage this account.",
+      "hint": "Only owners or admins can change branding and invite teammates."
+    },
+    "branding": {
+      "title": "Branding & Theme",
+      "description": "Customize how this account looks across the entire app.",
+      "fields": {
+        "logo": "Logo URL",
+        "primary": "Primary color",
+        "primarySoft": "Primary soft color",
+        "accent": "Accent color",
+        "accentSoft": "Accent soft color",
+        "background": "Background color",
+        "gradient": "Hero gradient"
+      },
+      "save": "Save branding",
+      "saving": "Saving...",
+      "success": "Branding updated!"
+    },
+    "members": {
+      "title": "Account members",
+      "description": "Invite teammates and manage their permissions.",
+      "fields": {
+        "email": "Email",
+        "password": "Temporary password (optional)",
+        "passwordPlaceholder": "Leave blank to auto-generate",
+        "role": "Role"
+      },
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "invite": "Send invite",
+      "inviting": "Inviting...",
+      "inviteSuccess": "Invite sent and membership created.",
+      "loading": "Loading members...",
+      "empty": "No members yet. Invite someone above."
     }
   },
   "calendar": {

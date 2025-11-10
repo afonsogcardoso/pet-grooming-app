@@ -15,6 +15,16 @@ import {
 
 const AccountContext = createContext(null)
 
+const DEFAULT_BRANDING = {
+  brand_primary: '#4fafa9',
+  brand_primary_soft: '#e7f8f7',
+  brand_accent: '#f4d58d',
+  brand_accent_soft: '#fdf6de',
+  brand_background: '#fdfcf9',
+  brand_gradient: 'linear-gradient(140deg, rgba(79,175,169,0.95), rgba(118,98,78,0.85))',
+  logo_url: null
+}
+
 const emptyState = {
   account: null,
   membership: null,
@@ -90,7 +100,14 @@ export function AccountProvider({ children }) {
             slug,
             plan,
             created_at,
-            updated_at
+            updated_at,
+            logo_url,
+            brand_primary,
+            brand_primary_soft,
+            brand_accent,
+            brand_accent_soft,
+            brand_background,
+            brand_gradient
           )
         `
         )
@@ -179,6 +196,40 @@ export function AccountProvider({ children }) {
     if (!currentUserId) return
     fetchMemberships(currentUserId)
   }, [currentUserId, fetchMemberships])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    const root = document.documentElement
+    const branding = state.account ?? DEFAULT_BRANDING
+    root.style.setProperty('--brand-primary', branding.brand_primary || DEFAULT_BRANDING.brand_primary)
+    root.style.setProperty(
+      '--brand-primary-soft',
+      branding.brand_primary_soft || DEFAULT_BRANDING.brand_primary_soft
+    )
+    root.style.setProperty('--brand-accent', branding.brand_accent || DEFAULT_BRANDING.brand_accent)
+    root.style.setProperty(
+      '--brand-accent-dark',
+      branding.brand_accent ? branding.brand_accent : DEFAULT_BRANDING.brand_accent
+    )
+    root.style.setProperty(
+      '--brand-accent-soft',
+      branding.brand_accent_soft || DEFAULT_BRANDING.brand_accent_soft
+    )
+    root.style.setProperty(
+      '--brand-secondary',
+      branding.brand_primary || DEFAULT_BRANDING.brand_primary
+    )
+    root.style.setProperty(
+      '--brand-secondary-soft',
+      branding.brand_accent_soft || DEFAULT_BRANDING.brand_accent_soft
+    )
+    root.style.setProperty('--brand-surface', branding.brand_background || DEFAULT_BRANDING.brand_background)
+    root.style.setProperty(
+      '--brand-gradient',
+      branding.brand_gradient || DEFAULT_BRANDING.brand_gradient
+    )
+    root.style.setProperty('--background', branding.brand_background || DEFAULT_BRANDING.brand_background)
+  }, [state.account])
 
   const value = useMemo(
     () => ({

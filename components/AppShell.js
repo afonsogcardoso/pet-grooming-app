@@ -26,15 +26,20 @@ const navItems = [
     href: '/services',
     labelKey: 'app.nav.services',
     icon: '🧴'
+  },
+  {
+    href: '/settings',
+    labelKey: 'app.nav.settings',
+    icon: '⚙️'
   }
 ]
 
 export default function AppShell({ children }) {
   const pathname = usePathname()
   const { t } = useTranslation()
-  const { authenticated } = useAccount()
+  const { authenticated, account, membership } = useAccount()
   const [logoError, setLogoError] = useState(false)
-  const logoPath = '/brand-logo.png'
+  const defaultLogo = '/brand-logo.png'
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -52,7 +57,7 @@ export default function AppShell({ children }) {
             <Link href="/" className="brand" aria-label={t('app.title')}>
               {!logoError ? (
                 <Image
-                  src={logoPath}
+                  src={account?.logo_url || defaultLogo}
                   alt="Pet Grooming logo"
                   width={56}
                   height={56}
@@ -66,8 +71,8 @@ export default function AppShell({ children }) {
                 </div>
               )}
               <div className="min-w-0 text-left">
-                <h1 className="brand-title">{t('app.title')}</h1>
-                <p className="brand-desc">{t('app.description')}</p>
+                <h1 className="brand-title">{account?.name || t('app.title')}</h1>
+                <p className="brand-desc">{account?.plan ? t('account.select.plan', { plan: account.plan }) : t('app.description')}</p>
               </div>
             </Link>
 
@@ -87,7 +92,12 @@ export default function AppShell({ children }) {
               id="primary-nav"
               className={`${menuOpen ? 'flex' : 'hidden'} flex-col sm:flex sm:flex-row sm:flex-nowrap sm:items-center sm:overflow-x-auto sm:no-scrollbar gap-2`}
             >
-              {navItems.map(({ href, labelKey, icon }) => {
+              {navItems
+                .filter((item) => {
+                  if (item.href !== '/settings') return true
+                  return ['owner', 'admin'].includes(membership?.role)
+                })
+                .map(({ href, labelKey, icon }) => {
                 const isActive = pathname === href
                 const base =
                   'nav-link flex items-center gap-1.5 rounded-full font-semibold transition duration-200 border text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2 whitespace-nowrap'
