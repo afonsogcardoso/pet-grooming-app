@@ -5,38 +5,15 @@
 
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { getWeekDates, getWeekRangeText, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink } from '@/utils/addressUtils'
 import { useTranslation } from '@/components/TranslationProvider'
 
 export default function CalendarView({ appointments, weekOffset, onWeekChange, onComplete, onEdit, onCreateAtSlot }) {
     const { t, resolvedLocale } = useTranslation()
-    const weekDates = getWeekDates(weekOffset)
-    const [compactView, setCompactView] = useState(false)
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (typeof window !== 'undefined') {
-                setCompactView(window.innerWidth < 768)
-            }
-        }
-        handleResize()
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
-
-    const datesToRender = useMemo(() => {
-        if (!compactView) return weekDates
-        const today = new Date()
-        const todayStr = today.toDateString()
-        const idx = weekDates.findIndex((date) => date.toDateString() === todayStr)
-        if (idx === -1) {
-            return weekDates.slice(0, 3)
-        }
-        const start = Math.min(Math.max(idx, 0), Math.max(0, weekDates.length - 3))
-        return weekDates.slice(start, start + 3)
-    }, [compactView, weekDates])
+    const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset])
+    const datesToRender = weekDates
 
     // Time slots from 8 AM to 6 PM in 30-minute intervals
     const timeSlots = [
@@ -148,8 +125,8 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             </div>
 
             {/* Calendar Grid with Time Slots */}
-            <div className="overflow-x-auto">
-                <div className={compactView ? 'min-w-full' : 'min-w-[900px]'}>
+            <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <div className="min-w-[720px] md:min-w-0">
                     {/* Day Headers */}
                     <div className="grid gap-1 mb-2" style={gridTemplateStyle}>
                         <div className="text-center font-bold text-gray-700 p-2">
