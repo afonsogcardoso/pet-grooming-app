@@ -8,6 +8,7 @@
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
+import BreedSelect from '@/components/BreedSelect'
 
 export default function PetForm({ customerId, onSubmit, onCancel, initialData = null }) {
   const { t } = useTranslation()
@@ -110,11 +111,9 @@ export default function PetForm({ customerId, onSubmit, onCancel, initialData = 
             <label className="block text-sm font-bold text-gray-800 mb-2">
               {t('petForm.labels.breed')}
             </label>
-            <input
-              type="text"
+            <BreedSelect
               value={formData.breed ?? ''}
-              onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-              className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+              onChange={(breed) => setFormData({ ...formData, breed })}
               placeholder={t('petForm.placeholders.breed')}
             />
           </div>

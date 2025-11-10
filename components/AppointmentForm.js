@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react'
 import { loadCustomers, loadPetsByCustomer, createCustomer, createPet } from '@/lib/customerService'
 import { loadServices, createService } from '@/lib/serviceService'
 import { useTranslation } from '@/components/TranslationProvider'
+import BreedSelect from '@/components/BreedSelect'
 
 const formatTimeValue = (value) => (value ? value.substring(0, 5) : '')
 
@@ -851,12 +852,11 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('petForm.labels.breed')}
                                     </label>
-                                    <input
-                                        type="text"
+                                    <BreedSelect
                                         value={petFormData.breed}
-                                        onChange={(e) => setPetFormData({ ...petFormData, breed: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
+                                        onChange={(breed) => setPetFormData({ ...petFormData, breed })}
                                         placeholder={t('petForm.placeholders.breed')}
+                                        className="text-base py-3"
                                     />
                                 </div>
 
