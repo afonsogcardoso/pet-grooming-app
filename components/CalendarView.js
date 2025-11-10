@@ -251,6 +251,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                                                                     width={48}
                                                                     height={48}
                                                                     className={`rounded-full object-cover border border-white shadow-sm ${isCompact ? 'w-12 h-12' : 'w-10 h-10 mx-auto'}`}
+                                                                    loading="lazy"
+                                                                    decoding="async"
+                                                                    sizes="48px"
                                                                     unoptimized
                                                                 />
                                                             </div>

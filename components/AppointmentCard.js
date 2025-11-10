@@ -44,6 +44,9 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                     width={80}
                                     height={80}
                                     className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                    sizes="80px"
                                     unoptimized
                                 />
                             </div>
@@ -129,6 +132,9 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                                         width={120}
                                                         height={120}
                                                         className="w-full h-24 object-cover rounded-lg border border-brand-primary"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        sizes="120px"
                                                         unoptimized
                                                     />
                                                 </div>
@@ -144,6 +150,9 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                                         width={120}
                                                         height={120}
                                                         className="w-full h-24 object-cover rounded-lg border border-brand-accent"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        sizes="120px"
                                                         unoptimized
                                                     />
                                                 </div>

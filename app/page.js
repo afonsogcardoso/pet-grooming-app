@@ -5,6 +5,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import {
   loadAppointments,
   createAppointment,
@@ -16,13 +17,34 @@ import {
 import { supabase } from '@/lib/supabase'
 import ViewToggle from '@/components/ViewToggle'
 import FilterButtons from '@/components/FilterButtons'
-import AppointmentForm from '@/components/AppointmentForm'
-import AppointmentList from '@/components/AppointmentList'
-import CalendarView from '@/components/CalendarView'
 import { useTranslation } from '@/components/TranslationProvider'
 import { compressImage } from '@/utils/image'
 
 const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
+
+const LoadingCard = ({ label }) => (
+  <div className="bg-white rounded-2xl shadow-md border border-brand-primary/20 p-6 text-center text-gray-500 animate-pulse">
+    {label}
+  </div>
+)
+
+const CalendarView = dynamic(() => import('@/components/CalendarView'), {
+  ssr: false,
+  loading: () => <LoadingCard label="Loading calendar…" />
+})
+
+const AppointmentList = dynamic(() => import('@/components/AppointmentList'), {
+  loading: () => <LoadingCard label="Loading appointments…" />
+})
+
+const AppointmentForm = dynamic(() => import('@/components/AppointmentForm'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-brand-primary/20 p-10 text-center text-gray-500 animate-pulse">
+      Preparing form…
+    </div>
+  )
+})
 
 export default function Home() {
   const [appointments, setAppointments] = useState([])
@@ -269,10 +291,10 @@ export default function Home() {
       {/* Add/Edit Appointment Form Modal */}
       {showForm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-brand-primary/20 backdrop-blur-md px-3 py-4 sm:px-10 sm:py-12 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-brand-primary/10 sm:bg-brand-primary/20 backdrop-blur-none sm:backdrop-blur-md px-3 py-4 sm:px-10 sm:py-12 overflow-y-auto transition"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-brand-primary/30">
+          <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl sm:shadow-2xl border border-brand-primary/30">
             <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-8">
               <AppointmentForm
                 onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
