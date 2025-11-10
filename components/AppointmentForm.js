@@ -60,6 +60,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         default_duration: 60,
         price: ''
     })
+    const [selectedPetInfo, setSelectedPetInfo] = useState(initialData?.pets || null)
 
     const isEditing = !!initialData
 
@@ -85,8 +86,10 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     useEffect(() => {
         if (initialData) {
             setFormData(buildInitialFormState(initialData))
+            setSelectedPetInfo(initialData.pets || null)
         } else {
             setFormData(buildInitialFormState(null))
+            setSelectedPetInfo(null)
         }
     }, [initialData])
 
@@ -98,6 +101,21 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             setFormData((prev) => ({ ...prev, pet_id: '' }))
         }
     }, [formData.customer_id])
+
+    useEffect(() => {
+        if (!formData.pet_id) {
+            setSelectedPetInfo(null)
+            return
+        }
+
+        const petFromList = pets.find((pet) => pet.id === formData.pet_id)
+
+        if (petFromList) {
+            setSelectedPetInfo(petFromList)
+        } else if (initialData?.pet_id === formData.pet_id && initialData?.pets) {
+            setSelectedPetInfo(initialData.pets)
+        }
+    }, [formData.pet_id, pets, initialData])
 
     async function fetchCustomers() {
         setLoadingCustomers(true)
@@ -374,6 +392,30 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 </button>
                             </div>
                         </div>
+
+                        {selectedPetInfo?.photo_url && (
+                            <div className="md:col-span-2 flex items-center gap-4 bg-brand-primary-soft border border-brand-primary rounded-2xl p-4 shadow-inner">
+                                <img
+                                    src={selectedPetInfo.photo_url}
+                                    alt={selectedPetInfo.name || 'Pet'}
+                                    className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
+                                />
+                                <div>
+                                    <p className="text-xs font-semibold uppercase text-brand-primary">
+                                        {t('appointmentForm.fields.pet')}
+                                    </p>
+                                    <p className="text-lg font-bold text-gray-800">
+                                        {selectedPetInfo.name}
+                                        {selectedPetInfo.breed && (
+                                            <span className="text-sm font-medium text-gray-500">
+                                                {' '}
+                                                ({selectedPetInfo.breed})
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Service Selection */}
                         <div>
