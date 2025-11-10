@@ -55,6 +55,18 @@ h6,
   font-size: 1rem;
 }
 
+.modal-card input,
+.modal-card select,
+.modal-card textarea {
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  min-height: 3.25rem;
+}
+
+.modal-card button {
+  font-size: 1.05rem;
+}
+
 .text-base {
   font-size: 0.8rem;
 }
@@ -68,11 +80,17 @@ h6,
     font-size: 1.15rem;
   }
 
+  .modal-card label {
+    font-size: 0.85rem;
+  }
+
   .modal-card input,
   .modal-card select,
   .modal-card textarea {
     padding-top: 0.65rem;
     padding-bottom: 0.65rem;
+    min-height: 3rem;
+    font-size: 0.95rem;
   }
 
   .modal-card button {

@@ -30,8 +30,8 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                 : 'border-brand-primary'
                 }`}
         >
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                <div className="flex-1 space-y-2">
+            <div className="space-y-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
                     <div className="flex items-start gap-4">
                         {petPhoto && (
                             <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-primary bg-brand-primary-soft flex-shrink-0 shadow-sm">
@@ -46,8 +46,8 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                             </div>
                         )}
 
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className="text-xl font-bold text-gray-800">
                                     {customerName}
                                 </h3>
@@ -86,12 +86,6 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                     <span className="font-bold">{t('appointmentCard.labels.service')}:</span>
                                     <span className="font-medium">{serviceName}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold">{t('appointmentCard.labels.date')}:</span>
-                                    <span className="font-bold text-brand-primary">
-                                        {t('appointmentCard.dateTime', { date: dateText, time: timeText })}
-                                    </span>
-                                </div>
                                 {address && (
                                     <div className="flex items-center gap-2">
                                         <span className="font-bold">{t('appointmentCard.labels.address')}:</span>
@@ -118,6 +112,15 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                             </div>
                         </div>
                     </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-primary text-brand-primary font-semibold bg-white shadow-sm">
+                            📅 <span>{dateText}</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-primary text-brand-primary font-semibold bg-white shadow-sm">
+                            ⏱ <span>{timeText}</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex sm:flex-col gap-2">
@@ -125,21 +128,24 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                         onClick={() => onEdit(appointment)}
                         className="btn-brand-outlined py-3 px-3 text-sm whitespace-nowrap shadow-md text-center"
                     >
-                        ✏️ {t('appointmentCard.buttons.edit')}
+                        ✏️
+                        <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.edit')}</span>
                     </button>
                     {appointment.status !== 'completed' && (
                         <button
                             onClick={() => onComplete(appointment.id)}
                             className="bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
                         >
-                            ✓ {t('appointmentCard.buttons.complete')}
+                            ✓
+                            <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.complete')}</span>
                         </button>
                     )}
                     <button
                         onClick={() => onDelete(appointment.id)}
                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-3 rounded-lg transition duration-200 text-sm whitespace-nowrap shadow-md"
                     >
-                        🗑 {t('appointmentCard.buttons.delete')}
+                        🗑
+                        <span className="hidden sm:inline ml-1">{t('appointmentCard.buttons.delete')}</span>
                     </button>
                 </div>
             </div>

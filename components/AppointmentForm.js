@@ -304,6 +304,42 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                     </button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
+                                {t('appointmentForm.fields.date')}
+                            </label>
+                            <input
+                                type="date"
+                                required
+                                value={formData.appointment_date}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, appointment_date: e.target.value })
+                                }
+                                className="w-full px-3 sm:px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
+                                {t('appointmentForm.fields.time')}
+                            </label>
+                            <select
+                                required
+                                value={formData.appointment_time}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, appointment_time: e.target.value })
+                                }
+                                className="w-full px-3 sm:px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                            >
+                                <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
+                                {generateTimeSlots().map((time) => (
+                                    <option key={time} value={time}>
+                                        {time}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Customer Selection */}
                         <div>
@@ -488,43 +524,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                             />
                         </div>
 
-                        {/* Date */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.date')}
-                            </label>
-                            <input
-                                type="date"
-                                required
-                                value={formData.appointment_date}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, appointment_date: e.target.value })
-                                }
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
-                            />
-                        </div>
-
-                        {/* Time - UPDATED TO 24H FORMAT WITH 30-MIN INCREMENTS */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.time')}
-                            </label>
-                            <select
-                                required
-                                value={formData.appointment_time}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, appointment_time: e.target.value })
-                                }
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
-                            >
-                                <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
-                                {generateTimeSlots().map((time) => (
-                                    <option key={time} value={time}>
-                                        {time}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
                     </div>
 
                     {/* Notes */}

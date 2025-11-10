@@ -212,10 +212,15 @@ export default function CustomerManager() {
                                 <h3 className="text-2xl font-bold text-gray-800">
                                     {selectedCustomer.name}
                                 </h3>
-                                <p className="text-gray-600">
-                                    📱 {selectedCustomer.phone}
-                                    {selectedCustomer.email && ` • ✉️ ${selectedCustomer.email}`}
+                                <p className="text-gray-600 flex flex-wrap gap-2">
+                                    <span>📱 {selectedCustomer.phone}</span>
+                                    {selectedCustomer.email && <span>• ✉️ {selectedCustomer.email}</span>}
                                 </p>
+                                {selectedCustomer.nif && (
+                                    <p className="text-gray-600">
+                                        🧾 {t('customerForm.labels.nif')}: {selectedCustomer.nif}
+                                    </p>
+                                )}
                                 {selectedCustomer.address && (
                                     <p className="text-gray-600">📍 {selectedCustomer.address}</p>
                                 )}
@@ -365,6 +370,9 @@ export default function CustomerManager() {
                                     <div className="text-sm text-gray-700 space-y-1">
                                         <div>📱 {customer.phone}</div>
                                         {customer.email && <div>✉️ {customer.email}</div>}
+                                        {customer.nif && (
+                                            <div>🧾 {t('customerForm.labels.nif')}: {customer.nif}</div>
+                                        )}
                                         <div className="flex gap-4 mt-2 text-xs">
                                             <span className="bg-brand-primary-soft text-brand-primary px-2 py-1 rounded font-semibold">
                                                 {t('customersPage.cards.petBadge', { count: customer.pet_count || 0 })}

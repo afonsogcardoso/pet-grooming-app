@@ -41,7 +41,7 @@ export default function AppShell({ children }) {
       <header className="bg-white/95 shadow-sm border-b border-gray-200 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="toolbar">
-            <div className="brand">
+            <Link href="/" className="brand" aria-label={t('app.title')}>
               {!logoError ? (
                 <Image
                   src={logoPath}
@@ -57,11 +57,11 @@ export default function AppShell({ children }) {
                   🐾
                 </div>
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 text-left">
                 <h1 className="brand-title">{t('app.title')}</h1>
                 <p className="brand-desc">{t('app.description')}</p>
               </div>
-            </div>
+            </Link>
 
             <button
               type="button"

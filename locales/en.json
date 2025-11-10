@@ -188,6 +188,7 @@
     "labels": {
       "name": "Customer Name *",
       "phone": "Phone Number *",
+      "nif": "NIF",
       "email": "Email",
       "address": "Address (service location) * 📍",
       "notes": "Notes"
@@ -195,6 +196,7 @@
     "placeholders": {
       "name": "John Doe",
       "phone": "+351 912 345 678",
+      "nif": "Portuguese tax ID (optional)",
       "email": "john@example.com",
       "address": "Full address or Google Maps link",
       "notes": "Any special notes about this customer..."
@@ -247,7 +249,7 @@
   "customersPage": {
     "headingWithCount": "Customers ({{count}})",
     "loading": "Loading customers...",
-    "searchPlaceholder": "Search by name or phone...",
+    "searchPlaceholder": "Search by name, phone or NIF...",
     "search": "Search",
     "clear": "Clear",
     "buttons": {

@@ -5,22 +5,27 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 
 export default function CustomerForm({ onSubmit, onCancel, initialData = null }) {
     const { t } = useTranslation()
-    const [formData, setFormData] = useState(
-        initialData || {
-            name: '',
-            phone: '',
-            email: '',
-            address: '',
-            notes: ''
-        }
-    )
+    const buildState = (data = {}) => ({
+        name: data.name || '',
+        phone: data.phone || '',
+        nif: data.nif || '',
+        email: data.email || '',
+        address: data.address || '',
+        notes: data.notes || ''
+    })
+
+    const [formData, setFormData] = useState(buildState(initialData))
 
     const isEditing = !!initialData
+
+    useEffect(() => {
+        setFormData(buildState(initialData || {}))
+    }, [initialData])
 
     const handleSubmit = (e) => {
         e.preventDefault()
@@ -59,6 +64,21 @@ export default function CustomerForm({ onSubmit, onCancel, initialData = null })
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
                             placeholder={t('customerForm.placeholders.phone')}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                            {t('customerForm.labels.nif')}
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.nif}
+                            onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
+                            className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"
+                            placeholder={t('customerForm.placeholders.nif')}
+                            maxLength={20}
+                            inputMode="numeric"
                         />
                     </div>
 
