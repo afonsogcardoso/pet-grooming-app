@@ -112,6 +112,45 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                         <p className="text-gray-700 mt-1 font-medium">{appointment.notes}</p>
                                     </div>
                                 )}
+                                {(appointment.before_photo_url || appointment.after_photo_url) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                                        <span className="font-bold">
+                                            {t('appointmentCard.labels.beforeAfter')}
+                                        </span>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {appointment.before_photo_url && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-1">
+                                                        {t('appointmentCard.labels.before')}
+                                                    </p>
+                                                    <Image
+                                                        src={appointment.before_photo_url}
+                                                        alt={t('appointmentCard.labels.before')}
+                                                        width={120}
+                                                        height={120}
+                                                        className="w-full h-24 object-cover rounded-lg border border-brand-primary"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            )}
+                                            {appointment.after_photo_url && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500 mb-1">
+                                                        {t('appointmentCard.labels.after')}
+                                                    </p>
+                                                    <Image
+                                                        src={appointment.after_photo_url}
+                                                        alt={t('appointmentCard.labels.after')}
+                                                        width={120}
+                                                        height={120}
+                                                        className="w-full h-24 object-cover rounded-lg border border-brand-accent"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

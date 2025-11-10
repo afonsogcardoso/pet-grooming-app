@@ -13,12 +13,16 @@ import {
   deleteAppointment as deleteAppointmentService,
   filterAppointments
 } from '@/lib/appointmentService'
+import { supabase } from '@/lib/supabase'
 import ViewToggle from '@/components/ViewToggle'
 import FilterButtons from '@/components/FilterButtons'
 import AppointmentForm from '@/components/AppointmentForm'
 import AppointmentList from '@/components/AppointmentList'
 import CalendarView from '@/components/CalendarView'
 import { useTranslation } from '@/components/TranslationProvider'
+import { compressImage } from '@/utils/image'
+
+const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
 
 export default function Home() {
   const [appointments, setAppointments] = useState([])
@@ -56,8 +60,33 @@ export default function Home() {
     setFilteredAppointments(filtered)
   }, [appointments, filter])
 
-  async function handleCreateAppointment(formData) {
-    const { data, error } = await createAppointment(formData)
+  async function handleCreateAppointment(formData, media = {}) {
+    const payload = { ...formData }
+
+    try {
+      if (media.beforePhotoFile) {
+        payload.before_photo_url = await uploadAppointmentPhoto(media.beforePhotoFile, 'before')
+      } else if (media.removeBeforePhoto) {
+        payload.before_photo_url = null
+        if (media.currentBeforePhotoUrl) {
+          await deleteAppointmentPhoto(media.currentBeforePhotoUrl)
+        }
+      }
+
+      if (media.afterPhotoFile) {
+        payload.after_photo_url = await uploadAppointmentPhoto(media.afterPhotoFile, 'after')
+      } else if (media.removeAfterPhoto) {
+        payload.after_photo_url = null
+        if (media.currentAfterPhotoUrl) {
+          await deleteAppointmentPhoto(media.currentAfterPhotoUrl)
+        }
+      }
+    } catch (photoError) {
+      alert(t('appointmentsPage.errors.photoUpload', { message: photoError.message }))
+      return
+    }
+
+    const { data, error } = await createAppointment(payload)
 
     if (error) {
       alert(t('appointmentsPage.errors.create', { message: error.message }))
@@ -67,8 +96,39 @@ export default function Home() {
     }
   }
 
-  async function handleUpdateAppointment(formData) {
-    const { data, error } = await updateAppointment(editingAppointment.id, formData)
+  async function handleUpdateAppointment(formData, media = {}) {
+    const payload = {
+      ...formData,
+      before_photo_url: editingAppointment?.before_photo_url || null,
+      after_photo_url: editingAppointment?.after_photo_url || null
+    }
+
+    try {
+      if (media.beforePhotoFile) {
+        payload.before_photo_url = await uploadAppointmentPhoto(media.beforePhotoFile, 'before')
+        if (media.currentBeforePhotoUrl) {
+          await deleteAppointmentPhoto(media.currentBeforePhotoUrl)
+        }
+      } else if (media.removeBeforePhoto && media.currentBeforePhotoUrl) {
+        payload.before_photo_url = null
+        await deleteAppointmentPhoto(media.currentBeforePhotoUrl)
+      }
+
+      if (media.afterPhotoFile) {
+        payload.after_photo_url = await uploadAppointmentPhoto(media.afterPhotoFile, 'after')
+        if (media.currentAfterPhotoUrl) {
+          await deleteAppointmentPhoto(media.currentAfterPhotoUrl)
+        }
+      } else if (media.removeAfterPhoto && media.currentAfterPhotoUrl) {
+        payload.after_photo_url = null
+        await deleteAppointmentPhoto(media.currentAfterPhotoUrl)
+      }
+    } catch (photoError) {
+      alert(t('appointmentsPage.errors.photoUpload', { message: photoError.message }))
+      return
+    }
+
+    const { data, error } = await updateAppointment(editingAppointment.id, payload)
 
     if (error) {
       alert(t('appointmentsPage.errors.update', { message: error.message }))
@@ -124,11 +184,18 @@ export default function Home() {
   async function handleDeleteAppointment(id) {
     if (!confirm(t('appointmentsPage.confirmDelete'))) return
 
+    const target = appointments.find((apt) => apt.id === id)
     const { error } = await deleteAppointmentService(id)
 
     if (error) {
       alert(t('appointmentsPage.errors.delete', { message: error.message }))
     } else {
+      if (target?.before_photo_url) {
+        await deleteAppointmentPhoto(target.before_photo_url)
+      }
+      if (target?.after_photo_url) {
+        await deleteAppointmentPhoto(target.after_photo_url)
+      }
       setAppointments(appointments.filter((apt) => apt.id !== id))
     }
   }
@@ -213,4 +280,40 @@ export default function Home() {
       )}
     </div>
   )
+}
+function generatePhotoPath(tag) {
+  const unique =
+    typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`
+  return `appointments/${unique}-${tag}.jpg`
+}
+
+async function uploadAppointmentPhoto(file, tag) {
+  const compressed = await compressImage(file, { maxSize: 1024 })
+  const filePath = generatePhotoPath(tag)
+  const { error } = await supabase.storage
+    .from(APPOINTMENT_PHOTO_BUCKET)
+    .upload(filePath, compressed, { upsert: true, contentType: 'image/jpeg' })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+
+  const {
+    data: { publicUrl }
+  } = supabase.storage.from(APPOINTMENT_PHOTO_BUCKET).getPublicUrl(filePath)
+
+  return publicUrl || null
+}
+
+function extractAppointmentStoragePath(url) {
+  if (!url) return null
+  const marker = `${APPOINTMENT_PHOTO_BUCKET}/`
+  const parts = url.split(marker)
+  return parts[1] || null
+}
+
+async function deleteAppointmentPhoto(url) {
+  const path = extractAppointmentStoragePath(url)
+  if (!path) return
+  await supabase.storage.from(APPOINTMENT_PHOTO_BUCKET).remove([path])
 }

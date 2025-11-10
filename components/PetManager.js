@@ -11,6 +11,7 @@ import { loadPetsByCustomer, createPet, updatePet, deletePet } from '@/lib/custo
 import { supabase } from '@/lib/supabase'
 import PetForm from './PetForm'
 import { useTranslation } from '@/components/TranslationProvider'
+import { compressImage } from '@/utils/image'
 
 const PET_PHOTO_BUCKET = 'pet-photos'
 
@@ -115,15 +116,19 @@ export default function PetManager({ customerId, customerName }) {
 
     async function uploadPetPhoto(file, petId) {
         try {
-            const fileExt = file.name.split('.').pop()
+            const compressed = await compressImage(file, { maxSize: 640 })
+            const fileExt = 'jpg'
             const uniqueId =
                 typeof crypto !== 'undefined' && crypto.randomUUID
                     ? crypto.randomUUID()
                     : `${Date.now()}`
             const filePath = `pets/${petId}-${uniqueId}.${fileExt}`
-            const { error } = await supabase.storage.from(PET_PHOTO_BUCKET).upload(filePath, file, {
-                upsert: true
-            })
+            const { error } = await supabase.storage
+                .from(PET_PHOTO_BUCKET)
+                .upload(filePath, compressed, {
+                    upsert: true,
+                    contentType: 'image/jpeg'
+                })
             if (error) {
                 console.error('Upload error', error)
                 alert(t('petManager.errors.photoUpload', { message: error.message }))

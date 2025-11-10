@@ -4,7 +4,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { loadCustomers, loadPetsByCustomer, createCustomer, createPet } from '@/lib/customerService'
 import { loadServices, createService } from '@/lib/serviceService'
 import { useTranslation } from '@/components/TranslationProvider'
@@ -62,6 +62,14 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         price: ''
     })
     const [selectedPetInfo, setSelectedPetInfo] = useState(initialData?.pets || null)
+    const [beforePhotoPreview, setBeforePhotoPreview] = useState(initialData?.before_photo_url || '')
+    const [afterPhotoPreview, setAfterPhotoPreview] = useState(initialData?.after_photo_url || '')
+    const [beforePhotoFile, setBeforePhotoFile] = useState(null)
+    const [afterPhotoFile, setAfterPhotoFile] = useState(null)
+    const [removeBeforePhoto, setRemoveBeforePhoto] = useState(false)
+    const [removeAfterPhoto, setRemoveAfterPhoto] = useState(false)
+    const beforePreviewRef = useRef(null)
+    const afterPreviewRef = useRef(null)
 
     const isEditing = !!initialData
 
@@ -88,11 +96,34 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         if (initialData) {
             setFormData(buildInitialFormState(initialData))
             setSelectedPetInfo(initialData.pets || null)
+            setBeforePhotoPreview(initialData.before_photo_url || '')
+            setAfterPhotoPreview(initialData.after_photo_url || '')
+            setBeforePhotoFile(null)
+            setAfterPhotoFile(null)
+            setRemoveBeforePhoto(false)
+            setRemoveAfterPhoto(false)
         } else {
             setFormData(buildInitialFormState(null))
             setSelectedPetInfo(null)
+            setBeforePhotoPreview('')
+            setAfterPhotoPreview('')
+            setBeforePhotoFile(null)
+            setAfterPhotoFile(null)
+            setRemoveBeforePhoto(false)
+            setRemoveAfterPhoto(false)
         }
     }, [initialData])
+
+    useEffect(() => {
+        return () => {
+            if (beforePreviewRef.current) {
+                URL.revokeObjectURL(beforePreviewRef.current)
+            }
+            if (afterPreviewRef.current) {
+                URL.revokeObjectURL(afterPreviewRef.current)
+            }
+        }
+    }, [])
 
     useEffect(() => {
         if (formData.customer_id) {
@@ -270,6 +301,52 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         }
     }
 
+    const handleBeforePhotoChange = (event) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+        if (beforePreviewRef.current) {
+            URL.revokeObjectURL(beforePreviewRef.current)
+        }
+        const blobUrl = URL.createObjectURL(file)
+        beforePreviewRef.current = blobUrl
+        setBeforePhotoFile(file)
+        setBeforePhotoPreview(blobUrl)
+        setRemoveBeforePhoto(false)
+    }
+
+    const handleAfterPhotoChange = (event) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+        if (afterPreviewRef.current) {
+            URL.revokeObjectURL(afterPreviewRef.current)
+        }
+        const blobUrl = URL.createObjectURL(file)
+        afterPreviewRef.current = blobUrl
+        setAfterPhotoFile(file)
+        setAfterPhotoPreview(blobUrl)
+        setRemoveAfterPhoto(false)
+    }
+
+    const handleRemoveBeforePhoto = () => {
+        if (beforePreviewRef.current) {
+            URL.revokeObjectURL(beforePreviewRef.current)
+            beforePreviewRef.current = null
+        }
+        setBeforePhotoFile(null)
+        setBeforePhotoPreview('')
+        setRemoveBeforePhoto(true)
+    }
+
+    const handleRemoveAfterPhoto = () => {
+        if (afterPreviewRef.current) {
+            URL.revokeObjectURL(afterPreviewRef.current)
+            afterPreviewRef.current = null
+        }
+        setAfterPhotoFile(null)
+        setAfterPhotoPreview('')
+        setRemoveAfterPhoto(true)
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
 
@@ -284,7 +361,14 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             status: formData.status
         }
 
-        onSubmit(payload)
+        onSubmit(payload, {
+            beforePhotoFile,
+            afterPhotoFile,
+            removeBeforePhoto,
+            removeAfterPhoto,
+            currentBeforePhotoUrl: initialData?.before_photo_url || null,
+            currentAfterPhotoUrl: initialData?.after_photo_url || null
+        })
     }
 
     return (
@@ -526,6 +610,83 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg text-lg bg-gray-50 text-gray-700 font-medium cursor-not-allowed"
                                 placeholder={t('appointmentForm.placeholders.phone')}
                             />
+                        </div>
+
+                        {/* Before & After Photos */}
+                        <div className="md:col-span-2 space-y-4">
+                            <p className="text-sm font-bold text-gray-800">
+                                {t('appointmentForm.sections.beforeAfter')}
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 border-2 border-gray-200 rounded-xl">
+                                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                                        {t('appointmentForm.labels.beforePhoto')}
+                                    </p>
+                                    {beforePhotoPreview ? (
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <Image
+                                                src={beforePhotoPreview}
+                                                alt="Before"
+                                                width={96}
+                                                height={96}
+                                                className="w-24 h-24 rounded-xl object-cover border-2 border-brand-primary"
+                                                unoptimized
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveBeforePhoto}
+                                                className="text-sm font-semibold text-red-600 hover:text-red-700"
+                                            >
+                                                {t('appointmentForm.buttons.removePhoto')}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 mb-3">
+                                            {t('appointmentForm.helpers.beforePhoto')}
+                                        </p>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleBeforePhotoChange}
+                                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-primary-soft)] file:text-[color:var(--brand-primary)] hover:file:bg-[color:var(--brand-primary)] hover:file:text-white"
+                                    />
+                                </div>
+                                <div className="p-4 border-2 border-gray-200 rounded-xl">
+                                    <p className="text-sm font-semibold text-gray-700 mb-2">
+                                        {t('appointmentForm.labels.afterPhoto')}
+                                    </p>
+                                    {afterPhotoPreview ? (
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <Image
+                                                src={afterPhotoPreview}
+                                                alt="After"
+                                                width={96}
+                                                height={96}
+                                                className="w-24 h-24 rounded-xl object-cover border-2 border-brand-accent"
+                                                unoptimized
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveAfterPhoto}
+                                                className="text-sm font-semibold text-red-600 hover:text-red-700"
+                                            >
+                                                {t('appointmentForm.buttons.removePhoto')}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 mb-3">
+                                            {t('appointmentForm.helpers.afterPhoto')}
+                                        </p>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAfterPhotoChange}
+                                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-accent-soft)] file:text-[color:var(--brand-accent)] hover:file:bg-[color:var(--brand-accent)] hover:file:text-white"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -862,7 +1023,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                         </form>
                     </div>
                 </div>
-            )}
+    )}
         </>
     )
 }

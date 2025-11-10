@@ -29,7 +29,8 @@
       "create": "Error creating appointment: {{message}}",
       "update": "Error updating appointment: {{message}}",
       "updateStatus": "Error updating appointment status: {{message}}",
-      "delete": "Error deleting appointment: {{message}}"
+      "delete": "Error deleting appointment: {{message}}",
+      "photoUpload": "Error uploading photo: {{message}}"
     }
   },
   "viewToggle": {
@@ -58,7 +59,10 @@
       "date": "📅 Date",
       "address": "📍 Address",
       "notes": "📝 Notes",
-      "petPhotoAlt": "Photo of {{pet}}"
+      "petPhotoAlt": "Photo of {{pet}}",
+      "beforeAfter": "Before & After",
+      "before": "Before",
+      "after": "After"
     },
     "dateTime": "{{date}} at {{time}}",
     "buttons": {
@@ -88,6 +92,13 @@
       "time": "Time *",
       "notes": "Notes"
     },
+    "labels": {
+      "beforePhoto": "Before photo",
+      "afterPhoto": "After photo"
+    },
+    "sections": {
+      "beforeAfter": "Before & After photos"
+    },
     "placeholders": {
       "selectCustomer": "Select a customer...",
       "selectPet": "Select a pet...",
@@ -97,6 +108,10 @@
       "phone": "Will autofill from customer",
       "notes": "Any special requests or notes...",
       "noServices": "No services available. Add one below."
+    },
+    "helpers": {
+      "beforePhoto": "Add a “before” photo of the pet.",
+      "afterPhoto": "Add an “after” photo once the session is complete."
     },
     "loaders": {
       "customers": "Loading customers...",
@@ -111,7 +126,8 @@
     "buttons": {
       "add": "+ New",
       "save": "💾 Save Appointment",
-      "update": "💾 Update Appointment"
+      "update": "💾 Update Appointment",
+      "removePhoto": "Remove photo"
     },
     "durationOptions": {
       "minutes30": "30 minutes",
@@ -361,6 +377,8 @@
       "title": "Branding & Theme",
       "description": "Customize how this account looks across the entire app.",
       "fields": {
+        "accountName": "Account name",
+        "accountNamePlaceholder": "e.g. Paws & Co",
         "logo": "Logo URL",
         "primary": "Primary color",
         "primarySoft": "Primary soft color",
@@ -369,6 +387,8 @@
         "background": "Background color",
         "gradient": "Hero gradient"
       },
+      "logoUploading": "Uploading logo...",
+      "logoUploaded": "Logo updated!",
       "save": "Save branding",
       "saving": "Saving...",
       "success": "Branding updated!"

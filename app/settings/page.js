@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAccount } from '@/components/AccountProvider'
 import { useTranslation } from '@/components/TranslationProvider'
+import { compressImage } from '@/utils/image'
 
 const ROLE_OPTIONS = [
   { value: 'owner', labelKey: 'settings.members.roles.owner' },
@@ -16,10 +17,14 @@ const ROLE_OPTIONS = [
   { value: 'member', labelKey: 'settings.members.roles.member' }
 ]
 
+const BRANDING_BUCKET = 'account-branding'
+
+
 export default function SettingsPage() {
-  const { account, membership, authenticated } = useAccount()
+  const { account, membership, authenticated, refresh } = useAccount()
   const { t } = useTranslation()
   const [branding, setBranding] = useState({
+    account_name: '',
     logo_url: '',
     brand_primary: '',
     brand_primary_soft: '',
@@ -29,6 +34,7 @@ export default function SettingsPage() {
     brand_gradient: ''
   })
   const [brandingSaving, setBrandingSaving] = useState(false)
+  const [logoUploading, setLogoUploading] = useState(false)
   const [brandingMessage, setBrandingMessage] = useState(null)
   const [members, setMembers] = useState([])
   const [membersLoading, setMembersLoading] = useState(false)
@@ -45,6 +51,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (account) {
       setBranding({
+        account_name: account.name || '',
         logo_url: account.logo_url || '',
         brand_primary: account.brand_primary || '',
         brand_primary_soft: account.brand_primary_soft || '',
@@ -114,6 +121,7 @@ export default function SettingsPage() {
     const { error } = await supabase
       .from('accounts')
       .update({
+        name: branding.account_name,
         logo_url: branding.logo_url,
         brand_primary: branding.brand_primary,
         brand_primary_soft: branding.brand_primary_soft,
@@ -134,6 +142,7 @@ export default function SettingsPage() {
         type: 'success',
         text: t('settings.branding.success')
       })
+      refresh()
     }
 
     setBrandingSaving(false)
@@ -184,6 +193,45 @@ export default function SettingsPage() {
     loadMembers()
   }
 
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file || !account?.id) return
+    setLogoUploading(true)
+    setBrandingMessage(null)
+
+    let compressedBlob
+    try {
+      compressedBlob = await compressImage(file, { maxSize: 640 })
+    } catch (compressionError) {
+      setBrandingMessage({ type: 'error', text: compressionError.message })
+      setLogoUploading(false)
+      return
+    }
+
+    const extension = 'jpg'
+    const path = `logos/${account.id}/${Date.now()}.${extension}`
+    const { error: uploadError } = await supabase.storage
+      .from(BRANDING_BUCKET)
+      .upload(path, compressedBlob, {
+        upsert: true,
+        contentType: 'image/jpeg'
+      })
+
+    if (uploadError) {
+      setBrandingMessage({ type: 'error', text: uploadError.message })
+      setLogoUploading(false)
+      return
+    }
+
+    const {
+      data: { publicUrl }
+    } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(path)
+
+    setBranding((prev) => ({ ...prev, logo_url: publicUrl }))
+    setBrandingMessage({ type: 'success', text: t('settings.branding.logoUploaded') })
+    setLogoUploading(false)
+  }
+
   return (
     <div className="space-y-8">
       <section className="bg-white shadow rounded-2xl p-6 border border-gray-100">
@@ -194,6 +242,17 @@ export default function SettingsPage() {
 
         <form onSubmit={handleBrandingSubmit} className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
+            {t('settings.branding.fields.accountName')}
+            <input
+              type="text"
+              value={branding.account_name}
+              onChange={(e) => setBranding((prev) => ({ ...prev, account_name: e.target.value }))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+              placeholder={t('settings.branding.fields.accountNamePlaceholder')}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
             {t('settings.branding.fields.logo')}
             <input
               type="url"
@@ -202,6 +261,16 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
               placeholder="https://..."
             />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              disabled={logoUploading}
+              className="mt-2 text-sm text-gray-600"
+            />
+            {logoUploading && (
+              <span className="text-xs text-gray-500">{t('settings.branding.logoUploading')}</span>
+            )}
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">

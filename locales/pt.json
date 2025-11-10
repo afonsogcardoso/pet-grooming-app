@@ -29,7 +29,8 @@
       "create": "Erro ao criar agendamento: {{message}}",
       "update": "Erro ao atualizar agendamento: {{message}}",
       "updateStatus": "Erro ao atualizar o estado: {{message}}",
-      "delete": "Erro ao eliminar agendamento: {{message}}"
+      "delete": "Erro ao eliminar agendamento: {{message}}",
+      "photoUpload": "Erro ao carregar fotografia: {{message}}"
     }
   },
   "viewToggle": {
@@ -58,7 +59,10 @@
       "date": "📅 Data",
       "address": "📍 Morada",
       "notes": "📝 Notas",
-      "petPhotoAlt": "Fotografia de {{pet}}"
+      "petPhotoAlt": "Fotografia de {{pet}}",
+      "beforeAfter": "Antes e Depois",
+      "before": "Antes",
+      "after": "Depois"
     },
     "dateTime": "{{date}} às {{time}}",
     "buttons": {
@@ -88,6 +92,13 @@
       "time": "Hora *",
       "notes": "Notas"
     },
+    "labels": {
+      "beforePhoto": "Foto antes",
+      "afterPhoto": "Foto depois"
+    },
+    "sections": {
+      "beforeAfter": "Fotos de antes e depois"
+    },
     "placeholders": {
       "selectCustomer": "Escolhe um cliente...",
       "selectPet": "Escolhe um animal...",
@@ -108,10 +119,15 @@
       "addPet": "Adicionar novo animal",
       "addService": "Adicionar novo serviço"
     },
+    "helpers": {
+      "beforePhoto": "Adiciona uma foto \"antes\" do animal.",
+      "afterPhoto": "Adiciona uma foto \"depois\" após terminares."
+    },
     "buttons": {
       "add": "+ Novo",
       "save": "💾 Guardar agendamento",
-      "update": "💾 Atualizar agendamento"
+      "update": "💾 Atualizar agendamento",
+      "removePhoto": "Remover foto"
     },
     "durationOptions": {
       "minutes30": "30 minutos",
@@ -361,6 +377,8 @@
       "title": "Branding e tema",
       "description": "Personalize o aspeto desta conta em toda a aplicação.",
       "fields": {
+        "accountName": "Nome da conta",
+        "accountNamePlaceholder": "ex.: Paws & Co",
         "logo": "URL do logo",
         "primary": "Cor primária",
         "primarySoft": "Cor primária suave",
@@ -369,6 +387,8 @@
         "background": "Cor de fundo",
         "gradient": "Gradiente principal"
       },
+      "logoUploading": "A carregar logo...",
+      "logoUploaded": "Logo atualizado!",
       "save": "Guardar branding",
       "saving": "A guardar...",
       "success": "Branding atualizado!"
