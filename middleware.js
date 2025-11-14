@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const DOMAIN_ROUTER_PATH = process.env.DOMAIN_ROUTER_PATH || '/api/domains'
 const DOMAIN_ROUTER_TOKEN = process.env.DOMAIN_ROUTER_TOKEN
-const CUSTOM_BASE_PATH = sanitizeBasePath(process.env.CUSTOM_DOMAIN_BASE_PATH || '/booking')
+const CUSTOM_BASE_PATH = sanitizeBasePath(process.env.CUSTOM_DOMAIN_BASE_PATH || '/portal')
 const PRIMARY_HOSTS = toSet(process.env.CUSTOM_DOMAIN_PRIMARY_HOSTS)
 const SKIP_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', ...(process.env.CUSTOM_DOMAIN_SKIP_HOSTS || '').split(',').map((h) => h.trim().toLowerCase()).filter(Boolean)])
 const CACHE_TTL_MS = Number(process.env.DOMAIN_ROUTER_CACHE_SECONDS || 60) * 1000
@@ -21,7 +21,7 @@ function toSet(value) {
 }
 
 function sanitizeBasePath(value) {
-  if (!value) return '/booking'
+  if (!value) return '/portal'
   let base = value.trim()
   if (!base.startsWith('/')) {
     base = `/${base}`

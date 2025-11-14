@@ -648,7 +648,7 @@ export default function SettingsPage() {
         <div className="flex flex-col gap-2 mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Custom domains</h2>
           <p className="text-gray-600">
-            Liga domínios como <span className="font-mono text-xs">booking.teunome.com</span> ao
+            Liga domínios como <span className="font-mono text-xs">portal.teunome.com</span> ao
             teu slug <span className="font-semibold">{account?.slug}</span>. Mantemos o estado
             pending/active/error e o token TXT para validação.
           </p>
@@ -661,7 +661,7 @@ export default function SettingsPage() {
               type="text"
               value={domainForm.domain}
               onChange={(e) => setDomainForm((prev) => ({ ...prev, domain: e.target.value }))}
-              placeholder="booking.exemplo.com"
+              placeholder="portal.exemplo.com"
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
               required
             />
@@ -781,7 +781,7 @@ export default function SettingsPage() {
           <p className="font-semibold mb-2">Instruções rápidas</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>
-              Aponta o subdomínio (ex.: <span className="font-mono text-xs">booking.tuaempresa.com</span>) via
+              Aponta o subdomínio (ex.: <span className="font-mono text-xs">portal.tuaempresa.com</span>) via
               CNAME para o domínio onde esta app está hospedada (ex. app.pet-grooming-app.com).
             </li>
             <li>

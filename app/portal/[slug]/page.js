@@ -55,7 +55,7 @@ export default async function BookingLandingPage({ params }) {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                href={`/booking/${account.slug}/login`}
+                href={`/portal/${account.slug}/login`}
                 className="btn-brand px-8 py-3 text-lg font-semibold"
                 style={{
                   backgroundColor: primary,

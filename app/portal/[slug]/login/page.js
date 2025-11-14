@@ -38,7 +38,7 @@ export default async function TenantLoginPage({ params }) {
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 h-full flex flex-col justify-between p-12 text-white">
             <div>
-              <Link href={`/booking/${account.slug}`} className="block group">
+              <Link href={`/portal/${account.slug}`} className="block group">
                 <p className="text-sm uppercase tracking-widest text-white/70">Portal booking</p>
                 <h1 className="text-4xl font-bold mt-2 group-hover:underline">{account.name}</h1>
               </Link>
@@ -49,7 +49,7 @@ export default async function TenantLoginPage({ params }) {
             </div>
             <div className="space-y-4">
               <Link
-                href={`/booking/${account.slug}`}
+                href={`/portal/${account.slug}`}
                 className="flex items-center gap-4 group"
               >
                 {account.logo_url && (

@@ -47,7 +47,7 @@ export default function AppShell({ children }) {
     setMenuOpen(false)
   }, [pathname])
 
-  const isTenantPublicRoute = pathname?.startsWith('/booking/')
+  const isTenantPublicRoute = pathname?.startsWith('/portal/')
   const publicRoutes = ['/login']
   const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
 
