@@ -98,12 +98,13 @@ export default function AppShell({ children }) {
               id="primary-nav"
               className={`${menuOpen ? 'flex' : 'hidden'} flex-col sm:flex sm:flex-row sm:flex-nowrap sm:items-center sm:overflow-x-auto sm:no-scrollbar gap-3 sm:gap-4`}
             >
-              {navItems
-                .filter((item) => {
-                  if (item.href !== '/settings') return true
-                  return ['owner', 'admin'].includes(membership?.role)
-                })
-                .map(({ href, labelKey, icon }) => {
+              {authenticated &&
+                navItems
+                  .filter((item) => {
+                    if (item.href !== '/settings') return true
+                    return ['owner', 'admin'].includes(membership?.role)
+                  })
+                  .map(({ href, labelKey, icon }) => {
                 const isActive = pathname === href
                 const base =
                   'nav-link flex items-center gap-1.5 rounded-full font-semibold transition duration-200 border text-sm sm:text-base px-4 py-2.5 sm:px-5 sm:py-2.5 whitespace-nowrap'

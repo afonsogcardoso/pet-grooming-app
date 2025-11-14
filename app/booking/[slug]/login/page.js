@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import TenantLoginForm from '@/components/tenant/TenantLoginForm'
 import { getPublicAccountBySlug } from '@/lib/publicAccounts'
@@ -27,22 +28,30 @@ export default async function TenantLoginPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: account.brand_background || '#fdfcf9' }}>
-      <div className="flex-1 grid md:grid-cols-5">
+    <div
+      className="min-h-screen flex flex-col overflow-hidden"
+      style={{ backgroundColor: account.brand_background || '#fdfcf9' }}
+    >
+      <div className="flex-1 grid md:grid-cols-5 md:h-screen">
         <div className="hidden md:block md:col-span-3 relative">
           <div className="absolute inset-0" style={gradientStyle(account)} />
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 h-full flex flex-col justify-between p-12 text-white">
             <div>
-              <p className="text-sm uppercase tracking-widest text-white/70">Portal booking</p>
-              <h1 className="text-4xl font-bold mt-2">{account.name}</h1>
+              <Link href={`/booking/${account.slug}`} className="block group">
+                <p className="text-sm uppercase tracking-widest text-white/70">Portal booking</p>
+                <h1 className="text-4xl font-bold mt-2 group-hover:underline">{account.name}</h1>
+              </Link>
               <p className="mt-4 text-lg text-white/90 max-w-lg">
                 Entra no portal para gerir agendamentos, clientes e branding desta unidade. Este login
                 é exclusivo para a equipa de {account.name}.
               </p>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
+              <Link
+                href={`/booking/${account.slug}`}
+                className="flex items-center gap-4 group"
+              >
                 {account.logo_url && (
                   <img
                     src={account.logo_url}
@@ -52,9 +61,9 @@ export default async function TenantLoginPage({ params }) {
                 )}
                 <div>
                   <p className="text-sm uppercase tracking-widest text-white/70">Slug</p>
-                  <p className="text-2xl font-semibold">{account.slug}</p>
+                  <p className="text-2xl font-semibold group-hover:underline">{account.slug}</p>
                 </div>
-              </div>
+              </Link>
               <p className="text-sm text-white/70">
                 Precisas de ajuda? envia email para{' '}
                 <a href="mailto:afonso@mstudio.pt" className="underline font-semibold">
