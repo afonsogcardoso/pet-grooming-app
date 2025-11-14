@@ -83,6 +83,7 @@
       "close": "Close"
     },
     "fields": {
+      "search": "Search client or pet",
       "customer": "Customer *",
       "pet": "Pet *",
       "service": "Service *",
@@ -100,6 +101,7 @@
       "beforeAfter": "Before & After photos"
     },
     "placeholders": {
+      "search": "Type a pet or client name...",
       "selectCustomer": "Select a customer...",
       "selectPet": "Select a pet...",
       "selectService": "Select a service...",
@@ -108,6 +110,12 @@
       "phone": "Will autofill from customer",
       "notes": "Any special requests or notes...",
       "noServices": "No services available. Add one below."
+    },
+    "search": {
+      "loading": "Loading pet & client index...",
+      "noResults": "No matches. Try another name.",
+      "noPhone": "no phone",
+      "instructions": "💡 Start typing a pet or client name to fill the fields automatically."
     },
     "helpers": {
       "beforePhoto": "Add a “before” photo of the pet.",

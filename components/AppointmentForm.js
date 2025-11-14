@@ -4,9 +4,15 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect, useRef } from 'react'
-import { loadCustomers, loadPetsByCustomer, createCustomer, createPet } from '@/lib/customerService'
-import { loadServices, createService } from '@/lib/serviceService'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import {
+    loadCustomers,
+    loadPetsByCustomer,
+    loadCustomerPetSearchIndex,
+    createCustomer,
+    createPet
+} from '@/lib/customerService'
+import { loadServices } from '@/lib/serviceService'
 import { useTranslation } from '@/components/TranslationProvider'
 import BreedSelect from '@/components/BreedSelect'
 
@@ -34,11 +40,9 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     const [loadingServices, setLoadingServices] = useState(true)
     const [showCustomerModal, setShowCustomerModal] = useState(false)
     const [showPetModal, setShowPetModal] = useState(false)
-    const [showServiceModal, setShowServiceModal] = useState(false)
 
     const [formData, setFormData] = useState(() => buildInitialFormState(initialData))
 
-    // Customer modal form data
     const [customerFormData, setCustomerFormData] = useState({
         name: '',
         phone: '',
@@ -46,22 +50,17 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         address: '',
         notes: ''
     })
-
-    // Pet modal form data
     const [petFormData, setPetFormData] = useState({
         name: '',
         breed: '',
         age: '',
         weight: '',
-        medical_notes: '' // Ensure this is never null
+        medical_notes: ''
     })
-
-    const [serviceFormData, setServiceFormData] = useState({
-        name: '',
-        description: '',
-        default_duration: 60,
-        price: ''
-    })
+    const [customerPetIndex, setCustomerPetIndex] = useState([])
+    const [loadingCustomerPetIndex, setLoadingCustomerPetIndex] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [selectedPetInfo, setSelectedPetInfo] = useState(initialData?.pets || null)
     const [beforePhotoPreview, setBeforePhotoPreview] = useState(initialData?.before_photo_url || '')
     const [afterPhotoPreview, setAfterPhotoPreview] = useState(initialData?.after_photo_url || '')
@@ -71,8 +70,32 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     const [removeAfterPhoto, setRemoveAfterPhoto] = useState(false)
     const beforePreviewRef = useRef(null)
     const afterPreviewRef = useRef(null)
+    const searchDropdownTimeoutRef = useRef(null)
 
     const isEditing = !!initialData
+
+    const searchResults = useMemo(() => {
+        const term = searchTerm.trim().toLowerCase()
+        if (!term) {
+            return []
+        }
+
+        return customerPetIndex
+            .filter((entry) => {
+                return (
+                    entry.pet_name?.toLowerCase().includes(term) ||
+                    entry.customer_name?.toLowerCase().includes(term)
+                )
+            })
+            .slice(0, 8)
+    }, [customerPetIndex, searchTerm])
+
+    const formatSearchLabel = (petName, customerName) => {
+        if (petName && customerName) {
+            return `${petName} · ${customerName}`
+        }
+        return customerName || petName || ''
+    }
 
     // Generate 24h time slots in 30-minute increments
     const generateTimeSlots = () => {
@@ -89,6 +112,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     useEffect(() => {
         fetchCustomers()
         fetchServicesList()
+        fetchCustomerPetIndex()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -113,6 +137,11 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             setRemoveBeforePhoto(false)
             setRemoveAfterPhoto(false)
         }
+        if (initialData?.pets?.name && initialData?.customers?.name) {
+            setSearchTerm(formatSearchLabel(initialData.pets.name, initialData.customers.name))
+        } else if (!initialData) {
+            setSearchTerm('')
+        }
     }, [initialData])
 
     useEffect(() => {
@@ -122,6 +151,9 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             }
             if (afterPreviewRef.current) {
                 URL.revokeObjectURL(afterPreviewRef.current)
+            }
+            if (searchDropdownTimeoutRef.current) {
+                clearTimeout(searchDropdownTimeoutRef.current)
             }
         }
     }, [])
@@ -178,6 +210,56 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         setLoadingServices(false)
     }
 
+    async function fetchCustomerPetIndex() {
+        setLoadingCustomerPetIndex(true)
+        const { data, error } = await loadCustomerPetSearchIndex()
+
+        if (error) {
+            console.error('Error loading customer/pet index:', error)
+            setCustomerPetIndex([])
+        } else {
+            setCustomerPetIndex(data)
+        }
+        setLoadingCustomerPetIndex(false)
+    }
+
+    function handleSearchInputChange(value) {
+        setSearchTerm(value)
+        setIsSearchOpen(true)
+    }
+
+    function handleSearchFocus() {
+        if (searchDropdownTimeoutRef.current) {
+            clearTimeout(searchDropdownTimeoutRef.current)
+            searchDropdownTimeoutRef.current = null
+        }
+        setIsSearchOpen(true)
+    }
+
+    function handleSearchBlur() {
+        searchDropdownTimeoutRef.current = setTimeout(() => {
+            setIsSearchOpen(false)
+        }, 150)
+    }
+
+    function handleSearchSelect(entry) {
+        setSearchTerm(formatSearchLabel(entry.pet_name, entry.customer_name))
+        handleCustomerChange(
+            entry.customer_id,
+            {
+                id: entry.customer_id,
+                phone: entry.customer_phone
+            },
+            { skipSearchUpdate: true }
+        )
+        handlePetChange(entry.pet_id)
+        if (searchDropdownTimeoutRef.current) {
+            clearTimeout(searchDropdownTimeoutRef.current)
+            searchDropdownTimeoutRef.current = null
+        }
+        setIsSearchOpen(false)
+    }
+
     async function fetchPets(customerId) {
         setLoadingPets(true)
         const { data, error } = await loadPetsByCustomer(customerId)
@@ -190,7 +272,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         setLoadingPets(false)
     }
 
-    function handleCustomerChange(customerId, customerOverride = null) {
+    function handleCustomerChange(customerId, customerOverride = null, { skipSearchUpdate = false } = {}) {
         const customer = customerOverride || customers.find((c) => c.id === customerId)
         setFormData((prev) => ({
             ...prev,
@@ -198,6 +280,10 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             phone: customer?.phone || '',
             pet_id: '' // Reset pet selection
         }))
+
+        if (!skipSearchUpdate && customer?.name && !formData.pet_id) {
+            setSearchTerm(customer.name)
+        }
     }
 
     function handlePetChange(petId) {
@@ -205,6 +291,15 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             ...prev,
             pet_id: petId
         }))
+
+        if (!petId) {
+            return
+        }
+
+        const matchingEntry = customerPetIndex.find((entry) => entry.pet_id === petId)
+        if (matchingEntry) {
+            setSearchTerm(formatSearchLabel(matchingEntry.pet_name, matchingEntry.customer_name))
+        }
     }
 
     function handleServiceChange(serviceId) {
@@ -218,7 +313,15 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
 
     async function handleCreateCustomer(e) {
         e.preventDefault()
-        const { data, error } = await createCustomer(customerFormData)
+        const payload = {
+            name: customerFormData.name,
+            phone: customerFormData.phone,
+            email: customerFormData.email,
+            address: customerFormData.address,
+            notes: customerFormData.notes
+        }
+
+        const { data, error } = await createCustomer(payload)
 
         if (error) {
             alert(t('customerForm.errors.create', { message: error.message }))
@@ -226,7 +329,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
             const newCustomer = data[0]
             setCustomers((prev) => [...prev, newCustomer].sort((a, b) => a.name.localeCompare(b.name)))
             handleCustomerChange(newCustomer.id, newCustomer)
-            // Reset modal form
+            setSearchTerm(newCustomer.name)
             setCustomerFormData({
                 name: '',
                 phone: '',
@@ -235,42 +338,16 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                 notes: ''
             })
             setShowCustomerModal(false)
-        }
-    }
-
-    async function handleCreateService(e) {
-        e.preventDefault()
-        const payload = {
-            name: serviceFormData.name,
-            description: serviceFormData.description,
-            default_duration: serviceFormData.default_duration || 60,
-            price: serviceFormData.price ? parseFloat(serviceFormData.price) : null
-        }
-
-        const { data, error } = await createService(payload)
-
-        if (error) {
-            alert(t('servicesForm.errors.create', { message: error.message }))
-        } else {
-            const newService = data[0]
-            setServices((prev) => [...prev, newService].sort((a, b) => a.name.localeCompare(b.name)))
-            setFormData((prev) => ({
-                ...prev,
-                service_id: newService.id,
-                duration: newService.default_duration || prev.duration
-            }))
-            setServiceFormData({
-                name: '',
-                description: '',
-                default_duration: 60,
-                price: ''
-            })
-            setShowServiceModal(false)
+            setShowPetModal(true)
         }
     }
 
     async function handleCreatePet(e) {
         e.preventDefault()
+        if (!formData.customer_id) {
+            alert(t('appointmentForm.messages.selectCustomerFirst'))
+            return
+        }
         const petData = {
             customer_id: formData.customer_id,
             name: petFormData.name,
@@ -285,12 +362,11 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
         if (error) {
             alert(t('petForm.errors.create', { message: error.message }))
         } else {
-            // Add new pet to list
             const newPet = data[0]
-            setPets([...pets, newPet])
-            // Auto-select the new pet
+            setPets((prev) => [...prev, newPet].sort((a, b) => a.name.localeCompare(b.name)))
             handlePetChange(newPet.id)
-            // Reset modal form
+            const customer = customers.find((c) => c.id === formData.customer_id)
+            setSearchTerm(formatSearchLabel(newPet.name, customer?.name || ''))
             setPetFormData({
                 name: '',
                 breed: '',
@@ -299,6 +375,7 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                 medical_notes: ''
             })
             setShowPetModal(false)
+            fetchCustomerPetIndex()
         }
     }
 
@@ -425,6 +502,68 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                 ))}
                             </select>
                         </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-800 mb-2">
+                            {t('appointmentForm.fields.search')}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                disabled={loadingCustomerPetIndex}
+                                onFocus={(e) => {
+                                    e.target.select()
+                                    handleSearchFocus()
+                                }}
+                                onBlur={handleSearchBlur}
+                                onChange={(e) => handleSearchInputChange(e.target.value)}
+                                placeholder={
+                                    loadingCustomerPetIndex
+                                        ? t('appointmentForm.search.loading')
+                                        : t('appointmentForm.placeholders.search')
+                                }
+                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium disabled:bg-gray-100"
+                            />
+                            {isSearchOpen && searchTerm.trim().length > 0 && (
+                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-72 overflow-y-auto z-20">
+                                    {loadingCustomerPetIndex ? (
+                                        <div className="px-4 py-3 text-sm text-gray-500">
+                                            {t('appointmentForm.search.loading')}
+                                        </div>
+                                    ) : searchResults.length > 0 ? (
+                                        searchResults.map((entry) => (
+                                            <button
+                                                type="button"
+                                                key={`${entry.customer_id}-${entry.pet_id}`}
+                                                onMouseDown={(event) => {
+                                                    event.preventDefault()
+                                                    handleSearchSelect(entry)
+                                                }}
+                                                className="w-full text-left px-4 py-3 hover:bg-brand-primary-soft focus:bg-brand-primary-soft transition"
+                                            >
+                                                <div className="text-base font-semibold text-gray-900">
+                                                    {entry.pet_name}
+                                                    {entry.pet_breed && (
+                                                        <span className="text-sm text-gray-500">{` · ${entry.pet_breed}`}</span>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    {entry.customer_name} • {entry.customer_phone || t('appointmentForm.search.noPhone')}
+                                                </div>
+                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="px-4 py-3 text-sm text-gray-500">
+                                            {t('appointmentForm.search.noResults')}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                            {t('appointmentForm.search.instructions')}
+                        </p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Customer Selection */}
@@ -571,14 +710,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         ))}
                                     </select>
                                 )}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowServiceModal(true)}
-                                    className="px-4 py-4 bg-brand-primary hover:bg-brand-primary-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
-                                    title={t('appointmentForm.tooltips.addService')}
-                                >
-                                    {t('appointmentForm.buttons.add')}
-                                </button>
                             </div>
                         </div>
 
@@ -714,8 +845,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                     </button>
                 </form>
             </div>
-
-            {/* Customer Creation Modal */}
             {showCustomerModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -732,12 +861,13 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         type="text"
                                         required
                                         value={customerFormData.name}
-                                        onChange={(e) => setCustomerFormData({ ...customerFormData, name: e.target.value })}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, name: e.target.value })
+                                        }
                                         className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.name')}
                                     />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('customerForm.labels.phone')}
@@ -746,61 +876,58 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         type="tel"
                                         required
                                         value={customerFormData.phone}
-                                        onChange={(e) => setCustomerFormData({ ...customerFormData, phone: e.target.value })}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, phone: e.target.value })
+                                        }
                                         className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.phone')}
                                     />
                                 </div>
-
-                                <div className="md:col-span-2">
+                                <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('customerForm.labels.email')}
                                     </label>
                                     <input
                                         type="email"
                                         value={customerFormData.email}
-                                        onChange={(e) => setCustomerFormData({ ...customerFormData, email: e.target.value })}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, email: e.target.value })
+                                        }
                                         className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.email')}
                                     />
                                 </div>
-
-                                <div className="md:col-span-2">
+                                <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('customerForm.labels.address')}
                                     </label>
                                     <input
                                         type="text"
-                                        required
                                         value={customerFormData.address}
-                                        onChange={(e) => setCustomerFormData({ ...customerFormData, address: e.target.value })}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, address: e.target.value })
+                                        }
                                         className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.address')}
                                     />
-                                    <p className="text-xs text-gray-600 mt-1">
-                                        {t('customerForm.helpers.address')}
-                                    </p>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">
+                                        {t('customerForm.labels.notes')}
+                                    </label>
+                                    <textarea
+                                        value={customerFormData.notes}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, notes: e.target.value })
+                                        }
+                                        rows="3"
+                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
+                                        placeholder={t('customerForm.placeholders.notes')}
+                                    />
                                 </div>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-bold text-gray-800 mb-2">
-                                    {t('customerForm.labels.notes')}
-                                </label>
-                                <textarea
-                                    value={customerFormData.notes || ''}
-                                    onChange={(e) => setCustomerFormData({ ...customerFormData, notes: e.target.value })}
-                                    rows="2"
-                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
-                                    placeholder={t('customerForm.placeholders.notes')}
-                                />
-                            </div>
-
                             <div className="flex gap-2">
-                                <button
-                                    type="submit"
-                                    className="flex-1 btn-brand shadow-brand-glow py-3 px-6"
-                                >
+                                <button type="submit" className="flex-1 btn-brand shadow-brand-glow py-3 px-6">
                                     {t('customerForm.buttons.save')}
                                 </button>
                                 <button
@@ -825,7 +952,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                 </div>
             )}
 
-            {/* Pet Creation Modal */}
             {showPetModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -847,7 +973,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         placeholder={t('petForm.placeholders.name')}
                                     />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('petForm.labels.breed')}
@@ -859,7 +984,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         className="text-base py-3"
                                     />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('petForm.labels.age')}
@@ -874,14 +998,12 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                         placeholder={t('petForm.placeholders.age')}
                                     />
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-bold text-gray-800 mb-2">
                                         {t('petForm.labels.weight')}
                                     </label>
                                     <input
                                         type="number"
-                                        step="0.1"
                                         min="0"
                                         max="200"
                                         value={petFormData.weight}
@@ -891,25 +1013,20 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     />
                                 </div>
                             </div>
-
                             <div>
                                 <label className="block text-sm font-bold text-gray-800 mb-2">
                                     {t('petForm.labels.medicalNotes')}
                                 </label>
                                 <textarea
-                                    value={petFormData.medical_notes || ''}
+                                    value={petFormData.medical_notes}
                                     onChange={(e) => setPetFormData({ ...petFormData, medical_notes: e.target.value })}
-                                    rows="2"
+                                    rows="3"
                                     className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-accent)] focus:border-[color:var(--brand-accent)] text-base bg-white text-gray-900 font-medium"
                                     placeholder={t('petForm.placeholders.medicalNotes')}
                                 />
                             </div>
-
                             <div className="flex gap-2">
-                                <button
-                                    type="submit"
-                                    className="flex-1 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
-                                >
+                                <button type="submit" className="flex-1 btn-brand shadow-brand-glow py-3 px-6">
                                     {t('petForm.buttons.save')}
                                 </button>
                                 <button
@@ -927,97 +1044,6 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                                     className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
                                 >
                                     {t('petForm.buttons.cancel')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showServiceModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="modal-card bg-white rounded-lg p-5 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">
-                            {t('servicesForm.modalTitle')}
-                        </h3>
-                        <form onSubmit={handleCreateService} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">
-                                        {t('servicesForm.labels.name')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={serviceFormData.name}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, name: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
-                                        placeholder={t('servicesForm.placeholders.name')}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">
-                                        {t('servicesForm.labels.duration')}
-                                    </label>
-                                    <select
-                                        value={serviceFormData.default_duration}
-                                        onChange={(e) =>
-                                            setServiceFormData({
-                                                ...serviceFormData,
-                                                default_duration: parseInt(e.target.value)
-                                            })
-                                        }
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
-                                    >
-                                        {[30, 45, 60, 75, 90, 120].map((value) => (
-                                            <option key={value} value={value}>
-                                                {t('servicesForm.durationOption', { minutes: value })}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-800 mb-2">
-                                        {t('servicesForm.labels.price')}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={serviceFormData.price}
-                                        onChange={(e) => setServiceFormData({ ...serviceFormData, price: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
-                                        placeholder={t('servicesForm.placeholders.price')}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-800 mb-2">
-                                    {t('servicesForm.labels.description')}
-                                </label>
-                                <textarea
-                                    value={serviceFormData.description}
-                                    onChange={(e) =>
-                                        setServiceFormData({ ...serviceFormData, description: e.target.value })
-                                    }
-                                    rows="3"
-                                    className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
-                                    placeholder={t('servicesForm.placeholders.description')}
-                                />
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    type="submit"
-                                    className="flex-1 btn-brand shadow-brand-glow py-3 px-6"
-                                >
-                                    {t('servicesForm.buttons.save')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowServiceModal(false)}
-                                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-200"
-                                >
-                                    {t('servicesForm.buttons.cancel')}
                                 </button>
                             </div>
                         </form>

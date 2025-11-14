@@ -58,6 +58,15 @@ export default function Home() {
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
   const { t } = useTranslation()
 
+  useEffect(() => {
+    if (!showForm) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [showForm])
+
   const fetchAppointments = useCallback(async () => {
     setLoading(true)
     const { data, error } = await loadAppointments()

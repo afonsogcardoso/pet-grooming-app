@@ -90,7 +90,7 @@ export default function AppShell({ children }) {
           <div className="nav-wrap">
             <nav
               id="primary-nav"
-              className={`${menuOpen ? 'flex' : 'hidden'} flex-col sm:flex sm:flex-row sm:flex-nowrap sm:items-center sm:overflow-x-auto sm:no-scrollbar gap-2`}
+              className={`${menuOpen ? 'flex' : 'hidden'} flex-col sm:flex sm:flex-row sm:flex-nowrap sm:items-center sm:overflow-x-auto sm:no-scrollbar gap-3 sm:gap-4`}
             >
               {navItems
                 .filter((item) => {
@@ -100,7 +100,7 @@ export default function AppShell({ children }) {
                 .map(({ href, labelKey, icon }) => {
                 const isActive = pathname === href
                 const base =
-                  'nav-link flex items-center gap-1.5 rounded-full font-semibold transition duration-200 border text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2 whitespace-nowrap'
+                  'nav-link flex items-center gap-1.5 rounded-full font-semibold transition duration-200 border text-sm sm:text-base px-4 py-2.5 sm:px-5 sm:py-2.5 whitespace-nowrap'
                 const active =
                   'bg-brand-primary text-white border-brand-primary shadow-brand-glow'
                 const inactive =

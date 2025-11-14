@@ -83,6 +83,7 @@
       "close": "Fechar"
     },
     "fields": {
+      "search": "Pesquisa cliente ou animal",
       "customer": "Cliente *",
       "pet": "Animal *",
       "service": "Serviço *",
@@ -100,6 +101,7 @@
       "beforeAfter": "Fotos de antes e depois"
     },
     "placeholders": {
+      "search": "Escreve o nome do animal ou da pessoa...",
       "selectCustomer": "Escolhe um cliente...",
       "selectPet": "Escolhe um animal...",
       "selectService": "Escolhe um serviço...",
@@ -118,6 +120,12 @@
       "addCustomer": "Adicionar novo cliente",
       "addPet": "Adicionar novo animal",
       "addService": "Adicionar novo serviço"
+    },
+    "search": {
+      "loading": "A preparar lista de clientes e animais...",
+      "noResults": "Sem resultados. Tenta outro nome.",
+      "noPhone": "sem telefone",
+      "instructions": "💡 Escreve o nome do animal ou do dono para preencher o resto automaticamente."
     },
     "helpers": {
       "beforePhoto": "Adiciona uma foto \"antes\" do animal.",
