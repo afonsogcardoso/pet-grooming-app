@@ -37,13 +37,17 @@ function normalizeHost(hostHeader) {
   return hostHeader.trim().toLowerCase().split(':')[0]
 }
 
-function shouldBypassPath(pathname) {
+function isSystemPath(pathname) {
   return (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/robots')
   )
+}
+
+function isPublicRewritePath(pathname) {
+  return pathname === '/' || pathname === '' || pathname === '/login'
 }
 
 function getCachedDomain(host) {
@@ -123,7 +127,7 @@ export async function middleware(request) {
   }
 
   const pathname = request.nextUrl.pathname
-  if (shouldBypassPath(pathname)) {
+  if (isSystemPath(pathname)) {
     return NextResponse.next()
   }
 
@@ -132,25 +136,32 @@ export async function middleware(request) {
     return NextResponse.next()
   }
 
-  const slugPrefix = `${CUSTOM_BASE_PATH}/${domain.slug}`
-  if (pathname.startsWith(slugPrefix)) {
-    return NextResponse.next()
-  }
-
-  const rewriteUrl = request.nextUrl.clone()
-  rewriteUrl.pathname = buildRewritePath(pathname, domain.slug)
-
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-custom-domain', hostname)
   requestHeaders.set('x-account-slug', domain.slug)
 
-  const response = NextResponse.rewrite(rewriteUrl, {
+  if (isPublicRewritePath(pathname)) {
+    const rewriteUrl = request.nextUrl.clone()
+    const targetPath =
+      pathname === '/login'
+        ? `${CUSTOM_BASE_PATH}/${domain.slug}/login`
+        : `${CUSTOM_BASE_PATH}/${domain.slug}`
+    rewriteUrl.pathname = targetPath
+
+    const response = NextResponse.rewrite(rewriteUrl, {
+      request: {
+        headers: requestHeaders
+      }
+    })
+    response.headers.set('x-custom-domain-slug', domain.slug)
+    return response
+  }
+
+  return NextResponse.next({
     request: {
       headers: requestHeaders
     }
   })
-  response.headers.set('x-custom-domain-slug', domain.slug)
-  return response
 }
 
 export const config = {
