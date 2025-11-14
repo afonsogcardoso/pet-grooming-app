@@ -47,8 +47,13 @@ export default function AppShell({ children }) {
     setMenuOpen(false)
   }, [pathname])
 
+  const isTenantPublicRoute = pathname?.startsWith('/booking/')
   const publicRoutes = ['/login']
-  const isPublicRoute = publicRoutes.some((route) => pathname?.startsWith(route))
+  const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
+
+  if (isTenantPublicRoute) {
+    return <div className="min-h-screen brand-background">{children}</div>
+  }
 
   return (
     <div className="min-h-screen brand-background">

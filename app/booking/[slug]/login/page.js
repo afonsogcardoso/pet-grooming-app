@@ -57,8 +57,8 @@ export default async function TenantLoginPage({ params }) {
               </div>
               <p className="text-sm text-white/70">
                 Precisas de ajuda? envia email para{' '}
-                <a href="mailto:support@pet-grooming.app" className="underline font-semibold">
-                  support@pet-grooming.app
+                <a href="mailto:afonso@mstudio.pt" className="underline font-semibold">
+                  afonso@mstudio.pt
                 </a>
               </p>
             </div>
