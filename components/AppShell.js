@@ -13,7 +13,7 @@ import { useAccount } from './AccountProvider'
 
 const navItems = [
   {
-    href: '/',
+    href: '/appointments',
     labelKey: 'app.nav.appointments',
     icon: '📅'
   },
@@ -54,7 +54,7 @@ export default function AppShell({ children }) {
       <header className="bg-white/95 shadow-sm border-b border-gray-200 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="toolbar">
-            <Link href="/" className="brand" aria-label={t('app.title')}>
+            <Link href="/appointments" className="brand" aria-label={t('app.title')}>
               {!logoError ? (
                 <Image
                   src={account?.logo_url || defaultLogo}
