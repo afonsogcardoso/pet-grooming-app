@@ -42,6 +42,12 @@ export default function SettingsPage() {
   const [inviteForm, setInviteForm] = useState({ email: '', password: '', role: 'member' })
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMessage, setInviteMessage] = useState(null)
+  const [domains, setDomains] = useState([])
+  const [domainsLoading, setDomainsLoading] = useState(false)
+  const [domainsError, setDomainsError] = useState(null)
+  const [domainMessage, setDomainMessage] = useState(null)
+  const [domainForm, setDomainForm] = useState({ domain: '', dnsRecordType: 'txt' })
+  const [domainSubmitting, setDomainSubmitting] = useState(false)
 
   const canEdit = useMemo(() => {
     if (!membership) return false
@@ -89,11 +95,44 @@ export default function SettingsPage() {
     setMembersLoading(false)
   }, [account?.id])
 
+  const loadDomains = useCallback(async () => {
+    if (!account?.id) return
+    setDomainsLoading(true)
+    setDomainsError(null)
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const response = await fetch(`/api/domains?accountId=${account.id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      }
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      setDomainsError(body.error || 'Request failed')
+      setDomainsLoading(false)
+      return
+    }
+
+    const body = await response.json()
+    setDomains(body.domains || [])
+    setDomainsLoading(false)
+  }, [account?.id])
+
   useEffect(() => {
     if (canEdit) {
       loadMembers()
     }
   }, [canEdit, loadMembers])
+
+  useEffect(() => {
+    if (canEdit) {
+      loadDomains()
+    }
+  }, [canEdit, loadDomains])
 
   if (!authenticated) {
     return (
@@ -230,6 +269,111 @@ export default function SettingsPage() {
     setBranding((prev) => ({ ...prev, logo_url: publicUrl }))
     setBrandingMessage({ type: 'success', text: t('settings.branding.logoUploaded') })
     setLogoUploading(false)
+  }
+
+  const handleDomainSubmit = async (event) => {
+    event.preventDefault()
+    if (!account?.id) return
+    setDomainSubmitting(true)
+    setDomainMessage(null)
+
+    const domainValue = domainForm.domain.trim().toLowerCase()
+    if (!domainValue) {
+      setDomainMessage({ type: 'error', text: 'Domain is required' })
+      setDomainSubmitting(false)
+      return
+    }
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const response = await fetch('/api/domains', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: JSON.stringify({
+        accountId: account.id,
+        domain: domainValue,
+        slug: account.slug,
+        dnsRecordType: domainForm.dnsRecordType
+      })
+    })
+
+    const body = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      setDomainMessage({
+        type: 'error',
+        text: body.error || 'Could not add domain'
+      })
+      setDomainSubmitting(false)
+      return
+    }
+
+    setDomainMessage({
+      type: 'success',
+      text: 'Domain created. Configure DNS and click verify once ready.'
+    })
+    setDomainForm((prev) => ({ ...prev, domain: '' }))
+    setDomainSubmitting(false)
+    loadDomains()
+  }
+
+  const handleDeleteDomain = async (domainId) => {
+    if (!account?.id || !domainId) return
+    const confirmed = window.confirm('Remove this custom domain?')
+    if (!confirmed) return
+
+    setDomainMessage(null)
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const response = await fetch('/api/domains', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: JSON.stringify({
+        accountId: account.id,
+        domainId
+      })
+    })
+
+    const body = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      setDomainMessage({
+        type: 'error',
+        text: body.error || 'Could not remove domain'
+      })
+      return
+    }
+
+    setDomainMessage({
+      type: 'success',
+      text: 'Domain removed.'
+    })
+    loadDomains()
+  }
+
+  const statusBadgeClass = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-emerald-100 text-emerald-700'
+      case 'error':
+        return 'bg-rose-100 text-rose-700'
+      case 'disabled':
+        return 'bg-gray-100 text-gray-600'
+      default:
+        return 'bg-amber-100 text-amber-700'
+    }
   }
 
   return (
@@ -454,6 +598,142 @@ export default function SettingsPage() {
               </span>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-white shadow rounded-2xl p-6 border border-gray-100">
+        <div className="flex flex-col gap-2 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Custom domains</h2>
+          <p className="text-gray-600">
+            Liga domínios como <span className="font-mono text-xs">booking.teunome.com</span> ao
+            teu slug <span className="font-semibold">{account?.slug}</span>. Mantemos o estado
+            pending/active/error e o token TXT para validação.
+          </p>
+        </div>
+
+        <form onSubmit={handleDomainSubmit} className="grid gap-4 md:grid-cols-3 mb-6">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700 md:col-span-2">
+            Domínio / subdomínio
+            <input
+              type="text"
+              value={domainForm.domain}
+              onChange={(e) => setDomainForm((prev) => ({ ...prev, domain: e.target.value }))}
+              placeholder="booking.exemplo.com"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+              required
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
+            Tipo de registo
+            <select
+              value={domainForm.dnsRecordType}
+              onChange={(e) => setDomainForm((prev) => ({ ...prev, dnsRecordType: e.target.value }))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+            >
+              <option value="txt">TXT + CNAME</option>
+              <option value="cname">CNAME only</option>
+            </select>
+          </label>
+
+          <div className="md:col-span-3 flex flex-wrap gap-3 items-center">
+            <button
+              type="submit"
+              disabled={domainSubmitting}
+              className="btn-brand px-6 py-3 shadow-brand-glow disabled:opacity-60"
+            >
+              {domainSubmitting ? 'A guardar…' : 'Adicionar domínio'}
+            </button>
+            {domainMessage && (
+              <span
+                className={`text-sm ${
+                  domainMessage.type === 'success' ? 'text-emerald-600' : 'text-rose-600'
+                }`}
+              >
+                {domainMessage.text}
+              </span>
+            )}
+          </div>
+        </form>
+
+        <div className="space-y-3">
+          {domainsLoading && <p className="text-gray-500">A carregar domínios…</p>}
+          {domainsError && <p className="text-rose-600 text-sm">{domainsError}</p>}
+          {!domainsLoading && domains.length === 0 && (
+            <p className="text-gray-600">Ainda não tens domínios configurados.</p>
+          )}
+
+          {domains.map((domain) => {
+            const txtHost = `_verify.${domain.domain}`
+            const txtValue = `verify=${domain.verification_token}`
+            return (
+              <div
+                key={domain.id}
+                className="border border-gray-200 rounded-2xl p-4 flex flex-col gap-3"
+              >
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900">{domain.domain}</p>
+                    <p className="text-sm text-gray-600">Slug alvo: {domain.slug}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass(
+                        domain.status
+                      )}`}
+                    >
+                      {domain.status || 'pending'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteDomain(domain.id)}
+                      className="text-sm text-rose-600 hover:text-rose-500 font-semibold"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-2 text-sm text-gray-700">
+                  <p>1. Cria um registo CNAME apontando o teu subdomínio para o domínio do deploy.</p>
+                  <p>
+                    2. Adiciona o TXT abaixo e aguarda propagação. Depois faz “verify” na
+                    dashboard.
+                  </p>
+                  <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-3 font-mono text-xs text-gray-800">
+                    <p>Host: {txtHost}</p>
+                    <p>Valor: {txtValue}</p>
+                  </div>
+                  {domain.last_error && (
+                    <p className="text-xs text-rose-600">Erro: {domain.last_error}</p>
+                  )}
+                  {domain.status === 'active' && domain.verified_at && (
+                    <p className="text-xs text-emerald-600">
+                      Verificado em {new Date(domain.verified_at).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <p className="font-semibold mb-2">Instruções rápidas</p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>
+              Aponta o subdomínio (ex.: <span className="font-mono text-xs">booking.tuaempresa.com</span>) via
+              CNAME para o domínio onde esta app está hospedada (ex. app.pet-grooming-app.com).
+            </li>
+            <li>
+              Adiciona o registo TXT <span className="font-mono text-xs">_verify.&lt;subdomínio&gt;</span> com o valor
+              <span className="font-mono text-xs"> verify=&lt;token&gt;</span>.
+            </li>
+            <li>Usa o botão “Verificar domínio” (em breve) ou fala connosco para confirmar.</li>
+          </ol>
+          <p className="mt-2 text-xs text-amber-800">
+            Nota: domínios raiz requerem ALIAS/ANAME ou Cloudflare com CNAME flattening.
+          </p>
         </div>
       </section>
     </div>
