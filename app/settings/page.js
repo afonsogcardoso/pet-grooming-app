@@ -48,6 +48,7 @@ export default function SettingsPage() {
   const [domainMessage, setDomainMessage] = useState(null)
   const [domainForm, setDomainForm] = useState({ domain: '', dnsRecordType: 'txt' })
   const [domainSubmitting, setDomainSubmitting] = useState(false)
+  const [verifyingDomainId, setVerifyingDomainId] = useState(null)
 
   const canEdit = useMemo(() => {
     if (!membership) return false
@@ -376,6 +377,48 @@ export default function SettingsPage() {
     }
   }
 
+  const handleVerifyDomain = async (domainId) => {
+    if (!account?.id || !domainId) return
+    setVerifyingDomainId(domainId)
+    setDomainMessage(null)
+
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const response = await fetch('/api/domains/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      body: JSON.stringify({
+        accountId: account.id,
+        domainId
+      })
+    })
+
+    const body = await response.json().catch(() => ({}))
+
+    if (!response.ok) {
+      setDomainMessage({
+        type: 'error',
+        text: body.error || 'Não foi possível verificar o domínio.'
+      })
+      setVerifyingDomainId(null)
+      return
+    }
+
+    const matched = body?.verification?.matched
+    setDomainMessage({
+      type: matched ? 'success' : 'error',
+      text: matched ? 'Domínio verificado com sucesso.' : body?.verification?.reason || 'TXT não encontrado.'
+    })
+    setVerifyingDomainId(null)
+    loadDomains()
+  }
+
   return (
     <div className="space-y-8">
       <section className="bg-white shadow rounded-2xl p-6 border border-gray-100">
@@ -686,6 +729,22 @@ export default function SettingsPage() {
                     </span>
                     <button
                       type="button"
+                      onClick={() => handleVerifyDomain(domain.id)}
+                      disabled={domain.status === 'active' || verifyingDomainId === domain.id}
+                      className={`px-4 py-2 text-sm font-semibold rounded-full border transition ${
+                        domain.status === 'active'
+                          ? 'border-emerald-300 text-emerald-600 bg-emerald-50'
+                          : 'border-brand-primary text-brand-primary hover:bg-brand-primary/10 disabled:opacity-50 disabled:cursor-not-allowed'
+                      }`}
+                    >
+                      {domain.status === 'active'
+                        ? 'Verificado'
+                        : verifyingDomainId === domain.id
+                          ? 'A verificar…'
+                          : 'Verificar domínio'}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleDeleteDomain(domain.id)}
                       className="text-sm text-rose-600 hover:text-rose-500 font-semibold"
                     >
@@ -729,7 +788,7 @@ export default function SettingsPage() {
               Adiciona o registo TXT <span className="font-mono text-xs">_verify.&lt;subdomínio&gt;</span> com o valor
               <span className="font-mono text-xs"> verify=&lt;token&gt;</span>.
             </li>
-            <li>Usa o botão “Verificar domínio” (em breve) ou fala connosco para confirmar.</li>
+            <li>Usa o botão “Verificar domínio” para confirmar assim que o DNS propagar.</li>
           </ol>
           <p className="mt-2 text-xs text-amber-800">
             Nota: domínios raiz requerem ALIAS/ANAME ou Cloudflare com CNAME flattening.
