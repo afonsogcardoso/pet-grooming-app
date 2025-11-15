@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import TenantLoginForm from '@/components/tenant/TenantLoginForm'
 import { useTranslation } from '@/components/TranslationProvider'
 
@@ -46,11 +47,14 @@ export default function PortalLoginLayout({ account }) {
               </p>
               {account.portal_image_url && (
                 <div className="mt-6 rounded-3xl overflow-hidden border border-white/30 shadow-2xl bg-white/10 backdrop-blur">
-                  <img
+                  <Image
                     src={account.portal_image_url}
                     alt={t('portal.loginPage.imageAlt', { name: account.name })}
-                    className="w-full h-64 object-cover"
-                    loading="lazy"
+                    width={1200}
+                    height={400}
+                    className="h-64 w-full object-cover"
+                    priority={false}
+                    unoptimized
                   />
                 </div>
               )}
@@ -61,10 +65,13 @@ export default function PortalLoginLayout({ account }) {
                 className="flex items-center gap-4 group"
               >
                 {account.logo_url && (
-                  <img
+                  <Image
                     src={account.logo_url}
                     alt={t('portal.landing.logoAlt', { name: account.name })}
+                    width={64}
+                    height={64}
                     className="h-16 w-16 rounded-full border-2 border-white/60 object-cover bg-white/20"
+                    unoptimized
                   />
                 )}
                 <div>

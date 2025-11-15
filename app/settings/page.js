@@ -96,7 +96,7 @@ export default function SettingsPage() {
     const body = await response.json()
     setMembers(body.members || [])
     setMembersLoading(false)
-  }, [account?.id])
+  }, [account?.id, t])
 
   const loadDomains = useCallback(async () => {
     if (!account?.id) return
@@ -123,7 +123,7 @@ export default function SettingsPage() {
     const body = await response.json()
     setDomains(body.domains || [])
     setDomainsLoading(false)
-  }, [account?.id])
+  }, [account?.id, t])
 
   useEffect(() => {
     if (canEdit) {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { setActiveAccountId } from '@/lib/accountHelpers'
@@ -64,10 +65,13 @@ export default function TenantLoginForm({ account }) {
     <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl p-8 shadow-xl">
       <div className="space-y-3 text-center mb-6">
         {account.logo_url && (
-          <img
+          <Image
             src={account.logo_url}
             alt={t('portal.landing.logoAlt', { name: account.name })}
+            width={64}
+            height={64}
             className="mx-auto h-16 w-16 rounded-full border-2 border-gray-100 object-cover shadow-sm"
+            unoptimized
           />
         )}
         <p className="text-sm font-semibold uppercase tracking-widest text-brand-primary">

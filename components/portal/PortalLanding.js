@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useMemo } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 
@@ -37,10 +38,13 @@ export default function PortalLanding({ account }) {
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
               {account.logo_url && (
-                <img
+                <Image
                   src={account.logo_url}
                   alt={t('portal.landing.logoAlt', { name: account.name })}
+                  width={64}
+                  height={64}
                   className="h-16 w-16 rounded-full border-2 border-white/60 object-cover bg-white/20"
+                  unoptimized
                 />
               )}
               <div>
