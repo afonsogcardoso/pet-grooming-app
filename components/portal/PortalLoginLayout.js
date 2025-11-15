@@ -24,10 +24,12 @@ export default function PortalLoginLayout({ account }) {
 
   return (
     <div
-      className="min-h-screen flex flex-col overflow-hidden"
+      className="relative flex min-h-screen flex-col overflow-hidden"
       style={{ backgroundColor: account.brand_background || '#fdfcf9' }}
     >
-      <div className="flex-1 grid md:grid-cols-5 md:h-screen">
+      <div className="absolute inset-0 md:hidden" style={gradientStyle(account)} />
+      <div className="absolute inset-0 md:hidden bg-black/25" />
+      <div className="relative flex-1 grid md:grid-cols-5 md:h-screen">
         <div className="hidden md:block md:col-span-3 relative">
           <div className="absolute inset-0" style={gradientStyle(account)} />
           <div className="absolute inset-0 bg-black/20" />

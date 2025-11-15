@@ -632,9 +632,9 @@
   },
   "portal": {
     "login": {
-      "portalLabel": "Portal {{slug}}",
-      "title": "Sign in to {{name}}",
-      "description": "Use your team credentials to access the backoffice.",
+      "heading": "Backoffice",
+      "title": "{{name}}",
+      "description": "Use your team credentials to access the private workspace.",
       "fields": {
         "email": "Email",
         "password": "Password"

@@ -63,14 +63,21 @@ export default function TenantLoginForm({ account }) {
   return (
     <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl p-8 shadow-xl">
       <div className="space-y-3 text-center mb-6">
-        <p className="text-sm uppercase tracking-widest text-gray-500">
-          {t('portal.login.portalLabel', { slug: account.slug })}
+        {account.logo_url && (
+          <img
+            src={account.logo_url}
+            alt={t('portal.landing.logoAlt', { name: account.name })}
+            className="mx-auto h-16 w-16 rounded-full border-2 border-gray-100 object-cover shadow-sm"
+          />
+        )}
+        <p className="text-sm font-semibold uppercase tracking-widest text-brand-primary">
+          {t('portal.login.heading')}
         </p>
-        <h2 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-3xl font-bold text-gray-900">
           {t('portal.login.title', { name: account.name })}
         </h2>
         <p className="text-gray-600 text-sm">
-          {t('portal.login.description')}
+          {t('portal.login.description', { name: account.name })}
         </p>
       </div>
 
