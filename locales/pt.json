@@ -398,6 +398,10 @@
     "help": {
       "noAccount": "Precisa de acesso?",
       "contact": "Contacte um administrador"
+    },
+    "mobile": {
+      "ctaTitle": "Sempre em movimento",
+      "ctaText": "Guarda as credenciais para entrares mais rápido no telemóvel."
     }
   },
   "settings": {

@@ -398,6 +398,10 @@
     "help": {
       "noAccount": "Need access?",
       "contact": "Contact an administrator"
+    },
+    "mobile": {
+      "ctaTitle": "Stay productive on the go",
+      "ctaText": "Save your credentials to sign in faster on your phone."
     }
   },
   "settings": {

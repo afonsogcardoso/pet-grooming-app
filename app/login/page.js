@@ -80,57 +80,69 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto bg-white border border-gray-100 rounded-2xl p-8 space-y-6">
-      <div className="space-y-2 text-center">
-        <p className="text-4xl">🔐</p>
-        <h1 className="text-2xl font-bold text-gray-900">{t('login.title')}</h1>
-        <p className="text-gray-600">{t('login.description')}</p>
-      </div>
-
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
-            {t('login.fields.email')}
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-lg text-gray-900 placeholder-gray-500 bg-white"
-            placeholder={t('login.placeholders.email')}
-          />
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg space-y-6 rounded-3xl border border-white/50 bg-white/95 p-6 shadow-2xl backdrop-blur-lg sm:p-8">
+        <div className="space-y-2 text-center">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-primary/10 text-3xl leading-[64px] text-brand-primary">
+            🔐
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('login.title')}</h1>
+          <p className="text-gray-600">{t('login.description')}</p>
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
-            {t('login.fields.password')}
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-lg text-gray-900 placeholder-gray-500 bg-white"
-            placeholder={t('login.placeholders.password')}
-          />
+        <div className="rounded-2xl bg-gradient-to-r from-brand-primary via-brand-accent to-brand-primary p-4 text-white shadow-lg sm:hidden">
+          <p className="text-sm font-semibold">{t('login.mobile.ctaTitle')}</p>
+          <p className="text-xs opacity-90">{t('login.mobile.ctaText')}</p>
         </div>
 
-        {error && <p className="text-sm text-rose-600">{error}</p>}
-        {message && <p className="text-sm text-emerald-600">{message}</p>}
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="email" className="mb-1 block text-sm font-semibold text-gray-700">
+              {t('login.fields.email')}
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              inputMode="email"
+              autoComplete="email"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-lg text-gray-900 placeholder-gray-500 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              placeholder={t('login.placeholders.email')}
+            />
+          </div>
 
-        <button type="submit" className="btn-brand w-full py-3 text-lg" disabled={loading}>
-          {loading ? t('login.actions.loading') : t('login.actions.submit')}
-        </button>
-      </form>
+          <div>
+            <label htmlFor="password" className="mb-1 block text-sm font-semibold text-gray-700">
+              {t('login.fields.password')}
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              autoComplete="current-password"
+              className="w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-lg text-gray-900 placeholder-gray-500 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              placeholder={t('login.placeholders.password')}
+            />
+          </div>
 
-      <div className="text-center text-sm text-gray-500">
-        <span>{t('login.help.noAccount')}</span>{' '}
-        <Link href="mailto:support@example.com" className="text-brand-primary font-semibold">
-          {t('login.help.contact')}
-        </Link>
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+          {message && <p className="text-sm text-emerald-600">{message}</p>}
+
+          <button type="submit" className="btn-brand w-full rounded-2xl py-3 text-lg" disabled={loading}>
+            {loading ? t('login.actions.loading') : t('login.actions.submit')}
+          </button>
+        </form>
+
+        <div className="text-center text-sm text-gray-500">
+          <span>{t('login.help.noAccount')}</span>{' '}
+          <Link href="mailto:support@example.com" className="font-semibold text-brand-primary">
+            {t('login.help.contact')}
+          </Link>
+        </div>
       </div>
     </div>
   )
