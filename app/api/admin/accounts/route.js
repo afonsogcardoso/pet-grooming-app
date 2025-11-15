@@ -34,7 +34,10 @@ export async function GET(request) {
 
   let query = supabaseAdmin
     .from('accounts')
-    .select('id, name, slug, plan, is_active, created_at, brand_primary, brand_accent', { count: 'exact' })
+    .select(
+      'id, name, slug, plan, is_active, created_at, brand_primary, brand_primary_soft, brand_accent, brand_accent_soft, brand_background, brand_gradient, logo_url, portal_image_url',
+      { count: 'exact' }
+    )
 
   if (plan) {
     query = query.eq('plan', plan)

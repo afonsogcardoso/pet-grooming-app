@@ -413,6 +413,8 @@
         "accountName": "Account name",
         "accountNamePlaceholder": "e.g. Paws & Co",
         "logo": "Logo URL",
+        "portalImage": "Portal login image URL",
+        "portalImageHelper": "Shown under the login description on the tenant portal.",
         "primary": "Primary color",
         "primarySoft": "Primary soft color",
         "accent": "Accent color",
@@ -667,7 +669,8 @@
       "badge": "Booking portal",
       "description": "Sign in to manage appointments, clients, and branding for this unit. This login is exclusive to the {{name}} team.",
       "slugLabel": "Slug",
-      "supportPrefix": "Need help? Email"
+      "supportPrefix": "Need help? Email",
+      "imageAlt": "Portal preview for {{name}}"
     }
   }
 }

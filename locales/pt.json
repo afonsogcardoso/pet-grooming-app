@@ -413,6 +413,8 @@
         "accountName": "Nome da conta",
         "accountNamePlaceholder": "ex.: Paws & Co",
         "logo": "URL do logo",
+        "portalImage": "Imagem do login do portal",
+        "portalImageHelper": "Mostrada por baixo da descrição no portal do tenant.",
         "primary": "Cor primária",
         "primarySoft": "Cor primária suave",
         "accent": "Cor de destaque",
@@ -667,7 +669,8 @@
       "badge": "Portal booking",
       "description": "Entra no portal para gerir agendamentos, clientes e branding desta unidade. Este login é exclusivo para a equipa de {{name}}.",
       "slugLabel": "Slug",
-      "supportPrefix": "Precisas de ajuda? envia email para"
+      "supportPrefix": "Precisas de ajuda? envia email para",
+      "imageAlt": "Imagem do portal de {{name}}"
     }
   }
 }

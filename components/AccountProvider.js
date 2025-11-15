@@ -119,7 +119,8 @@ export function AccountProvider({ children }) {
             brand_accent,
             brand_accent_soft,
             brand_background,
-            brand_gradient
+            brand_gradient,
+            portal_image_url
           )
         `
         )

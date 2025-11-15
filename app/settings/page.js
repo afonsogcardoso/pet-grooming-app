@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const [branding, setBranding] = useState({
     account_name: '',
     logo_url: '',
+    portal_image_url: '',
     brand_primary: '',
     brand_primary_soft: '',
     brand_accent: '',
@@ -60,6 +61,7 @@ export default function SettingsPage() {
       setBranding({
         account_name: account.name || '',
         logo_url: account.logo_url || '',
+        portal_image_url: account.portal_image_url || '',
         brand_primary: account.brand_primary || '',
         brand_primary_soft: account.brand_primary_soft || '',
         brand_accent: account.brand_accent || '',
@@ -163,6 +165,7 @@ export default function SettingsPage() {
       .update({
         name: branding.account_name,
         logo_url: branding.logo_url,
+        portal_image_url: branding.portal_image_url,
         brand_primary: branding.brand_primary,
         brand_primary_soft: branding.brand_primary_soft,
         brand_accent: branding.brand_accent,
@@ -460,6 +463,20 @@ export default function SettingsPage() {
             {logoUploading && (
               <span className="text-xs text-gray-500">{t('settings.branding.logoUploading')}</span>
             )}
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
+            {t('settings.branding.fields.portalImage')}
+            <input
+              type="url"
+              value={branding.portal_image_url}
+              onChange={(e) => setBranding((prev) => ({ ...prev, portal_image_url: e.target.value }))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+              placeholder="https://cdn.example.com/portal-image.jpg"
+            />
+            <span className="text-xs text-gray-500">
+              {t('settings.branding.fields.portalImageHelper')}
+            </span>
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">

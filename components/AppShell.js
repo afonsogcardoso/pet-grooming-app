@@ -67,6 +67,7 @@ export default function AppShell({ children }) {
   const isTenantPublicRoute = pathname?.startsWith('/portal/')
   const publicRoutes = ['/login']
   const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
+  const isLoginRoute = pathname?.startsWith('/login')
   const isAdminRoute = pathname?.startsWith('/admin')
 
   if (isAdminRoute) {
@@ -75,6 +76,10 @@ export default function AppShell({ children }) {
   }
 
   if (isTenantPublicRoute) {
+    return <div className="min-h-screen brand-background">{children}</div>
+  }
+
+  if (isLoginRoute) {
     return <div className="min-h-screen brand-background">{children}</div>
   }
 

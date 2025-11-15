@@ -42,6 +42,16 @@ export default function PortalLoginLayout({ account }) {
               <p className="mt-4 text-lg text-white/90 max-w-lg">
                 {t('portal.loginPage.description', { name: account.name })}
               </p>
+              {account.portal_image_url && (
+                <div className="mt-6 rounded-3xl overflow-hidden border border-white/30 shadow-2xl bg-white/10 backdrop-blur">
+                  <img
+                    src={account.portal_image_url}
+                    alt={t('portal.loginPage.imageAlt', { name: account.name })}
+                    className="w-full h-64 object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )}
             </div>
             <div className="space-y-4">
               <Link
