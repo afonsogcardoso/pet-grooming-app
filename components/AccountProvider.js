@@ -5,7 +5,7 @@
 // Provides the active account context for the app
 // ============================================
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import {
   clearStoredAccountId,
@@ -38,6 +38,17 @@ const emptyState = {
 export function AccountProvider({ children }) {
   const [state, setState] = useState(emptyState)
   const [currentUserId, setCurrentUserId] = useState(null)
+  const latestSessionRef = useRef(null)
+
+  const isPlatformAdmin = useCallback((session) => {
+    if (!session?.user) return false
+    const metadata = session.user
+    return (
+      metadata?.user_metadata?.platform_admin ||
+      metadata?.app_metadata?.platform_admin ||
+      (metadata?.app_metadata?.roles || []).includes('platform_admin')
+    )
+  }, [])
 
   const deriveActiveMembership = useCallback(async (memberships) => {
     let preferredAccountId = null
@@ -72,7 +83,7 @@ export function AccountProvider({ children }) {
   }, [])
 
   const fetchMemberships = useCallback(
-    async (userId) => {
+    async (userId, session) => {
       if (!userId) {
         setState({
           account: null,
@@ -122,10 +133,7 @@ export function AccountProvider({ children }) {
       }
 
       let result = data || []
-      const isPlatformAdminUser =
-        session?.user?.user_metadata?.platform_admin ||
-        session?.user?.app_metadata?.platform_admin ||
-        (session?.user?.app_metadata?.roles || []).includes('platform_admin')
+      const isPlatformAdminUser = isPlatformAdmin(session)
 
       if (isPlatformAdminUser) {
         try {
@@ -138,7 +146,7 @@ export function AccountProvider({ children }) {
 
       await deriveActiveMembership(result)
     },
-    [deriveActiveMembership]
+    [deriveActiveMembership, isPlatformAdmin]
   )
 
   useEffect(() => {
@@ -148,6 +156,7 @@ export function AccountProvider({ children }) {
       if (!isMounted) return
       const session = data?.session
       const userId = session?.user?.id || null
+      latestSessionRef.current = session
       setCurrentUserId(userId)
 
       if (!session) {
@@ -163,13 +172,14 @@ export function AccountProvider({ children }) {
         return
       }
 
-      fetchMemberships(userId)
+      fetchMemberships(userId, session)
     })
 
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const userId = session?.user?.id || null
+      latestSessionRef.current = session
       setCurrentUserId(userId)
 
       if (!session) {
@@ -185,7 +195,7 @@ export function AccountProvider({ children }) {
         return
       }
 
-      fetchMemberships(userId)
+      fetchMemberships(userId, session)
     })
 
     return () => {
@@ -210,7 +220,7 @@ export function AccountProvider({ children }) {
 
   const refresh = useCallback(() => {
     if (!currentUserId) return
-    fetchMemberships(currentUserId)
+    fetchMemberships(currentUserId, latestSessionRef.current)
   }, [currentUserId, fetchMemberships])
 
   useEffect(() => {
