@@ -16,18 +16,6 @@ export default function TenantLoginForm({ account }) {
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
 
-  useEffect(() => {
-    let active = true
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return
-      if (data?.session) {
-        router.replace(`/portal/${account.slug}`)
-      }
-    })
-    return () => {
-      active = false
-    }
-  }, [router, account.slug])
 
   const handleSubmit = async (event) => {
     event.preventDefault()

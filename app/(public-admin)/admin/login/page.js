@@ -44,9 +44,9 @@ function AdminLoginContent() {
 
   useEffect(() => {
     let active = true
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }) => {
       if (!active) return
-      const sessionUser = data?.session?.user
+      const sessionUser = data?.user
       if (sessionUser && isPlatformAdmin(sessionUser)) {
         router.replace('/admin')
       }

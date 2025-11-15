@@ -18,9 +18,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     let isMounted = true
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }) => {
       if (!isMounted) return
-      if (data?.session) {
+      if (data?.user) {
         router.replace('/')
       }
     })
