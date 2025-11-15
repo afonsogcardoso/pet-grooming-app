@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { getPublicAccountBySlug } from '@/lib/publicAccounts'
@@ -19,9 +19,5 @@ export default async function BookingLandingPage({ params }) {
     data: { session }
   } = await supabase.auth.getSession()
 
-  if (!session) {
-    redirect(`/portal/${account.slug}/login`)
-  }
-
-  return <PortalLanding account={account} isAuthenticated />
+  return <PortalLanding account={account} isAuthenticated={!!session} />
 }
