@@ -38,11 +38,11 @@ const emptyState = {
 export function AccountProvider({ children }) {
   const [state, setState] = useState(emptyState)
   const [currentUserId, setCurrentUserId] = useState(null)
-  const latestSessionRef = useRef(null)
+  const latestUserRef = useRef(null)
 
-  const isPlatformAdmin = useCallback((session) => {
-    if (!session?.user) return false
-    const metadata = session.user
+  const isPlatformAdmin = useCallback((user) => {
+    if (!user) return false
+    const metadata = user
     return (
       metadata?.user_metadata?.platform_admin ||
       metadata?.app_metadata?.platform_admin ||
@@ -83,7 +83,7 @@ export function AccountProvider({ children }) {
   }, [])
 
   const fetchMemberships = useCallback(
-    async (userId, session) => {
+    async (userId, user) => {
       if (!userId) {
         setState({
           account: null,
@@ -136,7 +136,7 @@ export function AccountProvider({ children }) {
       }
 
       let result = data || []
-      const isPlatformAdminUser = isPlatformAdmin(session)
+      const isPlatformAdminUser = isPlatformAdmin(user)
 
       if (isPlatformAdminUser) {
         try {
@@ -155,14 +155,14 @@ export function AccountProvider({ children }) {
   useEffect(() => {
     let isMounted = true
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }) => {
       if (!isMounted) return
-      const session = data?.session
-      const userId = session?.user?.id || null
-      latestSessionRef.current = session
+      const user = data?.user
+      const userId = user?.id || null
+      latestUserRef.current = user
       setCurrentUserId(userId)
 
-      if (!session) {
+      if (!user) {
         clearStoredAccountId()
         setState({
           account: null,
@@ -175,17 +175,18 @@ export function AccountProvider({ children }) {
         return
       }
 
-      fetchMemberships(userId, session)
+      fetchMemberships(userId, user)
     })
 
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      const userId = session?.user?.id || null
-      latestSessionRef.current = session
+      const user = session?.user || null
+      const userId = user?.id || null
+      latestUserRef.current = user
       setCurrentUserId(userId)
 
-      if (!session) {
+      if (!user) {
         clearStoredAccountId()
         setState({
           account: null,
@@ -198,7 +199,7 @@ export function AccountProvider({ children }) {
         return
       }
 
-      fetchMemberships(userId, session)
+      fetchMemberships(userId, user)
     })
 
     return () => {
@@ -223,7 +224,7 @@ export function AccountProvider({ children }) {
 
   const refresh = useCallback(() => {
     if (!currentUserId) return
-    fetchMemberships(currentUserId, latestSessionRef.current)
+    fetchMemberships(currentUserId, latestUserRef.current)
   }, [currentUserId, fetchMemberships])
 
   useEffect(() => {

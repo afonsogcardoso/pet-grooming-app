@@ -10,14 +10,17 @@ import { useTranslation } from '@/components/TranslationProvider'
 
 export default function CustomerForm({ onSubmit, onCancel, onDelete, initialData = null }) {
     const { t } = useTranslation()
-    const buildState = (data = {}) => ({
-        name: data.name || '',
-        phone: data.phone || '',
-        nif: data.nif || '',
-        email: data.email || '',
-        address: data.address || '',
-        notes: data.notes || ''
-    })
+    const buildState = (data = {}) => {
+        const source = data || {}
+        return {
+            name: source.name || '',
+            phone: source.phone || '',
+            nif: source.nif || '',
+            email: source.email || '',
+            address: source.address || '',
+            notes: source.notes || ''
+        }
+    }
 
     const [formData, setFormData] = useState(buildState(initialData))
 
@@ -101,7 +104,6 @@ export default function CustomerForm({ onSubmit, onCancel, onDelete, initialData
                         </label>
                         <input
                             type="text"
-                            required
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                             className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 placeholder-gray-500 font-medium"

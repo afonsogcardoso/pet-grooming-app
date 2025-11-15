@@ -30,7 +30,13 @@ const buildInitialFormState = (data) => ({
     status: data?.status || 'scheduled'
 })
 
-export default function AppointmentForm({ onSubmit, onCancel, initialData = null }) {
+export default function AppointmentForm({
+    onSubmit,
+    onCancel,
+    initialData = null,
+    onDelete,
+    onMarkCompleted
+}) {
     const { t } = useTranslation()
     const [customers, setCustomers] = useState([])
     const [pets, setPets] = useState([])
@@ -72,7 +78,8 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
     const afterPreviewRef = useRef(null)
     const searchDropdownTimeoutRef = useRef(null)
 
-    const isEditing = !!initialData
+    const isEditing = Boolean(initialData?.id)
+    const isCompleted = Boolean(initialData?.status === 'completed')
 
     const searchResults = useMemo(() => {
         const term = searchTerm.trim().toLowerCase()
@@ -837,12 +844,44 @@ export default function AppointmentForm({ onSubmit, onCancel, initialData = null
                         />
                     </div>
 
-                    <button
-                        type="submit"
-                        className="w-full btn-brand shadow-brand-glow py-4 px-6 text-xl"
-                    >
-                        {isEditing ? t('appointmentForm.buttons.update') : t('appointmentForm.buttons.save')}
-                    </button>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                        <button
+                            type="submit"
+                            className="w-full sm:flex-[0.6] btn-brand shadow-brand-glow py-4 px-6 text-xl"
+                        >
+                            {isEditing ? t('appointmentForm.buttons.update') : t('appointmentForm.buttons.save')}
+                        </button>
+                        {isEditing && (
+                            <div className="flex flex-col gap-2 sm:flex-row sm:flex-1">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!isCompleted) {
+                                            onMarkCompleted?.()
+                                        }
+                                    }}
+                                    disabled={isCompleted || !onMarkCompleted}
+                                    className={`w-full rounded-2xl border px-4 py-3 text-base font-semibold transition disabled:cursor-not-allowed ${
+                                        isCompleted
+                                            ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                                            : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                    }`}
+                                >
+                                    {isCompleted
+                                        ? t('appointmentForm.buttons.completed')
+                                        : t('appointmentForm.buttons.markCompleted')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onDelete}
+                                    disabled={!onDelete}
+                                    className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-base font-semibold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    {t('appointmentForm.buttons.delete')}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </form>
             </div>
             {showCustomerModal && (

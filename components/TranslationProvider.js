@@ -37,9 +37,9 @@ export function TranslationProvider({ children }) {
         return
       }
 
-      const { data } = await supabase.auth.getSession().catch(() => ({ data: null }))
+      const { data } = await supabase.auth.getUser().catch(() => ({ data: null }))
       if (!active) return
-      const preferred = data?.session?.user?.user_metadata?.preferred_locale
+      const preferred = data?.user?.user_metadata?.preferred_locale
       if (preferred && translations[preferred]) {
         setLocale(preferred)
       }

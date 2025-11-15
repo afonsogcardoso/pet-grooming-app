@@ -147,7 +147,10 @@
       "add": "+ Novo",
       "save": "💾 Guardar agendamento",
       "update": "💾 Atualizar agendamento",
-      "removePhoto": "Remover foto"
+      "removePhoto": "Remover foto",
+      "markCompleted": "✅ Marcar como completo",
+      "completed": "✅ Completo",
+      "delete": "🗑 Apagar agendamento"
     },
     "durationOptions": {
       "minutes30": "30 minutos",
@@ -227,7 +230,7 @@
       "phone": "Telefone *",
       "nif": "NIF",
       "email": "Email",
-      "address": "Morada (local do serviço) * 📍",
+      "address": "Morada (local do serviço)",
       "notes": "Notas"
     },
     "placeholders": {
@@ -239,7 +242,7 @@
       "notes": "Notas importantes sobre este cliente..."
     },
     "helpers": {
-      "address": "📍 Introduz a morada completa ou cola um link do Google Maps"
+      "address": "Opcional, mas ajuda se precisares de navegar até ao cliente."
     },
     "buttons": {
       "save": "💾 Guardar cliente",

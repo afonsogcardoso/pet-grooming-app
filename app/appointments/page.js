@@ -208,6 +208,9 @@ export default function Home() {
       alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
     } else {
       await fetchAppointments()
+      if (editingAppointment?.id === id) {
+        setEditingAppointment((prev) => (prev ? { ...prev, status: 'completed' } : prev))
+      }
     }
   }
 
@@ -227,6 +230,10 @@ export default function Home() {
         await deleteAppointmentPhoto(target.after_photo_url)
       }
       setAppointments(appointments.filter((apt) => apt.id !== id))
+      if (editingAppointment?.id === id) {
+        setEditingAppointment(null)
+        setShowForm(false)
+      }
     }
   }
 
@@ -308,6 +315,12 @@ export default function Home() {
                 onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
                 onCancel={handleCancelEdit}
                 initialData={editingAppointment || prefilledData}
+                onDelete={
+                  editingAppointment ? () => handleDeleteAppointment(editingAppointment.id) : undefined
+                }
+                onMarkCompleted={
+                  editingAppointment ? () => handleMarkCompleted(editingAppointment.id) : undefined
+                }
               />
             </div>
           </div>

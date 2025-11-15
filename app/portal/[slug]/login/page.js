@@ -5,7 +5,8 @@ import PortalLoginLayout from '@/components/portal/PortalLoginLayout'
 export const dynamic = 'force-dynamic'
 
 export default async function TenantLoginPage({ params }) {
-  const slug = params?.slug?.toLowerCase()
+  const { slug: rawSlug } = await params
+  const slug = rawSlug?.toLowerCase()
   const account = await getPublicAccountBySlug(slug)
 
   if (!account) {

@@ -11,7 +11,8 @@ export async function POST(request) {
     return NextResponse.json({ ok: false, error: 'missing_tokens' }, { status: 400 })
   }
 
-  const supabase = createRouteHandlerClient({ cookies })
+  const cookieStore = await cookies()
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
   await supabase.auth.setSession({
     access_token: accessToken,
     refresh_token: refreshToken

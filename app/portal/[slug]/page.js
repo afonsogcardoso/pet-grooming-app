@@ -7,13 +7,14 @@ import PortalLanding from '@/components/portal/PortalLanding'
 export const dynamic = 'force-dynamic'
 
 export default async function BookingLandingPage({ params }) {
-  const slugParam = params?.slug?.toLowerCase()
+  const { slug } = await params
+  const slugParam = slug?.toLowerCase()
   const account = await getPublicAccountBySlug(slugParam)
 
   if (!account) {
     notFound()
   }
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerComponentClient({ cookies: () => cookieStore })
   const {
     data: { session }

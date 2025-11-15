@@ -147,7 +147,10 @@
       "add": "+ New",
       "save": "💾 Save Appointment",
       "update": "💾 Update Appointment",
-      "removePhoto": "Remove photo"
+      "removePhoto": "Remove photo",
+      "markCompleted": "✅ Mark as completed",
+      "completed": "✅ Completed",
+      "delete": "🗑 Delete Appointment"
     },
     "durationOptions": {
       "minutes30": "30 minutes",
@@ -227,7 +230,7 @@
       "phone": "Phone Number *",
       "nif": "NIF",
       "email": "Email",
-      "address": "Address (service location) * 📍",
+      "address": "Address (service location)",
       "notes": "Notes"
     },
     "placeholders": {
@@ -239,7 +242,7 @@
       "notes": "Any special notes about this customer..."
     },
     "helpers": {
-      "address": "📍 Enter full address or paste a Google Maps link"
+      "address": "Optional, but helps if you need to navigate later."
     },
     "buttons": {
       "save": "💾 Save Customer",
