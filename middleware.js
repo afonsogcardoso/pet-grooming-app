@@ -140,6 +140,9 @@ export async function middleware(request) {
   const pathname = request.nextUrl.pathname
 
   if (isAdminPath(pathname)) {
+    if (pathname === `${ADMIN_PATH_PREFIX}/login`) {
+      return NextResponse.next()
+    }
     const adminResponse = await guardAdminRequest(request)
     if (adminResponse) {
       return adminResponse
@@ -262,7 +265,7 @@ function hasRole(appMetadata) {
 function redirectToLogin(request, reason) {
   const redirectTarget = `${request.nextUrl.pathname}${request.nextUrl.search}`
   return NextResponse.redirect(
-    buildUrl('/login', request, {
+    buildUrl(`${ADMIN_PATH_PREFIX}/login`, request, {
       redirectTo: redirectTarget,
       adminError: reason
     })

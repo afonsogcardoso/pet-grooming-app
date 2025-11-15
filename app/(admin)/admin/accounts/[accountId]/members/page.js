@@ -26,7 +26,7 @@ export default function AdminAccountMembersPage() {
   const [resending, setResending] = useState(null)
   const [removingMember, setRemovingMember] = useState(null)
   const [editingProfile, setEditingProfile] = useState(null)
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'member' })
+  const [inviteForm, setInviteForm] = useState({ email: '', password: '', role: 'member' })
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMessage, setInviteMessage] = useState(null)
 
@@ -227,6 +227,7 @@ export default function AdminAccountMembersPage() {
         },
         body: JSON.stringify({
           email: inviteForm.email,
+          password: inviteForm.password || undefined,
           role: inviteForm.role
         })
       })
@@ -238,7 +239,7 @@ export default function AdminAccountMembersPage() {
         ...prev,
         members: [...prev.members, body.member]
       }))
-      setInviteForm({ email: '', role: 'member' })
+      setInviteForm({ email: '', password: '', role: 'member' })
       setInviteMessage({
         type: 'success',
         text: 'Convite pronto! Partilha o link abaixo caso o email automático não esteja configurado.',
@@ -482,7 +483,7 @@ function InvitePanel({ form, onChange, onSubmit, loading, message }) {
       <p className="text-sm text-slate-500">
         Envia um convite para novos utilizadores ou adiciona alguém que já existe em Supabase Auth.
       </p>
-      <form className="mt-4 grid gap-4 sm:grid-cols-[2fr,180px,auto]" onSubmit={onSubmit}>
+      <form className="mt-4 grid gap-4 sm:grid-cols-[2fr,180px,180px,auto]" onSubmit={onSubmit}>
         <label className="sm:col-span-1">
           <span className="text-sm font-semibold text-slate-600">Email</span>
           <input
@@ -493,6 +494,19 @@ function InvitePanel({ form, onChange, onSubmit, loading, message }) {
             placeholder="user@example.com"
             className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
           />
+        </label>
+        <label>
+          <span className="text-sm font-semibold text-slate-600">Password temporária</span>
+          <input
+            type="text"
+            value={form.password}
+            onChange={(event) => onChange((prev) => ({ ...prev, password: event.target.value }))}
+            placeholder="Opcional"
+            className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
+          />
+          <span className="mt-1 block text-xs text-slate-500">
+            Deixa em branco para gerar automaticamente.
+          </span>
         </label>
         <label>
           <span className="text-sm font-semibold text-slate-600">Role</span>
