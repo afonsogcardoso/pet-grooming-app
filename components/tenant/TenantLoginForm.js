@@ -21,13 +21,13 @@ export default function TenantLoginForm({ account }) {
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return
       if (data?.session) {
-        router.replace('/')
+        router.replace(`/portal/${account.slug}`)
       }
     })
     return () => {
       active = false
     }
-  }, [router])
+  }, [router, account.slug])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
