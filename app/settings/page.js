@@ -22,7 +22,7 @@ const BRANDING_BUCKET = 'account-branding'
 
 export default function SettingsPage() {
   const { account, membership, authenticated, refresh } = useAccount()
-  const { t } = useTranslation()
+  const { t, resolvedLocale } = useTranslation()
   const [branding, setBranding] = useState({
     account_name: '',
     logo_url: '',
@@ -86,7 +86,7 @@ export default function SettingsPage() {
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}))
-      setMembersError(body.error || 'Request failed')
+      setMembersError(body.error || t('common.errors.requestFailed'))
       setMembersLoading(false)
       return
     }
@@ -113,7 +113,7 @@ export default function SettingsPage() {
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}))
-      setDomainsError(body.error || 'Request failed')
+      setDomainsError(body.error || t('common.errors.requestFailed'))
       setDomainsLoading(false)
       return
     }
@@ -218,7 +218,7 @@ export default function SettingsPage() {
     if (!response.ok) {
       setInviteMessage({
         type: 'error',
-        text: body.error || 'Request failed'
+        text: body.error || t('common.errors.requestFailed')
       })
       setInviteLoading(false)
       return
@@ -280,7 +280,7 @@ export default function SettingsPage() {
 
     const domainValue = domainForm.domain.trim().toLowerCase()
     if (!domainValue) {
-      setDomainMessage({ type: 'error', text: 'Domain is required' })
+      setDomainMessage({ type: 'error', text: t('settings.domains.errors.required') })
       setDomainSubmitting(false)
       return
     }
@@ -309,7 +309,7 @@ export default function SettingsPage() {
     if (!response.ok) {
       setDomainMessage({
         type: 'error',
-        text: body.error || 'Could not add domain'
+        text: body.error || t('settings.domains.errors.create')
       })
       setDomainSubmitting(false)
       return
@@ -317,7 +317,7 @@ export default function SettingsPage() {
 
     setDomainMessage({
       type: 'success',
-      text: 'Domain created. Configure DNS and click verify once ready.'
+      text: t('settings.domains.messages.created')
     })
     setDomainForm((prev) => ({ ...prev, domain: '' }))
     setDomainSubmitting(false)
@@ -326,7 +326,7 @@ export default function SettingsPage() {
 
   const handleDeleteDomain = async (domainId) => {
     if (!account?.id || !domainId) return
-    const confirmed = window.confirm('Remove this custom domain?')
+    const confirmed = window.confirm(t('settings.domains.confirmations.delete'))
     if (!confirmed) return
 
     setDomainMessage(null)
@@ -352,14 +352,14 @@ export default function SettingsPage() {
     if (!response.ok) {
       setDomainMessage({
         type: 'error',
-        text: body.error || 'Could not remove domain'
+        text: body.error || t('settings.domains.errors.delete')
       })
       return
     }
 
     setDomainMessage({
       type: 'success',
-      text: 'Domain removed.'
+      text: t('settings.domains.messages.deleted')
     })
     loadDomains()
   }
@@ -404,7 +404,7 @@ export default function SettingsPage() {
     if (!response.ok) {
       setDomainMessage({
         type: 'error',
-        text: body.error || 'Não foi possível verificar o domínio.'
+        text: body.error || t('settings.domains.errors.verify')
       })
       setVerifyingDomainId(null)
       return
@@ -413,7 +413,9 @@ export default function SettingsPage() {
     const matched = body?.verification?.matched
     setDomainMessage({
       type: matched ? 'success' : 'error',
-      text: matched ? 'Domínio verificado com sucesso.' : body?.verification?.reason || 'TXT não encontrado.'
+      text: matched
+        ? t('settings.domains.messages.verified')
+        : body?.verification?.reason || t('settings.domains.messages.verificationMissing')
     })
     setVerifyingDomainId(null)
     loadDomains()
@@ -637,7 +639,7 @@ export default function SettingsPage() {
                     : 'bg-yellow-100 text-yellow-700'
                 }`}
               >
-                {member.status}
+                {t(`settings.members.status.${member.status}`)}
               </span>
             </div>
           ))}
@@ -646,36 +648,41 @@ export default function SettingsPage() {
 
       <section className="bg-white shadow rounded-2xl p-6 border border-gray-100">
         <div className="flex flex-col gap-2 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Custom domains</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('settings.domains.title')}</h2>
           <p className="text-gray-600">
-            Liga domínios como <span className="font-mono text-xs">portal.teunome.com</span> ao
-            teu slug <span className="font-semibold">{account?.slug}</span>. Mantemos o estado
-            pending/active/error e o token TXT para validação.
+            {t('settings.domains.description', {
+              example: 'portal.teunome.com',
+              slug: account?.slug || ''
+            })}
           </p>
         </div>
 
         <form onSubmit={handleDomainSubmit} className="grid gap-4 md:grid-cols-3 mb-6">
           <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700 md:col-span-2">
-            Domínio / subdomínio
+            {t('settings.domains.fields.domain')}
             <input
               type="text"
               value={domainForm.domain}
               onChange={(e) => setDomainForm((prev) => ({ ...prev, domain: e.target.value }))}
-              placeholder="portal.exemplo.com"
+              placeholder={t('settings.domains.fields.domainPlaceholder')}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
               required
             />
           </label>
 
           <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
-            Tipo de registo
+            {t('settings.domains.fields.recordType')}
             <select
               value={domainForm.dnsRecordType}
               onChange={(e) => setDomainForm((prev) => ({ ...prev, dnsRecordType: e.target.value }))}
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
             >
-              <option value="txt">TXT + CNAME</option>
-              <option value="cname">CNAME only</option>
+              <option value="txt">
+                {t('settings.domains.fields.recordTypeOptions.txt')}
+              </option>
+              <option value="cname">
+                {t('settings.domains.fields.recordTypeOptions.cname')}
+              </option>
             </select>
           </label>
 
@@ -685,7 +692,9 @@ export default function SettingsPage() {
               disabled={domainSubmitting}
               className="btn-brand px-6 py-3 shadow-brand-glow disabled:opacity-60"
             >
-              {domainSubmitting ? 'A guardar…' : 'Adicionar domínio'}
+              {domainSubmitting
+                ? t('settings.domains.buttons.adding')
+                : t('settings.domains.buttons.add')}
             </button>
             {domainMessage && (
               <span
@@ -700,15 +709,26 @@ export default function SettingsPage() {
         </form>
 
         <div className="space-y-3">
-          {domainsLoading && <p className="text-gray-500">A carregar domínios…</p>}
+          {domainsLoading && <p className="text-gray-500">{t('settings.domains.loading')}</p>}
           {domainsError && <p className="text-rose-600 text-sm">{domainsError}</p>}
           {!domainsLoading && domains.length === 0 && (
-            <p className="text-gray-600">Ainda não tens domínios configurados.</p>
+            <p className="text-gray-600">{t('settings.domains.empty')}</p>
           )}
 
           {domains.map((domain) => {
             const txtHost = `_verify.${domain.domain}`
             const txtValue = `verify=${domain.verification_token}`
+            const statusKey = domain.status || 'pending'
+            const verifiedText =
+              domain.status === 'active' && domain.verified_at
+                ? t('settings.domains.labels.verifiedAt', {
+                    date: new Intl.DateTimeFormat(resolvedLocale, {
+                      dateStyle: 'medium',
+                      timeStyle: 'short'
+                    }).format(new Date(domain.verified_at))
+                  })
+                : null
+
             return (
               <div
                 key={domain.id}
@@ -717,7 +737,9 @@ export default function SettingsPage() {
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-lg font-semibold text-gray-900">{domain.domain}</p>
-                    <p className="text-sm text-gray-600">Slug alvo: {domain.slug}</p>
+                    <p className="text-sm text-gray-600">
+                      {t('settings.domains.slugLabel', { slug: domain.slug })}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
@@ -725,7 +747,7 @@ export default function SettingsPage() {
                         domain.status
                       )}`}
                     >
-                      {domain.status || 'pending'}
+                      {t(`settings.domains.status.${statusKey}`)}
                     </span>
                     <button
                       type="button"
@@ -738,38 +760,39 @@ export default function SettingsPage() {
                       }`}
                     >
                       {domain.status === 'active'
-                        ? 'Verificado'
+                        ? t('settings.domains.buttons.verified')
                         : verifyingDomainId === domain.id
-                          ? 'A verificar…'
-                          : 'Verificar domínio'}
+                          ? t('settings.domains.buttons.verifying')
+                          : t('settings.domains.buttons.verify')}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDeleteDomain(domain.id)}
                       className="text-sm text-rose-600 hover:text-rose-500 font-semibold"
                     >
-                      Remover
+                      {t('settings.domains.buttons.remove')}
                     </button>
                   </div>
                 </div>
 
                 <div className="grid gap-2 text-sm text-gray-700">
-                  <p>1. Cria um registo CNAME apontando o teu subdomínio para o domínio do deploy.</p>
-                  <p>
-                    2. Adiciona o TXT abaixo e aguarda propagação. Depois faz “verify” na
-                    dashboard.
-                  </p>
+                  <p>{t('settings.domains.steps.cname')}</p>
+                  <p>{t('settings.domains.steps.txt')}</p>
                   <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-3 font-mono text-xs text-gray-800">
-                    <p>Host: {txtHost}</p>
-                    <p>Valor: {txtValue}</p>
+                    <p>
+                      {t('settings.domains.labels.host')}: {txtHost}
+                    </p>
+                    <p>
+                      {t('settings.domains.labels.value')}: {txtValue}
+                    </p>
                   </div>
                   {domain.last_error && (
-                    <p className="text-xs text-rose-600">Erro: {domain.last_error}</p>
-                  )}
-                  {domain.status === 'active' && domain.verified_at && (
-                    <p className="text-xs text-emerald-600">
-                      Verificado em {new Date(domain.verified_at).toLocaleString()}
+                    <p className="text-xs text-rose-600">
+                      {t('settings.domains.labels.error', { message: domain.last_error })}
                     </p>
+                  )}
+                  {verifiedText && (
+                    <p className="text-xs text-emerald-600">{verifiedText}</p>
                   )}
                 </div>
               </div>
@@ -778,20 +801,14 @@ export default function SettingsPage() {
         </div>
 
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          <p className="font-semibold mb-2">Instruções rápidas</p>
+          <p className="font-semibold mb-2">{t('settings.domains.instructions.title')}</p>
           <ol className="list-decimal list-inside space-y-1">
-            <li>
-              Aponta o subdomínio (ex.: <span className="font-mono text-xs">portal.tuaempresa.com</span>) via
-              CNAME para o domínio onde esta app está hospedada (ex. app.pet-grooming-app.com).
-            </li>
-            <li>
-              Adiciona o registo TXT <span className="font-mono text-xs">_verify.&lt;subdomínio&gt;</span> com o valor
-              <span className="font-mono text-xs"> verify=&lt;token&gt;</span>.
-            </li>
-            <li>Usa o botão “Verificar domínio” para confirmar assim que o DNS propagar.</li>
+            <li>{t('settings.domains.instructions.step1')}</li>
+            <li>{t('settings.domains.instructions.step2')}</li>
+            <li>{t('settings.domains.instructions.step3')}</li>
           </ol>
           <p className="mt-2 text-xs text-amber-800">
-            Nota: domínios raiz requerem ALIAS/ANAME ou Cloudflare com CNAME flattening.
+            {t('settings.domains.instructions.note')}
           </p>
         </div>
       </section>

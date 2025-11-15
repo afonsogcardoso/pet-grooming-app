@@ -234,7 +234,7 @@ export default function CustomerManager() {
                                         <span className="text-brand-primary text-xl">✏️</span>
                                     </div>
                                     <span className="text-xs text-brand-primary opacity-0 group-hover:opacity-100 transition">
-                                        Clique para editar
+                                        {t('customersPage.selected.editHint')}
                                     </span>
                                 </button>
                                 <p className="text-gray-600 flex flex-wrap gap-2">
@@ -384,7 +384,7 @@ export default function CustomerManager() {
                                             {customer.name}
                                         </h4>
                                         <span className="text-xs text-gray-400 font-semibold uppercase">
-                                            Ver detalhes
+                                            {t('customersPage.cards.viewDetails')}
                                         </span>
                                     </div>
 
@@ -442,7 +442,9 @@ export default function CustomerManager() {
                                 {activeHistoryAppointment.services?.name || t('appointmentCard.unknownService')}
                             </div>
                             <div>
-                                <span className="font-bold">Data / hora:</span>{' '}
+                                <span className="font-bold">
+                                    {t('customersPage.history.labels.dateTime')}
+                                </span>{' '}
                                 {t('customersPage.history.dateTime', {
                                     date: formatDate(activeHistoryAppointment.appointment_date, resolvedLocale),
                                     time: formatTime(activeHistoryAppointment.appointment_time, resolvedLocale)

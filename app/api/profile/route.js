@@ -3,6 +3,8 @@ import { cookies } from 'next/headers'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
+const ALLOWED_LOCALES = ['pt', 'en']
+
 export async function PATCH(request) {
   const cookieStore = await cookies()
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
@@ -16,7 +18,7 @@ export async function PATCH(request) {
   }
 
   const payload = await request.json().catch(() => null)
-  const { displayName, phone } = payload || {}
+  const { displayName, phone, locale } = payload || {}
 
   const metadataUpdates = {}
   if (displayName !== undefined) {
@@ -24,6 +26,11 @@ export async function PATCH(request) {
   }
   if (phone !== undefined) {
     metadataUpdates.phone = phone?.trim() || null
+  }
+
+  if (locale !== undefined) {
+    const normalized = ALLOWED_LOCALES.includes(locale) ? locale : null
+    metadataUpdates.preferred_locale = normalized || null
   }
 
   if (!Object.keys(metadataUpdates).length) {

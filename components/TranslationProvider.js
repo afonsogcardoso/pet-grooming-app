@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import en from '@/locales/en.json'
 import pt from '@/locales/pt.json'
+import { supabase } from '@/lib/supabase'
 
 const translations = { en, pt }
 const localeMap = { en: 'en-US', pt: 'pt-PT' }
@@ -27,10 +28,25 @@ export function TranslationProvider({ children }) {
   const [locale, setLocale] = useState('pt')
 
   useEffect(() => {
-    const stored =
-      typeof window !== 'undefined' ? window.localStorage.getItem(LOCAL_STORAGE_KEY) : null
-    if (stored && translations[stored]) {
-      setLocale(stored)
+    let active = true
+    async function loadPreferredLocale() {
+      const stored =
+        typeof window !== 'undefined' ? window.localStorage.getItem(LOCAL_STORAGE_KEY) : null
+      if (stored && translations[stored]) {
+        setLocale(stored)
+        return
+      }
+
+      const { data } = await supabase.auth.getSession().catch(() => ({ data: null }))
+      if (!active) return
+      const preferred = data?.session?.user?.user_metadata?.preferred_locale
+      if (preferred && translations[preferred]) {
+        setLocale(preferred)
+      }
+    }
+    loadPreferredLocale()
+    return () => {
+      active = false
     }
   }, [])
 

@@ -9,6 +9,13 @@
       "settings": "Settings",
       "menu": "Menu",
       "close": "Close"
+    },
+    "logoAlt": "Logo for {{name}}",
+    "profile": {
+      "viewProfile": "View profile"
+    },
+    "tenantSwitch": {
+      "label": "Workspace"
     }
   },
   "language": {
@@ -31,6 +38,11 @@
       "updateStatus": "Error updating appointment status: {{message}}",
       "delete": "Error deleting appointment: {{message}}",
       "photoUpload": "Error uploading photo: {{message}}"
+    },
+    "loaders": {
+      "calendar": "Loading calendar...",
+      "list": "Loading appointments...",
+      "form": "Preparing form..."
     }
   },
   "viewToggle": {
@@ -250,7 +262,9 @@
       "age": "Age (years)",
       "weight": "Weight (kg)",
       "medicalNotes": "Medical Notes",
-      "photo": "Photo"
+      "photo": "Photo",
+      "photoAlt": "Photo of {{name}}",
+      "photoPreview": "Pet preview"
     },
     "placeholders": {
       "name": "Max",
@@ -293,17 +307,22 @@
       "pets": "Pets",
       "appointments": "Appointments",
       "lastVisit": "Last Visit",
-      "never": "Never"
+      "never": "Never",
+      "editHint": "Click to edit"
     },
     "history": {
       "heading": "Appointment History",
       "loading": "Loading...",
       "empty": "No appointments yet",
-      "dateTime": "{{date}} at {{time}}"
+      "dateTime": "{{date}} at {{time}}",
+      "labels": {
+        "dateTime": "Date / time"
+      }
     },
     "cards": {
       "petBadge": "🐾 {{count}} pets",
-      "appointmentBadge": "📅 {{count}} appts"
+      "appointmentBadge": "📅 {{count}} appts",
+      "viewDetails": "View details"
     },
     "confirmDelete": "Delete {{name}} and all their pets/appointments? This cannot be undone.",
     "errors": {
@@ -367,6 +386,10 @@
       "email": "Email address",
       "password": "Password"
     },
+    "placeholders": {
+      "email": "you@example.com",
+      "password": "••••••••"
+    },
     "actions": {
       "submit": "Login",
       "loading": "Signing you in..."
@@ -421,7 +444,74 @@
       "inviting": "Inviting...",
       "inviteSuccess": "Invite sent and membership created.",
       "loading": "Loading members...",
-      "empty": "No members yet. Invite someone above."
+      "empty": "No members yet. Invite someone above.",
+      "status": {
+        "accepted": "Accepted",
+        "pending": "Pending",
+        "invited": "Invited"
+      }
+    },
+    "domains": {
+      "title": "Custom domains",
+      "description": "Connect domains like {{example}} to your slug {{slug}}. We track pending/active/error states and the TXT token.",
+      "fields": {
+        "domain": "Domain / subdomain",
+        "domainPlaceholder": "portal.example.com",
+        "recordType": "Record type",
+        "recordTypeOptions": {
+          "txt": "TXT + CNAME",
+          "cname": "CNAME only"
+        }
+      },
+      "buttons": {
+        "add": "Add domain",
+        "adding": "Saving...",
+        "verify": "Verify domain",
+        "verifying": "Verifying...",
+        "verified": "Verified",
+        "remove": "Remove"
+      },
+      "loading": "Loading domains...",
+      "empty": "No domains configured yet.",
+      "slugLabel": "Target slug: {{slug}}",
+      "status": {
+        "pending": "Pending",
+        "active": "Active",
+        "error": "Error",
+        "disabled": "Disabled"
+      },
+      "steps": {
+        "cname": "1. Create a CNAME record pointing your subdomain to the deployment.",
+        "txt": "2. Add the TXT record below and wait for DNS to propagate, then click verify."
+      },
+      "labels": {
+        "host": "Host",
+        "value": "Value",
+        "error": "Error: {{message}}",
+        "verifiedAt": "Verified on {{date}}"
+      },
+      "instructions": {
+        "title": "Quick instructions",
+        "step1": "Point the subdomain (e.g. portal.yourbrand.com) via CNAME to the domain hosting this app.",
+        "step2": "Add the TXT record _verify.<subdomain> with the value verify=<token>.",
+        "step3": "Use the “Verify domain” button once DNS has propagated.",
+        "note": "Note: root domains require ALIAS/ANAME or Cloudflare with CNAME flattening."
+      },
+      "errors": {
+        "required": "Domain is required.",
+        "create": "Could not add domain.",
+        "delete": "Could not remove domain.",
+        "verify": "We couldn't verify the domain."
+      },
+      "messages": {
+        "created": "Domain created. Configure DNS and click verify once ready.",
+        "deleted": "Domain removed.",
+        "verified": "Domain verified successfully.",
+        "verificationMissing": "TXT record not found."
+      },
+      "confirmations": {
+        "delete": "Remove this custom domain?"
+      }
     }
   },
   "calendar": {
@@ -436,6 +526,148 @@
       "scheduled": "Scheduled",
       "completed": "Completed",
       "available": "Available (click to book)"
+    }
+  },
+  "common": {
+    "errors": {
+      "requestFailed": "Request failed. Please try again."
+    }
+  },
+  "profile": {
+    "form": {
+      "displayNameLabel": "Display name",
+      "displayNamePlaceholder": "e.g. Maria Silva",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "(+351) ...",
+      "localeLabel": "Language",
+      "localeHelper": "Choose the default language for your account.",
+      "localeOptions": {
+        "pt": "Português (Portugal)",
+        "en": "English"
+      },
+      "errors": {
+        "update": "Failed to update profile."
+      },
+      "success": "Profile updated.",
+      "saving": "Saving...",
+      "save": "Save changes"
+    },
+    "passwordForm": {
+      "errors": {
+        "length": "Password must be at least 8 characters.",
+        "mismatch": "Passwords do not match.",
+        "update": "Failed to update password."
+      },
+      "success": "Password updated.",
+      "labels": {
+        "new": "New password",
+        "confirm": "Confirm password"
+      },
+      "placeholders": {
+        "password": "********"
+      },
+      "buttons": {
+        "saving": "Updating...",
+        "submit": "Update password"
+      }
+    },
+    "page": {
+      "title": "Profile",
+      "requiresAuth": "You need to sign in to view your profile.",
+      "sectionLabel": "Profile",
+      "lastLogin": "Last login {{value}}"
+    },
+    "common": {
+      "notAvailable": "—"
+    },
+    "basics": {
+      "title": "Basic details",
+      "labels": {
+        "id": "ID",
+        "email": "Email",
+        "createdAt": "Created on"
+      }
+    },
+    "metadata": {
+      "title": "Metadata",
+      "user": "user_metadata",
+      "app": "app_metadata",
+      "empty": "No metadata yet."
+    },
+    "editSection": {
+      "title": "Edit profile",
+      "description": "Update your display name and phone number for the team."
+    },
+    "passwordSection": {
+      "title": "Password",
+      "description": "Set a new secure password."
+    },
+    "memberships": {
+      "title": "Memberships",
+      "empty": "This user is not part of any account yet.",
+      "headers": {
+        "account": "Account",
+        "role": "Role",
+        "status": "Status",
+        "since": "Member since"
+      },
+      "fallbackAccount": "Account",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "status": {
+        "accepted": "Accepted",
+        "pending": "Pending",
+        "invited": "Invited"
+      }
+    }
+  },
+  "portal": {
+    "login": {
+      "portalLabel": "Portal {{slug}}",
+      "title": "Sign in to {{name}}",
+      "description": "Use your team credentials to access the backoffice.",
+      "fields": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "placeholders": {
+        "email": "your-name@company.com",
+        "password": "••••••••"
+      },
+      "success": "Login successful.",
+      "submit": "Sign in",
+      "submitting": "Signing in..."
+    },
+    "landing": {
+      "logoAlt": "{{name}} logo",
+      "badge": "Booking portal",
+      "description": "Book grooming, baths, and special services with the {{name}} team. Pick the best slot and track your appointment in a personalized portal.",
+      "cta": "Sign in / Book",
+      "contactTeam": "Contact the team",
+      "cards": {
+        "team": {
+          "title": "Dedicated team",
+          "text": "Certified professionals who know your pet."
+        },
+        "schedule": {
+          "title": "Flexible schedules",
+          "text": "Book in minutes from any device."
+        },
+        "updates": {
+          "title": "Live updates",
+          "text": "Get confirmations and reminders by email or SMS."
+        }
+      },
+      "securityBadge": "🔐 Secure portal • {{name}}"
+    },
+    "loginPage": {
+      "badge": "Booking portal",
+      "description": "Sign in to manage appointments, clients, and branding for this unit. This login is exclusive to the {{name}} team.",
+      "slugLabel": "Slug",
+      "supportPrefix": "Need help? Email"
     }
   }
 }

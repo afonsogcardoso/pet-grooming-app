@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/components/TranslationProvider'
 
 export default function ResetPasswordForm() {
+  const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [status, setStatus] = useState(null)
@@ -13,12 +15,12 @@ export default function ResetPasswordForm() {
     setStatus(null)
 
     if (password.length < 8) {
-      setStatus({ type: 'error', text: 'Password deve ter pelo menos 8 caracteres.' })
+      setStatus({ type: 'error', text: t('profile.passwordForm.errors.length') })
       return
     }
 
     if (password !== confirmPassword) {
-      setStatus({ type: 'error', text: 'As passwords não coincidem.' })
+      setStatus({ type: 'error', text: t('profile.passwordForm.errors.mismatch') })
       return
     }
 
@@ -31,9 +33,9 @@ export default function ResetPasswordForm() {
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error(body.error || 'Falha ao atualizar password.')
+        throw new Error(body.error || t('profile.passwordForm.errors.update'))
       }
-      setStatus({ type: 'success', text: 'Password atualizada.' })
+      setStatus({ type: 'success', text: t('profile.passwordForm.success') })
       setPassword('')
       setConfirmPassword('')
     } catch (error) {
@@ -46,23 +48,27 @@ export default function ResetPasswordForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div>
-        <label className="block text-sm font-semibold text-slate-600">Nova password</label>
+        <label className="block text-sm font-semibold text-slate-600">
+          {t('profile.passwordForm.labels.new')}
+        </label>
         <input
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
-          placeholder="********"
+          placeholder={t('profile.passwordForm.placeholders.password')}
         />
       </div>
       <div>
-        <label className="block text-sm font-semibold text-slate-600">Confirmar password</label>
+        <label className="block text-sm font-semibold text-slate-600">
+          {t('profile.passwordForm.labels.confirm')}
+        </label>
         <input
           type="password"
           value={confirmPassword}
           onChange={(event) => setConfirmPassword(event.target.value)}
           className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
-          placeholder="********"
+          placeholder={t('profile.passwordForm.placeholders.password')}
         />
       </div>
       {status && (
@@ -79,7 +85,7 @@ export default function ResetPasswordForm() {
         disabled={loading}
         className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? 'A atualizar...' : 'Atualizar password'}
+        {loading ? t('profile.passwordForm.buttons.saving') : t('profile.passwordForm.buttons.submit')}
       </button>
     </form>
   )

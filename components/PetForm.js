@@ -171,7 +171,11 @@ export default function PetForm({ customerId, onSubmit, onCancel, onDelete, init
             <div className="flex items-center gap-3 mb-3">
               <Image
                 src={photoPreview}
-                alt={formData.name || 'Pet preview'}
+                alt={
+                  formData.name
+                    ? t('petForm.labels.photoAlt', { name: formData.name })
+                    : t('petForm.labels.photoPreview')
+                }
                 width={80}
                 height={80}
                 className="w-20 h-20 rounded-full object-cover border-2 border-brand-accent"

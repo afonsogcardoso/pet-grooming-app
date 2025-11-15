@@ -22,28 +22,27 @@ import { compressImage } from '@/utils/image'
 
 const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
 
-const LoadingCard = ({ label }) => (
-  <div className="bg-white rounded-2xl shadow-md border border-brand-primary/20 p-6 text-center text-gray-500 animate-pulse">
-    {label}
-  </div>
-)
+const LoadingCard = ({ labelKey }) => {
+  const { t } = useTranslation()
+  return (
+    <div className="bg-white rounded-2xl shadow-md border border-brand-primary/20 p-6 text-center text-gray-500 animate-pulse">
+      {t(labelKey)}
+    </div>
+  )
+}
 
 const CalendarView = dynamic(() => import('@/components/CalendarView'), {
   ssr: false,
-  loading: () => <LoadingCard label="Loading calendar…" />
+  loading: () => <LoadingCard labelKey="appointmentsPage.loaders.calendar" />
 })
 
 const AppointmentList = dynamic(() => import('@/components/AppointmentList'), {
-  loading: () => <LoadingCard label="Loading appointments…" />
+  loading: () => <LoadingCard labelKey="appointmentsPage.loaders.list" />
 })
 
 const AppointmentForm = dynamic(() => import('@/components/AppointmentForm'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-brand-primary/20 p-10 text-center text-gray-500 animate-pulse">
-      Preparing form…
-    </div>
-  )
+  loading: () => <LoadingCard labelKey="appointmentsPage.loaders.form" />
 })
 
 export default function Home() {

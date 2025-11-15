@@ -186,12 +186,16 @@ export default function AdminAccountsPage() {
     )
   }
 
-  const handleSingleDelete = async (accountId) => {
+  const handleSingleDelete = async (account) => {
+    if (account.is_active) {
+      alert('Só podes apagar tenants depois de arquivar.')
+      return
+    }
     const confirmed = window.confirm(
       'Apagar este tenant vai remover todos os dados associados. Confirmas a ação?'
     )
     if (!confirmed) return
-    setSelectedIds([accountId])
+    setSelectedIds([account.id])
     await handleBulkAction('delete')
   }
 
@@ -475,8 +479,9 @@ function AccountsTable({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(account.id)}
-                    className="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-700 hover:border-rose-300"
+                    onClick={() => onDelete(account)}
+                    disabled={account.is_active}
+                    className="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-700 hover:border-rose-300 disabled:cursor-not-allowed disabled:border-rose-100 disabled:text-rose-300 disabled:bg-rose-50/50"
                   >
                     Apagar
                   </button>

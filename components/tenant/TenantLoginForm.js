@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { setActiveAccountId } from '@/lib/accountHelpers'
+import { useTranslation } from '@/components/TranslationProvider'
 
 export default function TenantLoginForm({ account }) {
   const router = useRouter()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -53,7 +55,7 @@ export default function TenantLoginForm({ account }) {
       setActiveAccountId(accountId)
     }
 
-    setMessage('Login efetuado com sucesso.')
+    setMessage(t('portal.login.success'))
     setLoading(false)
     router.replace('/')
   }
@@ -61,34 +63,42 @@ export default function TenantLoginForm({ account }) {
   return (
     <div className="w-full max-w-md bg-white border border-gray-100 rounded-2xl p-8 shadow-xl">
       <div className="space-y-3 text-center mb-6">
-        <p className="text-sm uppercase tracking-widest text-gray-500">Portal {account.slug}</p>
-        <h2 className="text-2xl font-bold text-gray-900">Entrar em {account.name}</h2>
+        <p className="text-sm uppercase tracking-widest text-gray-500">
+          {t('portal.login.portalLabel', { slug: account.slug })}
+        </p>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {t('portal.login.title', { name: account.name })}
+        </h2>
         <p className="text-gray-600 text-sm">
-          Usa as credenciais da tua equipa para aceder ao backoffice.
+          {t('portal.login.description')}
         </p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            {t('portal.login.fields.email')}
+          </label>
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
-            placeholder="teu-nome@empresa.com"
+            placeholder={t('portal.login.placeholders.email')}
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            {t('portal.login.fields.password')}
+          </label>
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
-            placeholder="••••••••"
+            placeholder={t('portal.login.placeholders.password')}
           />
         </div>
 
@@ -101,7 +111,7 @@ export default function TenantLoginForm({ account }) {
           style={{ backgroundColor: account.brand_primary || '#4fafa9' }}
           disabled={loading}
         >
-          {loading ? 'A entrar…' : 'Entrar no portal'}
+          {loading ? t('portal.login.submitting') : t('portal.login.submit')}
         </button>
       </form>
     </div>

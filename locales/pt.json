@@ -9,6 +9,13 @@
       "settings": "Configurações",
       "menu": "Menu",
       "close": "Fechar"
+    },
+    "logoAlt": "Logótipo de {{name}}",
+    "profile": {
+      "viewProfile": "Ver perfil"
+    },
+    "tenantSwitch": {
+      "label": "Conta"
     }
   },
   "language": {
@@ -31,6 +38,11 @@
       "updateStatus": "Erro ao atualizar o estado: {{message}}",
       "delete": "Erro ao eliminar agendamento: {{message}}",
       "photoUpload": "Erro ao carregar fotografia: {{message}}"
+    },
+    "loaders": {
+      "calendar": "A carregar calendário...",
+      "list": "A carregar agendamentos...",
+      "form": "A preparar formulário..."
     }
   },
   "viewToggle": {
@@ -250,7 +262,9 @@
       "age": "Idade (anos)",
       "weight": "Peso (kg)",
       "medicalNotes": "Notas médicas",
-      "photo": "Fotografia"
+      "photo": "Fotografia",
+      "photoAlt": "Foto de {{name}}",
+      "photoPreview": "Pré-visualização do animal"
     },
     "placeholders": {
       "name": "Max",
@@ -293,17 +307,22 @@
       "pets": "Animais",
       "appointments": "Agendamentos",
       "lastVisit": "Última visita",
-      "never": "Nunca"
+      "never": "Nunca",
+      "editHint": "Clique para editar"
     },
     "history": {
       "heading": "Histórico de agendamentos",
       "loading": "A carregar...",
       "empty": "Sem agendamentos",
-      "dateTime": "{{date}} às {{time}}"
+      "dateTime": "{{date}} às {{time}}",
+      "labels": {
+        "dateTime": "Data / hora"
+      }
     },
     "cards": {
       "petBadge": "🐾 {{count}} animais",
-      "appointmentBadge": "📅 {{count}} agendamentos"
+      "appointmentBadge": "📅 {{count}} agendamentos",
+      "viewDetails": "Ver detalhes"
     },
     "confirmDelete": "Eliminar {{name}} e todos os respetivos animais/agendamentos? Não é possível desfazer.",
     "errors": {
@@ -367,6 +386,10 @@
       "email": "Email",
       "password": "Palavra-passe"
     },
+    "placeholders": {
+      "email": "teu-email@empresa.com",
+      "password": "••••••••"
+    },
     "actions": {
       "submit": "Entrar",
       "loading": "A autenticar..."
@@ -421,7 +444,74 @@
       "inviting": "A convidar...",
       "inviteSuccess": "Convite enviado e membro criado.",
       "loading": "A carregar membros...",
-      "empty": "Ainda não existem membros. Convide alguém acima."
+      "empty": "Ainda não existem membros. Convide alguém acima.",
+      "status": {
+        "accepted": "Aceite",
+        "pending": "Pendente",
+        "invited": "Convidado"
+      }
+    },
+    "domains": {
+      "title": "Domínios personalizados",
+      "description": "Liga domínios como {{example}} ao teu slug {{slug}}. Mantemos o estado pending/active/error e o token TXT.",
+      "fields": {
+        "domain": "Domínio / subdomínio",
+        "domainPlaceholder": "portal.exemplo.com",
+        "recordType": "Tipo de registo",
+        "recordTypeOptions": {
+          "txt": "TXT + CNAME",
+          "cname": "Apenas CNAME"
+        }
+      },
+      "buttons": {
+        "add": "Adicionar domínio",
+        "adding": "A guardar...",
+        "verify": "Verificar domínio",
+        "verifying": "A verificar...",
+        "verified": "Verificado",
+        "remove": "Remover"
+      },
+      "loading": "A carregar domínios...",
+      "empty": "Ainda não tens domínios configurados.",
+      "slugLabel": "Slug alvo: {{slug}}",
+      "status": {
+        "pending": "Pendente",
+        "active": "Ativo",
+        "error": "Erro",
+        "disabled": "Inativo"
+      },
+      "steps": {
+        "cname": "1. Cria um registo CNAME a apontar o teu subdomínio para o domínio do deploy.",
+        "txt": "2. Adiciona o TXT abaixo e aguarda propagação. Depois faz \"verify\" na dashboard."
+      },
+      "labels": {
+        "host": "Host",
+        "value": "Valor",
+        "error": "Erro: {{message}}",
+        "verifiedAt": "Verificado em {{date}}"
+      },
+      "instructions": {
+        "title": "Instruções rápidas",
+        "step1": "Aponta o subdomínio (ex.: portal.tuaempresa.com) via CNAME para o domínio onde esta app está alojada.",
+        "step2": "Adiciona o registo TXT _verify.<subdomínio> com o valor verify=<token>.",
+        "step3": "Usa o botão “Verificar domínio” assim que o DNS propagar.",
+        "note": "Nota: domínios raiz requerem ALIAS/ANAME ou Cloudflare com CNAME flattening."
+      },
+      "errors": {
+        "required": "O domínio é obrigatório.",
+        "create": "Não foi possível adicionar o domínio.",
+        "delete": "Não foi possível remover o domínio.",
+        "verify": "Não foi possível verificar o domínio."
+      },
+      "messages": {
+        "created": "Domínio criado. Configura o DNS e verifica quando estiver pronto.",
+        "deleted": "Domínio removido.",
+        "verified": "Domínio verificado com sucesso.",
+        "verificationMissing": "Registo TXT não encontrado."
+      },
+      "confirmations": {
+        "delete": "Remover este domínio personalizado?"
+      }
     }
   },
   "calendar": {
@@ -436,6 +526,148 @@
       "scheduled": "Agendado",
       "completed": "Concluído",
       "available": "Disponível (clica para marcar)"
+    }
+  },
+  "common": {
+    "errors": {
+      "requestFailed": "Pedido falhou. Tenta novamente."
+    }
+  },
+  "profile": {
+    "form": {
+      "displayNameLabel": "Nome a apresentar",
+      "displayNamePlaceholder": "Ex.: Maria Silva",
+      "phoneLabel": "Telefone",
+      "phonePlaceholder": "(+351) ...",
+      "localeLabel": "Idioma",
+      "localeHelper": "Escolhe o idioma predefinido da tua conta.",
+      "localeOptions": {
+        "pt": "Português (Portugal)",
+        "en": "Inglês"
+      },
+      "errors": {
+        "update": "Falha ao atualizar o perfil."
+      },
+      "success": "Perfil atualizado.",
+      "saving": "A guardar...",
+      "save": "Guardar alterações"
+    },
+    "passwordForm": {
+      "errors": {
+        "length": "A password deve ter pelo menos 8 caracteres.",
+        "mismatch": "As passwords não coincidem.",
+        "update": "Falha ao atualizar a password."
+      },
+      "success": "Password atualizada.",
+      "labels": {
+        "new": "Nova password",
+        "confirm": "Confirmar password"
+      },
+      "placeholders": {
+        "password": "********"
+      },
+      "buttons": {
+        "saving": "A atualizar...",
+        "submit": "Atualizar password"
+      }
+    },
+    "page": {
+      "title": "Perfil",
+      "requiresAuth": "Precisas de iniciar sessão para veres o teu perfil.",
+      "sectionLabel": "Perfil",
+      "lastLogin": "Último login {{value}}"
+    },
+    "common": {
+      "notAvailable": "—"
+    },
+    "basics": {
+      "title": "Dados básicos",
+      "labels": {
+        "id": "ID",
+        "email": "Email",
+        "createdAt": "Criado em"
+      }
+    },
+    "metadata": {
+      "title": "Metadata",
+      "user": "user_metadata",
+      "app": "app_metadata",
+      "empty": "Sem metadata."
+    },
+    "editSection": {
+      "title": "Editar perfil",
+      "description": "Atualiza o teu nome e telefone para partilhar com a equipa."
+    },
+    "passwordSection": {
+      "title": "Password",
+      "description": "Define uma nova password segura."
+    },
+    "memberships": {
+      "title": "Associações",
+      "empty": "Este utilizador ainda não pertence a nenhuma conta.",
+      "headers": {
+        "account": "Conta",
+        "role": "Função",
+        "status": "Estado",
+        "since": "Desde"
+      },
+      "fallbackAccount": "Conta",
+      "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Membro"
+      },
+      "status": {
+        "accepted": "Aceite",
+        "pending": "Pendente",
+        "invited": "Convidado"
+      }
+    }
+  },
+  "portal": {
+    "login": {
+      "portalLabel": "Portal {{slug}}",
+      "title": "Entrar em {{name}}",
+      "description": "Usa as credenciais da tua equipa para aceder ao backoffice.",
+      "fields": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "placeholders": {
+        "email": "teu-nome@empresa.com",
+        "password": "••••••••"
+      },
+      "success": "Login efetuado com sucesso.",
+      "submit": "Entrar no portal",
+      "submitting": "A entrar..."
+    },
+    "landing": {
+      "logoAlt": "Logo de {{name}}",
+      "badge": "Portal de reservas",
+      "description": "Reserva grooming, banho e serviços especiais com a equipa de {{name}}. Escolhe o melhor horário e acompanha o agendamento num portal personalizado.",
+      "cta": "Entrar / Reservar",
+      "contactTeam": "Falar com a equipa",
+      "cards": {
+        "team": {
+          "title": "Equipa dedicada",
+          "text": "Profissionais certificados que conhecem o teu pet."
+        },
+        "schedule": {
+          "title": "Horários flexíveis",
+          "text": "Agenda em minutos a partir de qualquer dispositivo."
+        },
+        "updates": {
+          "title": "Atualizações em tempo real",
+          "text": "Recebe confirmações e lembretes por email ou SMS."
+        }
+      },
+      "securityBadge": "🔐 Portal seguro • {{name}}"
+    },
+    "loginPage": {
+      "badge": "Portal booking",
+      "description": "Entra no portal para gerir agendamentos, clientes e branding desta unidade. Este login é exclusivo para a equipa de {{name}}.",
+      "slugLabel": "Slug",
+      "supportPrefix": "Precisas de ajuda? envia email para"
     }
   }
 }

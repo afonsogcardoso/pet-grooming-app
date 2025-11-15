@@ -1,11 +1,29 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from '@/components/TranslationProvider'
 
-export default function ProfileMetadataForm({ initialDisplayName = '', initialPhone = '' }) {
-  const [form, setForm] = useState({ displayName: initialDisplayName, phone: initialPhone })
+export default function ProfileMetadataForm({
+  initialDisplayName = '',
+  initialPhone = '',
+  initialLocale = 'pt'
+}) {
+  const { t, setLocale: setAppLocale, availableLocales } = useTranslation()
+  const [form, setForm] = useState({
+    displayName: initialDisplayName,
+    phone: initialPhone,
+    locale: initialLocale
+  })
   const [status, setStatus] = useState(null)
   const [loading, setLoading] = useState(false)
+  const localeOptions = useMemo(
+    () =>
+      (availableLocales || []).map((code) => ({
+        value: code,
+        label: t(`profile.form.localeOptions.${code}`)
+      })),
+    [availableLocales, t]
+  )
 
   const handleSubmit = async (event) => {
     event.preventDefault()
@@ -20,9 +38,12 @@ export default function ProfileMetadataForm({ initialDisplayName = '', initialPh
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error(body.error || 'Falha ao atualizar o perfil.')
+        throw new Error(body.error || t('profile.form.errors.update'))
       }
-      setStatus({ type: 'success', text: 'Perfil atualizado.' })
+      setStatus({ type: 'success', text: t('profile.form.success') })
+      if (form.locale) {
+        setAppLocale?.(form.locale)
+      }
     } catch (error) {
       setStatus({ type: 'error', text: error.message })
     } finally {
@@ -33,24 +54,41 @@ export default function ProfileMetadataForm({ initialDisplayName = '', initialPh
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <label className="block text-sm font-semibold text-slate-600">
-        Nome a apresentar
+        {t('profile.form.displayNameLabel')}
         <input
           type="text"
           value={form.displayName}
           onChange={(event) => setForm((prev) => ({ ...prev, displayName: event.target.value }))}
-          placeholder="Ex.: Maria Silva"
+          placeholder={t('profile.form.displayNamePlaceholder')}
           className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
         />
       </label>
       <label className="block text-sm font-semibold text-slate-600">
-        Telefone
+        {t('profile.form.phoneLabel')}
         <input
           type="tel"
           value={form.phone}
           onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-          placeholder="(+351) ..."
+          placeholder={t('profile.form.phonePlaceholder')}
           className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none"
         />
+      </label>
+      <label className="block text-sm font-semibold text-slate-600">
+        {t('profile.form.localeLabel')}
+        <select
+          value={form.locale}
+          onChange={(event) => setForm((prev) => ({ ...prev, locale: event.target.value }))}
+          className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none bg-white"
+        >
+          {localeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-slate-500">
+          {t('profile.form.localeHelper')}
+        </p>
       </label>
       {status && (
         <p
@@ -66,7 +104,7 @@ export default function ProfileMetadataForm({ initialDisplayName = '', initialPh
         disabled={loading}
         className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {loading ? 'A guardar...' : 'Guardar alterações'}
+        {loading ? t('profile.form.saving') : t('profile.form.save')}
       </button>
     </form>
   )

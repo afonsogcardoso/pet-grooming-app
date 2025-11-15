@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import LanguageSwitcher from './LanguageSwitcher'
 import AccountGate from './AccountGate'
 import { useTranslation } from './TranslationProvider'
 import { supabase } from '@/lib/supabase'
@@ -88,7 +87,7 @@ export default function AppShell({ children }) {
               {!logoError ? (
                 <Image
                   src={account?.logo_url || defaultLogo}
-                  alt="Pet Grooming logo"
+                  alt={t('app.logoAlt', { name: account?.name || t('app.title') })}
                   width={56}
                   height={56}
                   priority
@@ -112,6 +111,7 @@ export default function AppShell({ children }) {
               className="menu-btn"
               aria-expanded={menuOpen}
               aria-controls="primary-nav"
+              aria-label={menuOpen ? t('app.nav.close') : t('app.nav.menu')}
             >
               ☰
             </button>
@@ -126,7 +126,7 @@ export default function AppShell({ children }) {
                 navItems
                   .filter((item) => {
                     if (item.href !== '/settings') return true
-                    return ['owner', 'admin'].includes(membership?.role)
+                    return ['owner', 'admin', 'platform_admin'].includes(membership?.role)
                   })
                   .map(({ href, labelKey, icon }) => {
                 const isActive = pathname === href
@@ -143,14 +143,13 @@ export default function AppShell({ children }) {
                   </Link>
                 )
               })}
-              <LanguageSwitcher />
               {authenticated && (
                 currentUser && (
                   <Link
                     href="/profile"
                     className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-200 bg-white/80 font-semibold text-slate-700 shadow-sm hover:border-slate-300"
                   >
-                    <span className="sr-only">Ver perfil</span>
+                    <span className="sr-only">{t('app.profile.viewProfile')}</span>
                     <span>{currentUser.email?.charAt(0)?.toUpperCase() || '👤'}</span>
                   </Link>
                 )
@@ -182,7 +181,7 @@ export default function AppShell({ children }) {
           {authenticated && memberships?.length > 1 && (
             <div className="mt-3 flex flex-col gap-1 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-end">
               <label className="font-semibold text-xs uppercase tracking-wide text-slate-500">
-                Tenant
+                {t('app.tenantSwitch.label')}
               </label>
               <select
                 value={membership?.account_id || memberships[0]?.account_id}

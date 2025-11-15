@@ -161,7 +161,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                             return (
                                 <div key={i} className="flex-1 text-center">
                                     <div className="font-bold text-gray-700">
-                                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                                        {date.toLocaleDateString(resolvedLocale, { weekday: 'short' })}
                                     </div>
                                     <div
                                         className={`text-sm ${isToday

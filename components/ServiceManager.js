@@ -16,7 +16,7 @@ import ServiceForm from './ServiceForm'
 import { useTranslation } from '@/components/TranslationProvider'
 
 export default function ServiceManager() {
-  const { t } = useTranslation()
+  const { t, resolvedLocale } = useTranslation()
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -186,7 +186,7 @@ export default function ServiceManager() {
                 <span className="font-semibold">
                   {t('servicesPage.labels.price')}:{' '}
                   {service.price != null
-                    ? new Intl.NumberFormat(undefined, {
+                    ? new Intl.NumberFormat(resolvedLocale, {
                         style: 'currency',
                         currency: 'EUR'
                       }).format(service.price)
