@@ -48,6 +48,11 @@ export default function AppShell({ children }) {
   }, [pathname])
 
   useEffect(() => {
+    if (authenticated && pathname === '/' && account?.slug) {
+      router.replace(`/portal/${account.slug}`)
+    }
+  }, [authenticated, pathname, account?.slug, router])
+  useEffect(() => {
     let subscription
     supabase.auth.getUser().then(({ data }) => setCurrentUser(data?.user || null))
     supabase.auth.getSession().then(({ data }) => {
