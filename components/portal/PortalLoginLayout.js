@@ -19,9 +19,18 @@ function gradientStyle(account) {
   }
 }
 
+function formatPhone(value) {
+  if (!value) return null
+  const digits = value.replace(/[^0-9]/g, '')
+  return digits.length ? digits : null
+}
+
 export default function PortalLoginLayout({ account }) {
   const { t } = useTranslation()
   const supportEmail = account.support_email || 'afonso@mstudio.pt'
+  const whatsappNumber = formatPhone(account.support_phone)
+  const supportHref = whatsappNumber ? `https://wa.me/${whatsappNumber}` : `mailto:${supportEmail}`
+  const supportLabel = whatsappNumber ? t('portal.landing.contactWhatsApp') : supportEmail
 
   return (
     <div
@@ -83,8 +92,8 @@ export default function PortalLoginLayout({ account }) {
               </Link>
               <p className="text-sm text-white/70">
                 {t('portal.loginPage.supportPrefix')}{' '}
-                <a href={`mailto:${supportEmail}`} className="underline font-semibold">
-                  {supportEmail}
+                <a href={supportHref} className="underline font-semibold" target="_blank" rel="noreferrer">
+                  {supportLabel}
                 </a>
               </p>
             </div>

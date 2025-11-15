@@ -419,6 +419,11 @@
         "logo": "URL do logo",
         "portalImage": "Imagem do login do portal",
         "portalImageHelper": "Mostrada por baixo da descrição no portal do tenant.",
+        "supportEmail": "Email de suporte",
+        "supportEmailPlaceholder": "ola@suaempresa.com",
+        "supportPhone": "WhatsApp / telefone",
+        "supportPhonePlaceholder": "+351 912 345 678",
+        "supportPhoneHelper": "Utilizado no botão de contacto (WhatsApp) do portal.",
         "primary": "Cor primária",
         "primarySoft": "Cor primária suave",
         "accent": "Cor de destaque",
@@ -652,7 +657,9 @@
       "badge": "Portal de reservas",
       "description": "Reserva grooming, banho e serviços especiais com a equipa de {{name}}. Escolhe o melhor horário e acompanha o agendamento num portal personalizado.",
       "cta": "Entrar / Reservar",
+      "ctaAuthenticated": "Abrir agenda",
       "contactTeam": "Falar com a equipa",
+      "contactWhatsApp": "Enviar WhatsApp",
       "cards": {
         "team": {
           "title": "Equipa dedicada",
@@ -667,13 +674,30 @@
           "text": "Recebe confirmações e lembretes por email ou SMS."
         }
       },
-      "securityBadge": "🔐 Portal seguro • {{name}}"
+      "securityBadge": "🔐 Portal seguro • {{name}}",
+      "nav": {
+      "title": "Acesso rápido",
+      "subtitle": "Volta ao teu workspace",
+      "description": "Escolhe a área principal da operação logo após entrar.",
+      "appointments": {
+        "title": "Agendamentos",
+        "description": "Consulta e gere a rota diária."
+      },
+      "customers": {
+        "title": "Clientes",
+        "description": "Atualiza dados e animais em segundos."
+      },
+      "services": {
+        "title": "Serviços",
+        "description": "Revê preços e tempos de cada serviço."
+      }
+      }
     },
     "loginPage": {
       "badge": "Portal booking",
       "description": "Entra no portal para gerir agendamentos, clientes e branding desta unidade. Este login é exclusivo para a equipa de {{name}}.",
       "slugLabel": "Slug",
-      "supportPrefix": "Precisas de ajuda? envia email para",
+      "supportPrefix": "Precisas de ajuda? fala com",
       "imageAlt": "Imagem do portal de {{name}}"
     }
   }

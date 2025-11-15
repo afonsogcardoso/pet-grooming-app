@@ -27,6 +27,8 @@ export default function SettingsPage() {
     account_name: '',
     logo_url: '',
     portal_image_url: '',
+    support_email: '',
+    support_phone: '',
     brand_primary: '',
     brand_primary_soft: '',
     brand_accent: '',
@@ -62,6 +64,8 @@ export default function SettingsPage() {
         account_name: account.name || '',
         logo_url: account.logo_url || '',
         portal_image_url: account.portal_image_url || '',
+        support_email: account.support_email || '',
+        support_phone: account.support_phone || '',
         brand_primary: account.brand_primary || '',
         brand_primary_soft: account.brand_primary_soft || '',
         brand_accent: account.brand_accent || '',
@@ -166,6 +170,8 @@ export default function SettingsPage() {
         name: branding.account_name,
         logo_url: branding.logo_url,
         portal_image_url: branding.portal_image_url,
+        support_email: branding.support_email,
+        support_phone: branding.support_phone,
         brand_primary: branding.brand_primary,
         brand_primary_soft: branding.brand_primary_soft,
         brand_accent: branding.brand_accent,
@@ -476,6 +482,29 @@ export default function SettingsPage() {
             />
             <span className="text-xs text-gray-500">
               {t('settings.branding.fields.portalImageHelper')}
+            </span>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
+            {t('settings.branding.fields.supportEmail')}
+            <input
+              type="email"
+              value={branding.support_email}
+              onChange={(e) => setBranding((prev) => ({ ...prev, support_email: e.target.value }))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+              placeholder={t('settings.branding.fields.supportEmailPlaceholder')}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-semibold text-gray-700">
+            {t('settings.branding.fields.supportPhone')}
+            <input
+              type="tel"
+              value={branding.support_phone}
+              onChange={(e) => setBranding((prev) => ({ ...prev, support_phone: e.target.value }))}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-gray-900"
+              placeholder={t('settings.branding.fields.supportPhonePlaceholder')}
+            />
+            <span className="text-xs text-gray-500">
+              {t('settings.branding.fields.supportPhoneHelper')}
             </span>
           </label>
 

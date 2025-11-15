@@ -419,6 +419,11 @@
         "logo": "Logo URL",
         "portalImage": "Portal login image URL",
         "portalImageHelper": "Shown under the login description on the tenant portal.",
+        "supportEmail": "Support email",
+        "supportEmailPlaceholder": "hello@yourbrand.com",
+        "supportPhone": "WhatsApp / phone",
+        "supportPhonePlaceholder": "+351 912 345 678",
+        "supportPhoneHelper": "Used for the WhatsApp contact button on the portal.",
         "primary": "Primary color",
         "primarySoft": "Primary soft color",
         "accent": "Accent color",
@@ -652,7 +657,9 @@
       "badge": "Booking portal",
       "description": "Book grooming, baths, and special services with the {{name}} team. Pick the best slot and track your appointment in a personalized portal.",
       "cta": "Sign in / Book",
+      "ctaAuthenticated": "Open schedule",
       "contactTeam": "Contact the team",
+      "contactWhatsApp": "Chat on WhatsApp",
       "cards": {
         "team": {
           "title": "Dedicated team",
@@ -667,13 +674,30 @@
           "text": "Get confirmations and reminders by email or SMS."
         }
       },
-      "securityBadge": "🔐 Secure portal • {{name}}"
+      "securityBadge": "🔐 Secure portal • {{name}}",
+      "nav": {
+      "title": "Quick navigation",
+      "subtitle": "Jump back into your workspace",
+      "description": "Access the main areas immediately after signing in.",
+      "appointments": {
+        "title": "Appointments",
+        "description": "View and manage your daily route."
+      },
+      "customers": {
+        "title": "Customers",
+        "description": "Update client details and pets in seconds."
+      },
+      "services": {
+        "title": "Services",
+        "description": "Review prices and durations for each service."
+      }
+      }
     },
     "loginPage": {
       "badge": "Booking portal",
       "description": "Sign in to manage appointments, clients, and branding for this unit. This login is exclusive to the {{name}} team.",
       "slugLabel": "Slug",
-      "supportPrefix": "Need help? Email",
+      "supportPrefix": "Need help? Contact",
       "imageAlt": "Portal preview for {{name}}"
     }
   }

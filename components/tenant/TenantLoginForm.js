@@ -58,7 +58,7 @@ export default function TenantLoginForm({ account }) {
 
     setMessage(t('portal.login.success'))
     setLoading(false)
-    router.replace('/')
+    router.replace(`/portal/${account.slug}`)
   }
 
   return (

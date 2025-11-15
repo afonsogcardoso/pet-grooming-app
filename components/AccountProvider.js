@@ -114,6 +114,8 @@ export function AccountProvider({ children }) {
             created_at,
             updated_at,
             logo_url,
+            support_email,
+            support_phone,
             brand_primary,
             brand_primary_soft,
             brand_accent,
