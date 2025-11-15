@@ -38,18 +38,42 @@ export default function AppShell({ children }) {
   const pathname = usePathname()
   const router = useRouter()
   const { t } = useTranslation()
-  const { authenticated, account, membership } = useAccount()
+  const { authenticated, account, membership, memberships, selectAccount } = useAccount()
   const [logoError, setLogoError] = useState(false)
   const defaultLogo = '/brand-logo.png'
   const [menuOpen, setMenuOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
 
   useEffect(() => {
     setMenuOpen(false)
   }, [pathname])
 
+  useEffect(() => {
+    let subscription
+    supabase.auth.getUser().then(({ data }) => setCurrentUser(data?.user || null))
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session?.user) {
+        setCurrentUser(data.session.user)
+      }
+    })
+    const authListener = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user || null)
+    })
+    subscription = authListener?.data?.subscription
+    return () => {
+      subscription?.unsubscribe?.()
+    }
+  }, [])
+
   const isTenantPublicRoute = pathname?.startsWith('/portal/')
   const publicRoutes = ['/login']
   const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
+  const isAdminRoute = pathname?.startsWith('/admin')
+
+  if (isAdminRoute) {
+    // Admin shell has its own layout and guards
+    return <>{children}</>
+  }
 
   if (isTenantPublicRoute) {
     return <div className="min-h-screen brand-background">{children}</div>
@@ -121,12 +145,32 @@ export default function AppShell({ children }) {
               })}
               <LanguageSwitcher />
               {authenticated && (
+                currentUser && (
+                  <Link
+                    href="/profile"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-200 bg-white/80 font-semibold text-slate-700 shadow-sm hover:border-slate-300"
+                  >
+                    <span className="sr-only">Ver perfil</span>
+                    <span>{currentUser.email?.charAt(0)?.toUpperCase() || '👤'}</span>
+                  </Link>
+                )
+              )}
+
+              {authenticated && (
                 <button
                   type="button"
                   onClick={async () => {
-                    await supabase.auth.signOut()
-                    clearStoredAccountId()
-                    router.push('/login')
+                    try {
+                      await Promise.all([
+                        supabase.auth.signOut(),
+                        fetch('/api/auth/signout', { method: 'POST' })
+                      ])
+                    } catch (error) {
+                      console.error('Failed to sign out completely', error)
+                    } finally {
+                      clearStoredAccountId()
+                      router.push('/login')
+                    }
                   }}
                   className="nav-link bg-white/80 text-red-600 border border-red-200 hover:bg-red-50 font-semibold px-4 py-2 rounded-full text-sm"
                 >
@@ -135,6 +179,24 @@ export default function AppShell({ children }) {
               )}
             </nav>
           </div>
+          {authenticated && memberships?.length > 1 && (
+            <div className="mt-3 flex flex-col gap-1 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-end">
+              <label className="font-semibold text-xs uppercase tracking-wide text-slate-500">
+                Tenant
+              </label>
+              <select
+                value={membership?.account_id || memberships[0]?.account_id}
+                onChange={(event) => selectAccount(event.target.value)}
+                className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-700 focus:border-slate-500 focus:outline-none"
+              >
+                {memberships.map((entry) => (
+                  <option key={entry.account_id} value={entry.account_id}>
+                    {entry.account?.name || entry.account_id}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </header>
 

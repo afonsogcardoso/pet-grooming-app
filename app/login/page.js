@@ -46,6 +46,24 @@ export default function LoginPage() {
       return
     }
 
+    const session = data?.session
+    if (session) {
+      try {
+        await fetch('/api/auth/set-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token
+          })
+        })
+      } catch (setSessionError) {
+        console.error('Failed to sync Supabase session', setSessionError)
+      }
+    }
+
     const accountId =
       data?.user?.user_metadata?.account_id ||
       data?.user?.app_metadata?.account_id ||

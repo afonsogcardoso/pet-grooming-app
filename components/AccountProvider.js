@@ -12,6 +12,7 @@ import {
   getCurrentAccountId,
   setActiveAccountId
 } from '@/lib/accountHelpers'
+import { fetchAllActiveAccounts } from '@/lib/admin/accountFetcher'
 
 const AccountContext = createContext(null)
 
@@ -120,7 +121,22 @@ export function AccountProvider({ children }) {
         return
       }
 
-      await deriveActiveMembership(data || [])
+      let result = data || []
+      const isPlatformAdminUser =
+        session?.user?.user_metadata?.platform_admin ||
+        session?.user?.app_metadata?.platform_admin ||
+        (session?.user?.app_metadata?.roles || []).includes('platform_admin')
+
+      if (isPlatformAdminUser) {
+        try {
+          const extraAccounts = await fetchAllActiveAccounts()
+          result = mergeMembershipsWithAdminAccounts(result, extraAccounts)
+        } catch (adminError) {
+          console.error('Failed to fetch admin accounts', adminError)
+        }
+      }
+
+      await deriveActiveMembership(result)
     },
     [deriveActiveMembership]
   )
@@ -241,6 +257,19 @@ export function AccountProvider({ children }) {
   )
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>
+}
+
+function mergeMembershipsWithAdminAccounts(existing, adminAccounts) {
+  const existingIds = new Set(existing.map((entry) => entry.account_id))
+  const merged = [...existing]
+
+  adminAccounts.forEach((entry) => {
+    if (!existingIds.has(entry.account_id)) {
+      merged.push(entry)
+    }
+  })
+
+  return merged.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
 }
 
 export function useAccount() {
