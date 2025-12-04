@@ -89,7 +89,7 @@
       "shareShort": "WhatsApp"
     },
     "share": {
-      "messageWithName": "Hi {{customer}}! Your appointment is confirmed for {{date}} at {{time}}.",
+      "messageWithName": "Hi {{customer}}!\n\nYour appointment is confirmed for {{date}} at {{time}}.",
       "messageNoName": "Hi! Your appointment is confirmed for {{date}} at {{time}}.",
       "service": "Service: {{service}}",
       "pet": "Pet: {{pet}}",
@@ -157,7 +157,8 @@
       "phone": "Phone Number",
       "date": "Date *",
       "time": "Time *",
-      "notes": "Notes"
+      "notes": "Notes",
+      "sendWhatsapp": "Send WhatsApp confirmation after saving"
     },
     "labels": {
       "beforePhoto": "Before photo",
@@ -213,7 +214,8 @@
       "removePhoto": "Remove photo",
       "markCompleted": "✅ Mark as completed",
       "completed": "✅ Completed",
-      "delete": "🗑 Delete Appointment"
+      "delete": "🗑 Delete Appointment",
+      "share": "Send via WhatsApp"
     },
     "durationOptions": {
       "minutes30": "30 minutes",
@@ -223,6 +225,7 @@
     "messages": {
       "selectCustomerFirst": "Please select a customer first",
       "newCustomerPetRequired": "Please fill customer name/phone and pet name to create new records.",
+      "noShareToken": "This appointment cannot be shared yet. Save it first.",
       "createCustomerError": "Error creating customer: {{message}}",
       "createPetError": "Error creating pet: {{message}}",
       "updateCustomerError": "Error updating customer: {{message}}",

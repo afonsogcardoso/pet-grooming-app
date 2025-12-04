@@ -26,26 +26,16 @@ export default function ConfirmationPage({ appointment }) {
     setIsMounted(true)
   }, [])
 
-  if (!appointment) {
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-brand-primary-soft via-white to-brand-accent-soft px-4 py-10 text-slate-900">
-        <div className="mx-auto max-w-xl rounded-3xl border border-slate-200 bg-white/80 p-6 text-center shadow-xl backdrop-blur">
-          <h1 className="text-2xl font-bold text-slate-800">{t('confirmationPage.titleNoName')}</h1>
-          <p className="mt-2 text-slate-600">{t('confirmationPage.notFound')}</p>
-        </div>
-      </main>
-    )
-  }
-
-  const customer = appointment.customers?.name || ''
-  const pet = appointment.pets?.name || ''
-  const service = appointment.services?.name || ''
-  const address = appointment.customers?.address || ''
-  const notes = appointment.notes || ''
-  const paymentStatus = appointment.payment_status || 'unpaid'
-  const duration = appointment.duration
-  const date = appointment.appointment_date
-  const time = appointment.appointment_time
+  const hasAppointment = Boolean(appointment)
+  const customer = appointment?.customers?.name || ''
+  const pet = appointment?.pets?.name || ''
+  const service = appointment?.services?.name || ''
+  const address = appointment?.customers?.address || ''
+  const notes = appointment?.notes || ''
+  const paymentStatus = appointment?.payment_status || 'unpaid'
+  const duration = appointment?.duration
+  const date = appointment?.appointment_date
+  const time = appointment?.appointment_time
 
   const formattedDate = useMemo(() => formatDate(date, resolvedLocale), [date, resolvedLocale])
   const formattedTime = useMemo(() => formatTime(time, resolvedLocale), [time, resolvedLocale])
@@ -67,6 +57,17 @@ export default function ConfirmationPage({ appointment }) {
     ? t('confirmationPage.durationMinutes', { duration })
     : t('confirmationPage.missing.generic')
   const addressValue = address || t('confirmationPage.missing.generic')
+
+  if (!hasAppointment) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-brand-primary-soft via-white to-brand-accent-soft px-4 py-10 text-slate-900">
+        <div className="mx-auto max-w-xl rounded-3xl border border-slate-200 bg-white/80 p-6 text-center shadow-xl backdrop-blur">
+          <h1 className="text-2xl font-bold text-slate-800">{t('confirmationPage.titleNoName')}</h1>
+          <p className="mt-2 text-slate-600">{t('confirmationPage.notFound')}</p>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-brand-primary-soft via-white to-brand-accent-soft px-4 py-10 text-slate-900">
@@ -96,12 +97,12 @@ export default function ConfirmationPage({ appointment }) {
               value={serviceValue}
             />
             <InfoRow
-              label={t('confirmationPage.labels.pet')}
-              value={petValue}
-            />
-            <InfoRow
               label={t('confirmationPage.labels.duration')}
               value={durationValue}
+            />
+            <InfoRow
+              label={t('confirmationPage.labels.pet')}
+              value={petValue}
             />
             <InfoRow
               label={t('confirmationPage.labels.payment')}

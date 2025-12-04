@@ -29,7 +29,7 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
         }
         return slots
-    }, [])
+    }, [START_TIME_MINUTES, END_TIME_MINUTES, SLOT_INTERVAL_MINUTES])
     const SLOT_HEIGHT = 80
     const SLOT_GAP = 4
     const TOTAL_DAY_HEIGHT = timeSlots.length * SLOT_HEIGHT + SLOT_GAP * (timeSlots.length - 1)

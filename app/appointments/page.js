@@ -20,11 +20,12 @@ import ViewToggle from '@/components/ViewToggle'
 import FilterButtons from '@/components/FilterButtons'
 import { useTranslation } from '@/components/TranslationProvider'
 import { compressImage } from '@/utils/image'
+import { formatDate, formatTime } from '@/utils/dateUtils'
 
 const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
 
 const LoadingCard = ({ labelKey }) => {
-  const { t } = useTranslation()
+  const { t, resolvedLocale } = useTranslation()
   return (
     <div className="bg-white rounded-2xl shadow-md border border-brand-primary/20 p-6 text-center text-gray-500 animate-pulse">
       {t(labelKey)}
@@ -57,7 +58,7 @@ export default function Home() {
   const [view, setView] = useState('calendar') // 'list' or 'calendar'
   const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
-  const { t } = useTranslation()
+  const { t, resolvedLocale } = useTranslation()
 
   useEffect(() => {
     if (!showForm) return
@@ -94,7 +95,53 @@ export default function Home() {
     setFilteredAppointments(filtered)
   }, [appointments, filter])
 
-  async function handleCreateAppointment(formData, media = {}) {
+  const openWhatsAppForAppointment = (appointment, { forceRedirect = false } = {}) => {
+    if (!appointment?.public_token || !appointment?.id) {
+      alert(t('appointmentForm.messages.noShareToken'))
+      return
+    }
+
+    const dateText = formatDate(appointment.appointment_date, resolvedLocale)
+    const timeText = formatTime(appointment.appointment_time, resolvedLocale)
+    const customerName = appointment.customers?.name
+    const petName = appointment.pets?.name
+    const petBreed = appointment.pets?.breed
+    const serviceName = appointment.services?.name
+    const address = appointment.customers?.address
+    const phoneNumber = appointment.customers?.phone || ''
+    const phoneDigits = phoneNumber.replace(/\D/g, '')
+
+    const introMessage = customerName
+      ? t('appointmentCard.share.messageWithName', {
+          customer: customerName,
+          date: dateText,
+          time: timeText
+        })
+      : t('appointmentCard.share.messageNoName', {
+          date: dateText,
+          time: timeText
+        })
+
+    const confirmationUrl = `${window.location.origin}/appointments/confirm?id=${appointment.id}&token=${appointment.public_token}`
+
+    const detailLines = [
+      serviceName && t('appointmentCard.share.service', { service: serviceName }),
+      petName && t('appointmentCard.share.pet', { pet: petBreed ? `${petName} (${petBreed})` : petName }),
+      address && t('appointmentCard.share.address', { address }),
+      t('appointmentCard.share.link', { url: confirmationUrl })
+    ].filter(Boolean)
+
+    const messageBody = [introMessage, '', ...detailLines].join('\n')
+
+    const waUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(messageBody)}`
+    if (forceRedirect) {
+      window.location.href = waUrl
+    } else {
+      window.open(waUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  async function handleCreateAppointment(formData, media = {}, options = { sendWhatsapp: false }) {
     const payload = { ...formData }
 
     try {
@@ -125,12 +172,28 @@ export default function Home() {
     if (error) {
       alert(t('appointmentsPage.errors.create', { message: error.message }))
     } else {
-      await fetchAppointments()
+      const created = data?.[0] || null
+
+      if (options?.sendWhatsapp && created?.id) {
+        // Fetch fresh data to ensure relations/public_token are present
+        const { data: latest } = await loadAppointments()
+        if (latest && Array.isArray(latest)) {
+          setAppointments(latest)
+          const match = latest.find((apt) => apt.id === created.id) || created
+          openWhatsAppForAppointment(match, { forceRedirect: true })
+        } else {
+          openWhatsAppForAppointment(created, { forceRedirect: true })
+          await fetchAppointments()
+        }
+      } else {
+        await fetchAppointments()
+      }
+
       setShowForm(false)
     }
   }
 
-  async function handleUpdateAppointment(formData, media = {}) {
+  async function handleUpdateAppointment(formData, media = {}, _options = {}) {
     const payload = {
       ...formData,
       before_photo_url: editingAppointment?.before_photo_url || null,
@@ -348,6 +411,7 @@ export default function Home() {
                 onMarkCompleted={
                   editingAppointment ? () => handleMarkCompleted(editingAppointment.id) : undefined
                 }
+                onShare={openWhatsAppForAppointment}
               />
             </div>
           </div>

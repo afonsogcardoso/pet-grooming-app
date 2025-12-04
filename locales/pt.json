@@ -89,7 +89,7 @@
       "shareShort": "WhatsApp"
     },
     "share": {
-      "messageWithName": "Olá {{customer}}! Confirmamos a sua marcação para {{date}} às {{time}}.",
+      "messageWithName": "Olá {{customer}}!\n\nConfirmamos a sua marcação para {{date}} às {{time}}.",
       "messageNoName": "Olá! Confirmamos a sua marcação para {{date}} às {{time}}.",
       "service": "Serviço: {{service}}",
       "pet": "Pet: {{pet}}",
@@ -157,7 +157,8 @@
       "phone": "Telefone",
       "date": "Data *",
       "time": "Hora *",
-      "notes": "Notas"
+      "notes": "Notas",
+      "sendWhatsapp": "Enviar confirmação por WhatsApp após gravar"
     },
     "labels": {
       "beforePhoto": "Foto antes",
@@ -213,7 +214,8 @@
       "removePhoto": "Remover foto",
       "markCompleted": "✅ Marcar como completo",
       "completed": "✅ Completo",
-      "delete": "🗑 Apagar agendamento"
+      "delete": "🗑 Apagar agendamento",
+      "share": "Enviar por WhatsApp"
     },
     "durationOptions": {
       "minutes30": "30 minutos",
@@ -223,6 +225,7 @@
     "messages": {
       "selectCustomerFirst": "Escolhe primeiro um cliente",
       "newCustomerPetRequired": "Preenche o nome/telefone do cliente e o nome do animal.",
+      "noShareToken": "Ainda não podes partilhar esta marcação. Guarda-a primeiro.",
       "createCustomerError": "Erro a criar cliente: {{message}}",
       "createPetError": "Erro a criar animal: {{message}}",
       "updateCustomerError": "Erro a atualizar cliente: {{message}}",

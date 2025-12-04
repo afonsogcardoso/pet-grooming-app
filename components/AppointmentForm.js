@@ -38,7 +38,8 @@ export default function AppointmentForm({
     onCancel,
     initialData = null,
     onDelete,
-    onMarkCompleted
+    onMarkCompleted,
+    onShare
 }) {
     const { t } = useTranslation()
     const [customers, setCustomers] = useState([])
@@ -81,6 +82,7 @@ export default function AppointmentForm({
     const afterPreviewRef = useRef(null)
     const searchDropdownTimeoutRef = useRef(null)
     const [creatingNew, setCreatingNew] = useState(false)
+    const [sendWhatsappAfterSave, setSendWhatsappAfterSave] = useState(false)
 
     const isEditing = Boolean(initialData?.id)
     const isCompleted = Boolean(initialData?.status === 'completed')
@@ -153,6 +155,7 @@ export default function AppointmentForm({
             setAfterPhotoFile(null)
             setRemoveBeforePhoto(false)
             setRemoveAfterPhoto(false)
+            setSendWhatsappAfterSave(false)
         } else {
             setFormData(buildInitialFormState(null))
             setSelectedPetInfo(null)
@@ -162,6 +165,7 @@ export default function AppointmentForm({
             setAfterPhotoFile(null)
             setRemoveBeforePhoto(false)
             setRemoveAfterPhoto(false)
+            setSendWhatsappAfterSave(false)
         }
         if (initialData?.pets?.name && initialData?.customers?.name) {
             setSearchTerm(formatSearchLabel(initialData.pets.name, initialData.customers.name))
@@ -539,14 +543,34 @@ export default function AppointmentForm({
             payment_status: formData.payment_status || 'unpaid'
         }
 
-        onSubmit(payload, {
-            beforePhotoFile,
-            afterPhotoFile,
-            removeBeforePhoto,
-            removeAfterPhoto,
-            currentBeforePhotoUrl: initialData?.before_photo_url || null,
-            currentAfterPhotoUrl: initialData?.after_photo_url || null
-        })
+        onSubmit(
+            payload,
+            {
+                beforePhotoFile,
+                afterPhotoFile,
+                removeBeforePhoto,
+                removeAfterPhoto,
+                currentBeforePhotoUrl: initialData?.before_photo_url || null,
+                currentAfterPhotoUrl: initialData?.after_photo_url || null
+            },
+            {
+                sendWhatsapp: !isEditing && sendWhatsappAfterSave
+            }
+        )
+    }
+
+    const handleShareClick = () => {
+        if (!onShare) return
+        const appointmentForShare = {
+            ...(initialData || {}),
+            ...formData,
+            public_token: initialData?.public_token,
+            customers: selectedCustomer || initialData?.customers || null,
+            pets: selectedPetInfo || initialData?.pets || null,
+            services: services.find((s) => s.id === formData.service_id) || initialData?.services || null,
+            notes: formData.notes
+        }
+        onShare(appointmentForShare)
     }
 
     return (
@@ -579,7 +603,7 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_date: e.target.value })
                                 }
-                                className="h-5 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium"
+                                className="w-[150px] h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
                             />
                         </div>
                         <div>
@@ -592,7 +616,7 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_time: e.target.value })
                                 }
-                                className="w-25 h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium"
+                                className="w-25 h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
                             >
                                 <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
                                 {generateTimeSlots().map((time) => (
@@ -603,27 +627,76 @@ export default function AppointmentForm({
                             </select>
                         </div>
                     </div>
+
+                    {/* Service + Duration */}
+                    <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-800 mb-2">
+                                {t('appointmentForm.fields.service')}
+                            </label>
+                            <div className="flex gap-2">
+                                {loadingServices ? (
+                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                        {t('appointmentForm.loaders.services')}
+                                    </div>
+                                ) : services.length === 0 ? (
+                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-dashed border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                        {t('appointmentForm.placeholders.noServices')}
+                                    </div>
+                                ) : (
+                                    <select
+                                        required
+                                        value={formData.service_id}
+                                        onChange={(e) => handleServiceChange(e.target.value)}
+                                        className="flex-1 min-w-[150px] max-w-[200px] sm:max-w-none px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm sm:text-lg bg-white text-gray-900 font-medium"
+                                    >
+                                        <option value="">{t('appointmentForm.placeholders.selectService')}</option>
+                                        {services.map((service) => (
+                                            <option key={service.id} value={service.id}>
+                                                {service.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-gray-800 mb-2">
+                                {t('appointmentForm.fields.duration')}
+                            </label>
+                            <select
+                                required
+                                value={formData.duration}
+                                onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                                className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                            >
+                                <option value="30">{t('appointmentForm.durationOptions.minutes30')}</option>
+                                <option value="60">{t('appointmentForm.durationOptions.hour')}</option>
+                                <option value="90">{t('appointmentForm.durationOptions.hourThirty')}</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={() => handleModeSwitch('existing')}
-                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                                    !creatingNew
-                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
-                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
-                                }`}
+                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${!creatingNew
+                                    ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                    }`}
                             >
                                 {t('appointmentForm.buttons.searchExisting')}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleModeSwitch('new')}
-                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
-                                    creatingNew
-                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
-                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
-                                }`}
+                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${creatingNew
+                                    ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                    }`}
                             >
                                 {t('appointmentForm.buttons.newEntry')}
                             </button>
@@ -811,11 +884,11 @@ export default function AppointmentForm({
                                         {t('appointmentForm.fields.customer')}
                                     </label>
                                     <div className="flex gap-2">
-                                {loadingCustomers ? (
-                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
-                                        {t('appointmentForm.loaders.customers')}
-                                    </div>
-                                ) : (
+                                        {loadingCustomers ? (
+                                            <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                                {t('appointmentForm.loaders.customers')}
+                                            </div>
+                                        ) : (
                                             <select
                                                 required
                                                 value={formData.customer_id}
@@ -926,55 +999,6 @@ export default function AppointmentForm({
                                 )}
                             </>
                         )}
-
-                        {/* Service Selection */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.service')}
-                            </label>
-                            <div className="flex gap-2">
-                                {loadingServices ? (
-                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
-                                        {t('appointmentForm.loaders.services')}
-                                    </div>
-                                ) : services.length === 0 ? (
-                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-dashed border-gray-400 rounded-lg text-gray-600 bg-gray-50">
-                                        {t('appointmentForm.placeholders.noServices')}
-                                    </div>
-                                ) : (
-                                    <select
-                                        required
-                                        value={formData.service_id}
-                                        onChange={(e) => handleServiceChange(e.target.value)}
-                                        className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
-                                    >
-                                        <option value="">{t('appointmentForm.placeholders.selectService')}</option>
-                                        {services.map((service) => (
-                                            <option key={service.id} value={service.id}>
-                                                {service.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Duration Selection */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.duration')}
-                            </label>
-                            <select
-                                required
-                                value={formData.duration}
-                                onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                                className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
-                            >
-                                <option value="30">{t('appointmentForm.durationOptions.minutes30')}</option>
-                                <option value="60">{t('appointmentForm.durationOptions.hour')}</option>
-                                <option value="90">{t('appointmentForm.durationOptions.hourThirty')}</option>
-                            </select>
-                        </div>
 
                         {/* Payment status (edit only) */}
                         {isEditing && (
@@ -1109,6 +1133,20 @@ export default function AppointmentForm({
                             placeholder={t('appointmentForm.placeholders.notes')}
                         />
                     </div>
+                    {!isEditing && (
+                        <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
+                            <input
+                                id="send-whatsapp"
+                                type="checkbox"
+                                checked={sendWhatsappAfterSave}
+                                onChange={(e) => setSendWhatsappAfterSave(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                            />
+                            <label htmlFor="send-whatsapp" className="text-sm font-medium text-gray-800">
+                                {t('appointmentForm.fields.sendWhatsapp')}
+                            </label>
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                         <button
@@ -1119,6 +1157,15 @@ export default function AppointmentForm({
                         </button>
                         {isEditing && (
                             <div className="flex flex-col gap-2 sm:flex-row sm:flex-1">
+                                {onShare && initialData?.public_token && (
+                                    <button
+                                        type="button"
+                                        onClick={handleShareClick}
+                                        className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                                    >
+                                        🟢 {t('appointmentForm.buttons.share')}
+                                    </button>
+                                )}
                                 <button
                                     type="button"
                                     onClick={() => {
