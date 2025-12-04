@@ -24,6 +24,52 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
     const petPhoto = appointment.pets?.photo_url
     const serviceName = appointment.services?.name || t('appointmentCard.unknownService')
     const paymentStatus = appointment.payment_status || 'unpaid'
+    const phoneDigits = (phoneNumber || '').replace(/\D/g, '')
+
+    const buildConfirmationUrl = () => {
+        if (typeof window === 'undefined') return ''
+        const url = new URL('/appointments/confirm', window.location.origin)
+        const setParam = (key, value) => {
+            if (value) url.searchParams.set(key, value)
+        }
+        setParam('c', customerName)
+        setParam('p', petName)
+        setParam('s', serviceName)
+        setParam('a', address)
+        setParam('n', appointment.notes)
+        setParam('u', appointment.duration)
+        setParam('pm', appointment.payment_status)
+        setParam('d', appointment.appointment_date)
+        setParam('t', appointment.appointment_time)
+        return url.toString()
+    }
+
+    const handleShareWhatsApp = () => {
+        if (typeof window === 'undefined') return
+        const confirmationUrl = buildConfirmationUrl()
+        const introMessage = customerName
+            ? t('appointmentCard.share.messageWithName', {
+                customer: customerName,
+                date: dateText,
+                time: timeText
+            })
+            : t('appointmentCard.share.messageNoName', {
+                date: dateText,
+                time: timeText
+            })
+
+        const detailLines = [
+            serviceName && t('appointmentCard.share.service', { service: serviceName }),
+            petName && t('appointmentCard.share.pet', { pet: petBreed ? `${petName} (${petBreed})` : petName }),
+            address && t('appointmentCard.share.address', { address }),
+            confirmationUrl && t('appointmentCard.share.link', { url: confirmationUrl })
+        ].filter(Boolean)
+
+        const messageBody = [introMessage, '', ...detailLines].join('\n')
+
+        const waUrl = `https://wa.me/${phoneDigits || ''}?text=${encodeURIComponent(messageBody)}`
+        window.open(waUrl, '_blank', 'noopener,noreferrer')
+    }
 
     return (
         <div
@@ -189,6 +235,14 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                 </div>
 
                 <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                    <button
+                        onClick={handleShareWhatsApp}
+                        className="inline-flex items-center justify-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 sm:w-auto"
+                    >
+                        🟢
+                        <span className="hidden sm:inline">{t('appointmentCard.buttons.share')}</span>
+                        <span className="sm:hidden">{t('appointmentCard.buttons.shareShort')}</span>
+                    </button>
                     <button
                         onClick={() => onEdit(appointment)}
                         className="inline-flex items-center justify-center gap-1 rounded-full border border-brand-primary bg-white px-3 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary-soft sm:w-auto"

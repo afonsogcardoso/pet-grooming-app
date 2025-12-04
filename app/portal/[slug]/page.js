@@ -6,6 +6,38 @@ import PortalLanding from '@/components/portal/PortalLanding'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const account = await getPublicAccountBySlug(slug?.toLowerCase())
+
+  if (!account) {
+    return {
+      title: 'Booking',
+      description: 'Agende online com facilidade.'
+    }
+  }
+
+  const title = `${account.name} · Marcação online`
+  const description = `Reserve serviços em ${account.name}.`
+  const image = account.portal_image_url || account.logo_url || '/brand-logo.png'
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: image ? [image] : undefined
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+      images: image ? [image] : undefined
+    }
+  }
+}
+
 export default async function BookingLandingPage({ params }) {
   const { slug } = await params
   const slugParam = slug?.toLowerCase()

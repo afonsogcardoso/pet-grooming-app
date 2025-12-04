@@ -84,7 +84,17 @@
       "markPaid": "Mark as paid",
       "markUnpaid": "Mark as unpaid",
       "markPaidShort": "Paid",
-      "markUnpaidShort": "Unpaid"
+      "markUnpaidShort": "Unpaid",
+      "share": "Send via WhatsApp",
+      "shareShort": "WhatsApp"
+    },
+    "share": {
+      "messageWithName": "Hi {{customer}}! Your appointment is confirmed for {{date}} at {{time}}.",
+      "messageNoName": "Hi! Your appointment is confirmed for {{date}} at {{time}}.",
+      "service": "Service: {{service}}",
+      "pet": "Pet: {{pet}}",
+      "address": "Address: {{address}}",
+      "link": "See details and confirm: {{url}}"
     },
     "payment": {
       "paid": "Paid",
@@ -93,6 +103,36 @@
     "unknownCustomer": "Unknown customer",
     "unknownPet": "Unknown pet",
     "unknownService": "Unknown service"
+  },
+  "confirmationPage": {
+    "header": "Appointment confirmed",
+    "title": "Hi {{customer}}, your booking is confirmed",
+    "titleNoName": "Your booking is confirmed",
+    "subtitle": "Save this link to check your appointment details anytime.",
+    "labels": {
+      "date": "Date",
+      "time": "Time",
+      "service": "Service",
+      "pet": "Pet",
+      "address": "Address",
+      "notes": "Notes",
+      "payment": "Payment status",
+      "duration": "Duration"
+    },
+    "durationMinutes": "{{duration}} minutes",
+    "payment": {
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "missing": {
+      "generic": "Not provided"
+    },
+    "footer": {
+      "confirmed": "Everything is set for your visit.",
+      "update": "Need to change something? Reply to the message you received.",
+      "note": "This page is just for you. Save it so you can find it later.",
+      "homeLink": "Back to homepage"
+    }
   },
   "appointmentForm": {
     "title": {

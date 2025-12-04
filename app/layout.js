@@ -16,9 +16,22 @@ const lilitaOne = Lilita_One({
   variable: '--font-lilita'
 })
 
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || 'Booking'
+const siteDescription =
+  process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Agende online com facilidade.'
+
 export const metadata = {
-  title: 'Pet Grooming Manager',
-  description: 'Manage your pet grooming appointments',
+  title: siteName,
+  description: siteDescription,
+  openGraph: {
+    title: siteName,
+    description: siteDescription
+  },
+  twitter: {
+    card: 'summary',
+    title: siteName,
+    description: siteDescription
+  }
 }
 
 export default function RootLayout({ children }) {

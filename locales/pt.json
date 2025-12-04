@@ -84,7 +84,17 @@
       "markPaid": "Marcar como pago",
       "markUnpaid": "Marcar por pagar",
       "markPaidShort": "Pago",
-      "markUnpaidShort": "Por pagar"
+      "markUnpaidShort": "Por pagar",
+      "share": "Enviar por WhatsApp",
+      "shareShort": "WhatsApp"
+    },
+    "share": {
+      "messageWithName": "Olá {{customer}}! Confirmamos a sua marcação para {{date}} às {{time}}.",
+      "messageNoName": "Olá! Confirmamos a sua marcação para {{date}} às {{time}}.",
+      "service": "Serviço: {{service}}",
+      "pet": "Pet: {{pet}}",
+      "address": "Morada: {{address}}",
+      "link": "Ver detalhes e confirmar: {{url}}"
     },
     "payment": {
       "paid": "Pago",
@@ -93,6 +103,36 @@
     "unknownCustomer": "Cliente desconhecido",
     "unknownPet": "Animal desconhecido",
     "unknownService": "Serviço"
+  },
+  "confirmationPage": {
+    "header": "Confirmação de marcação",
+    "title": "Olá {{customer}}, a sua reserva está confirmada",
+    "titleNoName": "A sua reserva está confirmada",
+    "subtitle": "Guarde este link para voltar a ver os detalhes quando quiser.",
+    "labels": {
+      "date": "Data",
+      "time": "Hora",
+      "service": "Serviço",
+      "pet": "Pet",
+      "address": "Morada",
+      "notes": "Notas",
+      "payment": "Estado do pagamento",
+      "duration": "Duração"
+    },
+    "durationMinutes": "{{duration}} minutos",
+    "payment": {
+      "paid": "Pago",
+      "unpaid": "Por pagar"
+    },
+    "missing": {
+      "generic": "Não fornecido"
+    },
+    "footer": {
+      "confirmed": "Tudo preparado para a sua visita.",
+      "update": "Precisa de alterar? Responda à mensagem que recebeu.",
+      "note": "Esta página é só para si. Guarde-a para encontrar facilmente.",
+      "homeLink": "Voltar ao início"
+    }
   },
   "appointmentForm": {
     "title": {
