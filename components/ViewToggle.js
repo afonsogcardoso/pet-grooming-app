@@ -8,29 +8,32 @@
 import { useTranslation } from '@/components/TranslationProvider'
 
 export default function ViewToggle({ view, onViewChange }) {
-    const { t } = useTranslation()
+  const { t } = useTranslation()
 
-    const baseClasses =
-        'flex-1 rounded-full font-semibold transition duration-200 border flex items-center justify-center gap-2 py-3 px-4 text-base'
-    const activeClasses =
-        'bg-[color:var(--brand-primary)] text-white border-[color:var(--brand-primary)] shadow-brand-glow'
-    const inactiveClasses =
-        'bg-white text-brand-primary border-[color:var(--brand-primary)] hover:bg-brand-primary-soft'
+  const options = [
+    { id: 'list', icon: '📋', label: t('viewToggle.list') },
+    { id: 'calendar', icon: '📅', label: t('viewToggle.calendar') }
+  ]
 
-    return (
-        <div className="flex gap-2">
-            <button
-                onClick={() => onViewChange('list')}
-                className={`${baseClasses} ${view === 'list' ? activeClasses : inactiveClasses}`}
-            >
-                📋 {t('viewToggle.list')}
-            </button>
-            <button
-                onClick={() => onViewChange('calendar')}
-                className={`${baseClasses} ${view === 'calendar' ? activeClasses : inactiveClasses}`}
-            >
-                📅 {t('viewToggle.calendar')}
-            </button>
-        </div>
-    )
+  return (
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+      {options.map((option) => {
+        const isActive = view === option.id
+        return (
+          <button
+            key={option.id}
+            onClick={() => onViewChange(option.id)}
+            aria-label={option.label}
+            className={`flex h-9 w-9 items-center justify-center rounded-full text-lg transition ${
+              isActive
+                ? 'bg-[color:var(--brand-primary)] text-white shadow-brand-glow'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <span aria-hidden="true">{option.icon}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
 }

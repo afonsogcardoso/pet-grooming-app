@@ -16,13 +16,20 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
     const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset])
     const datesToRender = weekDates
 
+    const SLOT_INTERVAL_MINUTES = 30
+    const START_TIME_MINUTES = 9 * 60 // 09:00
+    const END_TIME_MINUTES = 18 * 60 // 18:00
+
     // Time slots from 9 AM to 6 PM in 30-minute intervals
-    const timeSlots = [
-        '09:00', '09:30', '10:00', '10:30',
-        '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-        '17:00', '17:30', '18:00'
-    ]
+    const timeSlots = useMemo(() => {
+        const slots = []
+        for (let minutes = START_TIME_MINUTES; minutes <= END_TIME_MINUTES; minutes += SLOT_INTERVAL_MINUTES) {
+            const hour = Math.floor(minutes / 60)
+            const minute = minutes % 60
+            slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
+        }
+        return slots
+    }, [])
     const SLOT_HEIGHT = 80
     const SLOT_GAP = 4
     const TOTAL_DAY_HEIGHT = timeSlots.length * SLOT_HEIGHT + SLOT_GAP * (timeSlots.length - 1)
@@ -93,12 +100,13 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
             .filter((apt) => apt.appointment_date === dateStr)
             .map((apt) => {
                 const normalizedTime = normalizeTimeToSlot(apt.appointment_time)
-                const slotIndex = normalizedTime ? timeSlots.indexOf(normalizedTime) : -1
-                if (slotIndex === -1) return null
-                const duration = Math.max(30, apt.duration || 60)
-                const requestedSpans = Math.ceil(duration / 30)
-                const availableSpans = timeSlots.length - slotIndex
-                const slotsToRender = Math.max(1, Math.min(requestedSpans, availableSpans))
+                if (!normalizedTime) return null
+                const [hour, minute] = normalizedTime.split(':').map(Number)
+                const minutesFromStart = hour * 60 + minute - START_TIME_MINUTES
+                if (Number.isNaN(minutesFromStart) || minutesFromStart < 0) return null
+                const slotIndex = minutesFromStart / SLOT_INTERVAL_MINUTES
+                const durationMinutes = Math.max(SLOT_INTERVAL_MINUTES, apt.duration || 60)
+                const slotsToRender = Math.max(1, durationMinutes / SLOT_INTERVAL_MINUTES)
                 return { ...apt, slotIndex, slotsToRender }
             })
             .filter(Boolean)
@@ -112,8 +120,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                 <button
                     onClick={handlePrevious}
                     className="btn-brand py-3 px-4"
+                    aria-label={t('calendar.previous')}
                 >
-                    ← {t('calendar.previous')}
+                    <span aria-hidden="true">←</span>
                 </button>
 
                 <div className="text-center flex-1">
@@ -133,8 +142,9 @@ export default function CalendarView({ appointments, weekOffset, onWeekChange, o
                 <button
                     onClick={handleNext}
                     className="btn-brand py-3 px-4"
+                    aria-label={t('calendar.next')}
                 >
-                    {t('calendar.next')} →
+                    <span aria-hidden="true">→</span>
                 </button>
             </div>
 

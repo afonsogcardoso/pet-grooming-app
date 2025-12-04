@@ -80,7 +80,15 @@
     "buttons": {
       "edit": "Editar",
       "complete": "Concluir",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "markPaid": "Marcar como pago",
+      "markUnpaid": "Marcar por pagar",
+      "markPaidShort": "Pago",
+      "markUnpaidShort": "Por pagar"
+    },
+    "payment": {
+      "paid": "Pago",
+      "unpaid": "Por pagar"
     },
     "unknownCustomer": "Cliente desconhecido",
     "unknownPet": "Animal desconhecido",
@@ -100,6 +108,7 @@
       "pet": "Animal *",
       "service": "Serviço *",
       "duration": "Duração *",
+      "payment": "Pagamento",
       "phone": "Telefone",
       "date": "Data *",
       "time": "Hora *",
@@ -107,7 +116,8 @@
     },
     "labels": {
       "beforePhoto": "Foto antes",
-      "afterPhoto": "Foto depois"
+      "afterPhoto": "Foto depois",
+      "address": "Morada"
     },
     "sections": {
       "beforeAfter": "Fotos de antes e depois"
@@ -119,6 +129,7 @@
       "selectService": "Escolhe um serviço...",
       "selectTime": "Escolhe uma hora...",
       "selectCustomerFirst": "Escolhe primeiro um cliente",
+      "address": "Morada (opcional)",
       "phone": "Preenche automaticamente pelo cliente",
       "notes": "Instruções ou notas especiais...",
       "noServices": "Ainda não existem serviços. Adiciona um abaixo."
@@ -143,7 +154,14 @@
       "beforePhoto": "Adiciona uma foto \"antes\" do animal.",
       "afterPhoto": "Adiciona uma foto \"depois\" após terminares."
     },
+    "payment": {
+      "paid": "Pago",
+      "unpaid": "Por pagar",
+      "helper": "Usa isto para registares rapidamente se este serviço já foi pago."
+    },
     "buttons": {
+      "searchExisting": "Procurar",
+      "newEntry": "Novo",
       "add": "+ Novo",
       "save": "💾 Guardar agendamento",
       "update": "💾 Atualizar agendamento",
@@ -158,7 +176,12 @@
       "hourThirty": "1 hora e 30 minutos"
     },
     "messages": {
-      "selectCustomerFirst": "Escolhe primeiro um cliente"
+      "selectCustomerFirst": "Escolhe primeiro um cliente",
+      "newCustomerPetRequired": "Preenche o nome/telefone do cliente e o nome do animal.",
+      "createCustomerError": "Erro a criar cliente: {{message}}",
+      "createPetError": "Erro a criar animal: {{message}}",
+      "updateCustomerError": "Erro a atualizar cliente: {{message}}",
+      "newFlowHint": "Preenche para criares um novo cliente e animal."
     }
   },
   "servicesForm": {
@@ -272,8 +295,8 @@
     "placeholders": {
       "name": "Max",
       "breed": "Golden Retriever",
-      "age": "5",
-      "weight": "25,5",
+      "age": "5 anos",
+      "weight": "25 kg",
       "medicalNotes": "Alergias, medicação, necessidades especiais..."
     },
     "helpers": {

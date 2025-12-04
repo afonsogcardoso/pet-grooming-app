@@ -10,7 +10,8 @@ import {
     loadPetsByCustomer,
     loadCustomerPetSearchIndex,
     createCustomer,
-    createPet
+    createPet,
+    updateCustomer
 } from '@/lib/customerService'
 import { loadServices } from '@/lib/serviceService'
 import { useTranslation } from '@/components/TranslationProvider'
@@ -23,11 +24,13 @@ const buildInitialFormState = (data) => ({
     pet_id: data?.pet_id || '',
     service_id: data?.service_id || data?.services?.id || '',
     phone: data?.customers?.phone || '',
+    address: data?.customers?.address || '',
     appointment_date: data?.appointment_date || '',
     appointment_time: formatTimeValue(data?.appointment_time),
     duration: data?.duration || 60,
     notes: data?.notes || '',
-    status: data?.status || 'scheduled'
+    status: data?.status || 'scheduled',
+    payment_status: data?.payment_status || 'unpaid'
 })
 
 export default function AppointmentForm({
@@ -77,6 +80,7 @@ export default function AppointmentForm({
     const beforePreviewRef = useRef(null)
     const afterPreviewRef = useRef(null)
     const searchDropdownTimeoutRef = useRef(null)
+    const [creatingNew, setCreatingNew] = useState(false)
 
     const isEditing = Boolean(initialData?.id)
     const isCompleted = Boolean(initialData?.status === 'completed')
@@ -104,14 +108,29 @@ export default function AppointmentForm({
         return customerName || petName || ''
     }
 
-    // Generate 24h time slots in 30-minute increments
+    const selectedCustomer = useMemo(
+        () => customers.find((c) => c.id === formData.customer_id),
+        [customers, formData.customer_id]
+    )
+
+    const handleModeSwitch = (mode) => {
+        setCreatingNew(mode === 'new')
+        if (mode === 'new') {
+            setFormData((prev) => ({ ...prev, customer_id: '', pet_id: '', address: '', phone: '' }))
+            setSelectedPetInfo(null)
+            setSearchTerm('')
+        }
+    }
+
+    // Generate 24h time slots in 5-minute increments
     const generateTimeSlots = () => {
         const slots = []
-        for (let hour = 8; hour < 20; hour++) {
-            for (let minute of [0, 30]) {
-                const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-                slots.push(timeString)
-            }
+        const startMinutes = 8 * 60
+        const endMinutes = 20 * 60
+        for (let minutes = startMinutes; minutes <= endMinutes; minutes += 5) {
+            const hour = Math.floor(minutes / 60)
+            const minute = minutes % 60
+            slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
         }
         return slots
     }
@@ -255,7 +274,8 @@ export default function AppointmentForm({
             entry.customer_id,
             {
                 id: entry.customer_id,
-                phone: entry.customer_phone
+                phone: entry.customer_phone,
+                address: entry.customer_address
             },
             { skipSearchUpdate: true }
         )
@@ -280,11 +300,13 @@ export default function AppointmentForm({
     }
 
     function handleCustomerChange(customerId, customerOverride = null, { skipSearchUpdate = false } = {}) {
-        const customer = customerOverride || customers.find((c) => c.id === customerId)
+        const customerFromList = customers.find((c) => c.id === customerId)
+        const customer = { ...(customerFromList || {}), ...(customerOverride || {}) }
         setFormData((prev) => ({
             ...prev,
             customer_id: customerId,
             phone: customer?.phone || '',
+            address: customer?.address || '',
             pet_id: '' // Reset pet selection
         }))
 
@@ -432,18 +454,89 @@ export default function AppointmentForm({
         setRemoveAfterPhoto(true)
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
 
+        let customerId = formData.customer_id || null
+        let petId = formData.pet_id || null
+
+        if (creatingNew) {
+            if (!customerFormData.name || !customerFormData.phone || !petFormData.name) {
+                alert(t('appointmentForm.messages.newCustomerPetRequired'))
+                return
+            }
+
+            const { data: newCustomer, error: customerError } = await createCustomer({
+                name: customerFormData.name,
+                phone: customerFormData.phone,
+                email: customerFormData.email || null,
+                address: customerFormData.address || '',
+                notes: customerFormData.notes || ''
+            })
+            if (customerError || !newCustomer?.[0]?.id) {
+                alert(
+                    t('appointmentForm.messages.createCustomerError', {
+                        message: customerError?.message || 'Unknown error'
+                    })
+                )
+                return
+            }
+            customerId = newCustomer[0].id
+
+            const { data: newPet, error: petError } = await createPet({
+                customer_id: customerId,
+                name: petFormData.name,
+                breed: petFormData.breed || '',
+                age: petFormData.age ? parseInt(petFormData.age) : null,
+                weight: petFormData.weight ? parseFloat(petFormData.weight) : null,
+                medical_notes: petFormData.medical_notes || ''
+            })
+            if (petError || !newPet?.[0]?.id) {
+                alert(
+                    t('appointmentForm.messages.createPetError', {
+                        message: petError?.message || 'Unknown error'
+                    })
+                )
+                return
+            }
+            petId = newPet[0].id
+        } else if (selectedCustomer) {
+            const needsAddressUpdate = formData.address !== (selectedCustomer.address || '')
+            const needsPhoneUpdate = formData.phone !== (selectedCustomer.phone || '')
+            if (needsAddressUpdate || needsPhoneUpdate) {
+                const updatePayload = {}
+                if (needsAddressUpdate) updatePayload.address = formData.address
+                if (needsPhoneUpdate) updatePayload.phone = formData.phone
+
+                const { error: updateError, data: updated } = await updateCustomer(selectedCustomer.id, updatePayload)
+                if (updateError) {
+                    alert(
+                        t('appointmentForm.messages.updateCustomerError', {
+                            message: updateError.message || 'Unknown error'
+                        })
+                    )
+                    return
+                }
+                if (updated?.[0]) {
+                    setCustomers((prev) =>
+                        prev.map((c) =>
+                            c.id === selectedCustomer.id ? { ...c, ...updatePayload } : c
+                        )
+                    )
+                }
+            }
+        }
+
         const payload = {
-            customer_id: formData.customer_id || null,
-            pet_id: formData.pet_id || null,
+            customer_id: customerId,
+            pet_id: petId,
             service_id: formData.service_id || null,
             appointment_date: formData.appointment_date,
             appointment_time: formData.appointment_time,
             duration: formData.duration,
             notes: formData.notes,
-            status: formData.status
+            status: formData.status,
+            payment_status: formData.payment_status || 'unpaid'
         }
 
         onSubmit(payload, {
@@ -458,9 +551,9 @@ export default function AppointmentForm({
 
     return (
         <>
-            <div className="modal-card bg-white rounded-lg p-5 sm:p-6">
+            <div className="modal-card bg-white rounded-lg p-4 sm:p-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-bold text-gray-800">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800">
                         {isEditing ? t('appointmentForm.title.edit') : t('appointmentForm.title.new')}
                     </h3>
                     <button
@@ -473,8 +566,8 @@ export default function AppointmentForm({
                         ✕
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                         <div>
                             <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
                                 {t('appointmentForm.fields.date')}
@@ -486,7 +579,7 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_date: e.target.value })
                                 }
-                                className="w-full px-3 sm:px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                                className="h-5 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium"
                             />
                         </div>
                         <div>
@@ -499,7 +592,7 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_time: e.target.value })
                                 }
-                                className="w-full px-3 sm:px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                                className="w-25 h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium"
                             >
                                 <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
                                 {generateTimeSlots().map((time) => (
@@ -510,182 +603,328 @@ export default function AppointmentForm({
                             </select>
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-bold text-gray-800 mb-2">
-                            {t('appointmentForm.fields.search')}
-                        </label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                disabled={loadingCustomerPetIndex}
-                                onFocus={(e) => {
-                                    e.target.select()
-                                    handleSearchFocus()
-                                }}
-                                onBlur={handleSearchBlur}
-                                onChange={(e) => handleSearchInputChange(e.target.value)}
-                                placeholder={
-                                    loadingCustomerPetIndex
-                                        ? t('appointmentForm.search.loading')
-                                        : t('appointmentForm.placeholders.search')
-                                }
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium disabled:bg-gray-100"
-                            />
-                            {isSearchOpen && searchTerm.trim().length > 0 && (
-                                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-72 overflow-y-auto z-20">
-                                    {loadingCustomerPetIndex ? (
-                                        <div className="px-4 py-3 text-sm text-gray-500">
-                                            {t('appointmentForm.search.loading')}
-                                        </div>
-                                    ) : searchResults.length > 0 ? (
-                                        searchResults.map((entry) => (
-                                            <button
-                                                type="button"
-                                                key={`${entry.customer_id}-${entry.pet_id}`}
-                                                onMouseDown={(event) => {
-                                                    event.preventDefault()
-                                                    handleSearchSelect(entry)
-                                                }}
-                                                className="w-full text-left px-4 py-3 hover:bg-brand-primary-soft focus:bg-brand-primary-soft transition"
-                                            >
-                                                <div className="text-base font-semibold text-gray-900">
-                                                    {entry.pet_name}
-                                                    {entry.pet_breed && (
-                                                        <span className="text-sm text-gray-500">{` · ${entry.pet_breed}`}</span>
-                                                    )}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => handleModeSwitch('existing')}
+                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                                    !creatingNew
+                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                }`}
+                            >
+                                {t('appointmentForm.buttons.searchExisting')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleModeSwitch('new')}
+                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${
+                                    creatingNew
+                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                }`}
+                            >
+                                {t('appointmentForm.buttons.newEntry')}
+                            </button>
+                        </div>
+
+                        {!creatingNew ? (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-800 mb-2">
+                                    {t('appointmentForm.fields.search')}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        disabled={loadingCustomerPetIndex}
+                                        onFocus={(e) => {
+                                            e.target.select()
+                                            handleSearchFocus()
+                                        }}
+                                        onBlur={handleSearchBlur}
+                                        onChange={(e) => handleSearchInputChange(e.target.value)}
+                                        placeholder={
+                                            loadingCustomerPetIndex
+                                                ? t('appointmentForm.search.loading')
+                                                : t('appointmentForm.placeholders.search')
+                                        }
+                                        className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium disabled:bg-gray-100"
+                                    />
+                                    {isSearchOpen && searchTerm.trim().length > 0 && (
+                                        <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-72 overflow-y-auto z-20">
+                                            {loadingCustomerPetIndex ? (
+                                                <div className="px-4 py-3 text-sm text-gray-500">
+                                                    {t('appointmentForm.search.loading')}
                                                 </div>
-                                                <div className="text-sm text-gray-600">
-                                                    {entry.customer_name} • {entry.customer_phone || t('appointmentForm.search.noPhone')}
+                                            ) : searchResults.length > 0 ? (
+                                                searchResults.map((entry) => (
+                                                    <button
+                                                        type="button"
+                                                        key={`${entry.customer_id}-${entry.pet_id}`}
+                                                        onMouseDown={(event) => {
+                                                            event.preventDefault()
+                                                            handleSearchSelect(entry)
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-brand-primary-soft focus:bg-brand-primary-soft transition"
+                                                    >
+                                                        <div className="text-base font-semibold text-gray-900">
+                                                            {entry.pet_name}
+                                                            {entry.pet_breed && (
+                                                                <span className="text-sm text-gray-500">{` · ${entry.pet_breed}`}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            {entry.customer_name} • {entry.customer_phone || t('appointmentForm.search.noPhone')}
+                                                        </div>
+                                                    </button>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-sm text-gray-500">
+                                                    {t('appointmentForm.search.noResults')}
                                                 </div>
-                                            </button>
-                                        ))
-                                    ) : (
-                                        <div className="px-4 py-3 text-sm text-gray-500">
-                                            {t('appointmentForm.search.noResults')}
+                                            )}
                                         </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                            {t('appointmentForm.search.instructions')}
-                        </p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    {t('appointmentForm.search.instructions')}
+                                </p>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-600">
+                                {t('appointmentForm.messages.newFlowHint')}
+                            </p>
+                        )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Customer Selection */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.customer')}
-                            </label>
-                            <div className="flex gap-2">
+                        {creatingNew ? (
+                            <>
+                                <div className="space-y-2">
+                                    <p className="text-sm font-bold text-gray-800">
+                                        {t('appointmentForm.fields.customer')}
+                                    </p>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={customerFormData.name}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, name: e.target.value })
+                                        }
+                                        placeholder={t('customerForm.placeholders.name')}
+                                        className="w-full rounded-lg border-2 border-gray-400 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={customerFormData.phone}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, phone: e.target.value })
+                                        }
+                                        placeholder={t('customerForm.placeholders.phone')}
+                                        className="w-full rounded-lg border-2 border-gray-400 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <input
+                                        type="email"
+                                        value={customerFormData.email}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, email: e.target.value })
+                                        }
+                                        placeholder={t('customerForm.placeholders.email')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={customerFormData.address}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, address: e.target.value })
+                                        }
+                                        placeholder={t('customerForm.placeholders.address')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <textarea
+                                        value={customerFormData.notes}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, notes: e.target.value })
+                                        }
+                                        rows="2"
+                                        placeholder={t('customerForm.placeholders.notes')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-sm font-bold text-gray-800">
+                                        {t('appointmentForm.fields.pet')}
+                                    </p>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={petFormData.name}
+                                        onChange={(e) => setPetFormData({ ...petFormData, name: e.target.value })}
+                                        placeholder={t('petForm.placeholders.name')}
+                                        className="w-full rounded-lg border-2 border-gray-400 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={petFormData.breed}
+                                        onChange={(e) => setPetFormData({ ...petFormData, breed: e.target.value })}
+                                        placeholder={t('petForm.placeholders.breed')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={petFormData.age}
+                                            onChange={(e) => setPetFormData({ ...petFormData, age: e.target.value })}
+                                            placeholder={t('petForm.placeholders.age')}
+                                            className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                        />
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={petFormData.weight}
+                                            onChange={(e) =>
+                                                setPetFormData({ ...petFormData, weight: e.target.value })
+                                            }
+                                            placeholder={t('petForm.placeholders.weight')}
+                                            className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                        />
+                                    </div>
+                                    <textarea
+                                        value={petFormData.medical_notes}
+                                        onChange={(e) =>
+                                            setPetFormData({ ...petFormData, medical_notes: e.target.value })
+                                        }
+                                        rows="2"
+                                        placeholder={t('petForm.placeholders.medicalNotes')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Customer Selection */}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">
+                                        {t('appointmentForm.fields.customer')}
+                                    </label>
+                                    <div className="flex gap-2">
                                 {loadingCustomers ? (
-                                    <div className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
                                         {t('appointmentForm.loaders.customers')}
                                     </div>
                                 ) : (
-                                    <select
-                                        required
-                                        value={formData.customer_id}
-                                        onChange={(e) => handleCustomerChange(e.target.value)}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
-                                    >
-                                        <option value="">
-                                            {t('appointmentForm.placeholders.selectCustomer')}
-                                        </option>
-                                        {customers.map((customer) => (
-                                            <option key={customer.id} value={customer.id}>
-                                                {customer.name} - {customer.phone}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCustomerModal(true)}
-                                    className="px-4 py-4 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap"
-                                    title={t('appointmentForm.tooltips.addCustomer')}
-                                >
-                                    {t('appointmentForm.buttons.add')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Pet Selection */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.pet')}
-                            </label>
-                            <div className="flex gap-2">
-                                {!formData.customer_id ? (
-                                    <div className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
-                                        {t('appointmentForm.placeholders.selectCustomerFirst')}
-                                    </div>
-                                ) : loadingPets ? (
-                                    <div className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
-                                        {t('appointmentForm.loaders.pets')}
-                                    </div>
-                                ) : (
-                                    <select
-                                        required
-                                        value={formData.pet_id}
-                                        onChange={(e) => handlePetChange(e.target.value)}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
-                                    >
-                                        <option value="">
-                                            {t('appointmentForm.placeholders.selectPet')}
-                                        </option>
-                                        {pets.map((pet) => (
-                                            <option key={pet.id} value={pet.id}>
-                                                {pet.name}
-                                                {pet.breed && ` (${pet.breed})`}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!formData.customer_id) {
-                                            alert(t('appointmentForm.messages.selectCustomerFirst'))
-                                            return
-                                        }
-                                        setShowPetModal(true)
-                                    }}
-                                    disabled={!formData.customer_id}
-                                    className="px-4 py-4 bg-brand-accent hover:bg-brand-accent-dark text-white font-bold rounded-lg shadow-lg transition duration-200 whitespace-nowrap disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                    title={t('appointmentForm.tooltips.addPet')}
-                                >
-                                    {t('appointmentForm.buttons.add')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {selectedPetInfo?.photo_url && (
-                            <div className="md:col-span-2 flex items-center gap-4 bg-brand-primary-soft border border-brand-primary rounded-2xl p-4 shadow-inner">
-                                <Image
-                                    src={selectedPetInfo.photo_url}
-                                    alt={selectedPetInfo.name || 'Pet'}
-                                    width={80}
-                                    height={80}
-                                    className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
-                                    unoptimized
-                                />
-                                <div>
-                                    <p className="text-xs font-semibold uppercase text-brand-primary">
-                                        {t('appointmentForm.fields.pet')}
-                                    </p>
-                                    <p className="text-lg font-bold text-gray-800">
-                                        {selectedPetInfo.name}
-                                        {selectedPetInfo.breed && (
-                                            <span className="text-sm font-medium text-gray-500">
-                                                {' '}
-                                                ({selectedPetInfo.breed})
-                                            </span>
+                                            <select
+                                                required
+                                                value={formData.customer_id}
+                                                onChange={(e) => handleCustomerChange(e.target.value)}
+                                                className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                                            >
+                                                <option value="">
+                                                    {t('appointmentForm.placeholders.selectCustomer')}
+                                                </option>
+                                                {customers.map((customer) => (
+                                                    <option key={customer.id} value={customer.id}>
+                                                        {customer.name} - {customer.phone}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         )}
-                                    </p>
+                                    </div>
+                                    <div className="mt-2">
+                                        <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
+                                            {t('appointmentForm.labels.address')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.address}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({ ...prev, address: e.target.value }))
+                                            }
+                                            placeholder={t('appointmentForm.placeholders.address')}
+                                            className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 text-sm sm:text-base bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                        />
+                                    </div>
+                                    <div className="mt-2">
+                                        <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
+                                            {t('appointmentForm.fields.phone')}
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                                            }
+                                            placeholder={t('appointmentForm.placeholders.phone')}
+                                            className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 text-sm sm:text-base bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* Pet Selection */}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">
+                                        {t('appointmentForm.fields.pet')}
+                                    </label>
+                                    <div className="flex gap-2">
+                                        {!formData.customer_id ? (
+                                            <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                                {t('appointmentForm.placeholders.selectCustomerFirst')}
+                                            </div>
+                                        ) : loadingPets ? (
+                                            <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                                {t('appointmentForm.loaders.pets')}
+                                            </div>
+                                        ) : (
+                                            <select
+                                                required
+                                                value={formData.pet_id}
+                                                onChange={(e) => handlePetChange(e.target.value)}
+                                                className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                                            >
+                                                <option value="">
+                                                    {t('appointmentForm.placeholders.selectPet')}
+                                                </option>
+                                                {pets.map((pet) => (
+                                                    <option key={pet.id} value={pet.id}>
+                                                        {pet.name}
+                                                        {pet.breed && ` (${pet.breed})`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {selectedPetInfo?.photo_url && (
+                                    <div className="md:col-span-2 flex items-center gap-4 bg-brand-primary-soft border border-brand-primary rounded-2xl p-4 shadow-inner">
+                                        <Image
+                                            src={selectedPetInfo.photo_url}
+                                            alt={selectedPetInfo.name || 'Pet'}
+                                            width={80}
+                                            height={80}
+                                            className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow"
+                                            unoptimized
+                                        />
+                                        <div>
+                                            <p className="text-xs font-semibold uppercase text-brand-primary">
+                                                {t('appointmentForm.fields.pet')}
+                                            </p>
+                                            <p className="text-lg font-bold text-gray-800">
+                                                {selectedPetInfo.name}
+                                                {selectedPetInfo.breed && (
+                                                    <span className="text-sm font-medium text-gray-500">
+                                                        {' '}
+                                                        ({selectedPetInfo.breed})
+                                                    </span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {/* Service Selection */}
@@ -695,11 +934,11 @@ export default function AppointmentForm({
                             </label>
                             <div className="flex gap-2">
                                 {loadingServices ? (
-                                    <div className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg text-gray-600 bg-gray-50">
                                         {t('appointmentForm.loaders.services')}
                                     </div>
                                 ) : services.length === 0 ? (
-                                    <div className="flex-1 px-4 py-4 border-2 border-dashed border-gray-400 rounded-lg text-gray-600 bg-gray-50">
+                                    <div className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-dashed border-gray-400 rounded-lg text-gray-600 bg-gray-50">
                                         {t('appointmentForm.placeholders.noServices')}
                                     </div>
                                 ) : (
@@ -707,7 +946,7 @@ export default function AppointmentForm({
                                         required
                                         value={formData.service_id}
                                         onChange={(e) => handleServiceChange(e.target.value)}
-                                        className="flex-1 px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
+                                        className="flex-1 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">{t('appointmentForm.placeholders.selectService')}</option>
                                         {services.map((service) => (
@@ -729,7 +968,7 @@ export default function AppointmentForm({
                                 required
                                 value={formData.duration}
                                 onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                                className="w-full px-4 py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-lg bg-white text-gray-900 font-medium"
+                                className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
                             >
                                 <option value="30">{t('appointmentForm.durationOptions.minutes30')}</option>
                                 <option value="60">{t('appointmentForm.durationOptions.hour')}</option>
@@ -737,96 +976,123 @@ export default function AppointmentForm({
                             </select>
                         </div>
 
-                        {/* Phone Display (read-only) */}
-                        <div>
-                            <label className="block text-sm font-bold text-gray-800 mb-2">
-                                {t('appointmentForm.fields.phone')}
-                            </label>
-                            <input
-                                type="tel"
-                                value={formData.phone}
-                                readOnly
-                                className="w-full px-4 py-4 border-2 border-gray-300 rounded-lg text-lg bg-gray-50 text-gray-700 font-medium cursor-not-allowed"
-                                placeholder={t('appointmentForm.placeholders.phone')}
-                            />
-                        </div>
-
-                        {/* Before & After Photos */}
-                        <div className="md:col-span-2 space-y-4">
-                            <p className="text-sm font-bold text-gray-800">
-                                {t('appointmentForm.sections.beforeAfter')}
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="p-4 border-2 border-gray-200 rounded-xl">
-                                    <p className="text-sm font-semibold text-gray-700 mb-2">
-                                        {t('appointmentForm.labels.beforePhoto')}
-                                    </p>
-                                    {beforePhotoPreview ? (
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <Image
-                                                src={beforePhotoPreview}
-                                                alt="Before"
-                                                width={96}
-                                                height={96}
-                                                className="w-24 h-24 rounded-xl object-cover border-2 border-brand-primary"
-                                                unoptimized
-                                            />
+                        {/* Payment status (edit only) */}
+                        {isEditing && (
+                            <div>
+                                <label className="block text-sm font-bold text-gray-800 mb-2">
+                                    {t('appointmentForm.fields.payment')}
+                                </label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['unpaid', 'paid'].map((statusKey) => {
+                                        const isActive = formData.payment_status === statusKey
+                                        return (
                                             <button
+                                                key={statusKey}
                                                 type="button"
-                                                onClick={handleRemoveBeforePhoto}
-                                                className="text-sm font-semibold text-red-600 hover:text-red-700"
+                                                onClick={() => setFormData({ ...formData, payment_status: statusKey })}
+                                                className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-3 text-sm font-semibold transition ${isActive
+                                                    ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                                    : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                                    }`}
+                                                aria-pressed={isActive}
                                             >
-                                                {t('appointmentForm.buttons.removePhoto')}
+                                                <span>{statusKey === 'paid' ? '💳' : '⏳'}</span>
+                                                <span>
+                                                    {statusKey === 'paid'
+                                                        ? t('appointmentForm.payment.paid')
+                                                        : t('appointmentForm.payment.unpaid')}
+                                                </span>
                                             </button>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 mb-3">
-                                            {t('appointmentForm.helpers.beforePhoto')}
-                                        </p>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleBeforePhotoChange}
-                                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-primary-soft)] file:text-[color:var(--brand-primary)] hover:file:bg-[color:var(--brand-primary)] hover:file:text-white"
-                                    />
+                                        )
+                                    })}
                                 </div>
-                                <div className="p-4 border-2 border-gray-200 rounded-xl">
-                                    <p className="text-sm font-semibold text-gray-700 mb-2">
-                                        {t('appointmentForm.labels.afterPhoto')}
-                                    </p>
-                                    {afterPhotoPreview ? (
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <Image
-                                                src={afterPhotoPreview}
-                                                alt="After"
-                                                width={96}
-                                                height={96}
-                                                className="w-24 h-24 rounded-xl object-cover border-2 border-brand-accent"
-                                                unoptimized
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={handleRemoveAfterPhoto}
-                                                className="text-sm font-semibold text-red-600 hover:text-red-700"
-                                            >
-                                                {t('appointmentForm.buttons.removePhoto')}
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 mb-3">
-                                            {t('appointmentForm.helpers.afterPhoto')}
+                                <p className="mt-2 text-xs text-gray-500">
+                                    {t('appointmentForm.payment.helper')}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Phone Display (read-only) */}
+                        <div className="space-y-2" />
+
+                        {/* Before & After Photos (edit only) */}
+                        {isEditing && (
+                            <div className="md:col-span-2 space-y-4">
+                                <p className="text-sm font-bold text-gray-800">
+                                    {t('appointmentForm.sections.beforeAfter')}
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-4 border-2 border-gray-200 rounded-xl">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">
+                                            {t('appointmentForm.labels.beforePhoto')}
                                         </p>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleAfterPhotoChange}
-                                        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-accent-soft)] file:text-[color:var(--brand-accent)] hover:file:bg-[color:var(--brand-accent)] hover:file:text-white"
-                                    />
+                                        {beforePhotoPreview ? (
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Image
+                                                    src={beforePhotoPreview}
+                                                    alt="Before"
+                                                    width={96}
+                                                    height={96}
+                                                    className="w-24 h-24 rounded-xl object-cover border-2 border-brand-primary"
+                                                    unoptimized
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveBeforePhoto}
+                                                    className="text-sm font-semibold text-red-600 hover:text-red-700"
+                                                >
+                                                    {t('appointmentForm.buttons.removePhoto')}
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 mb-3">
+                                                {t('appointmentForm.helpers.beforePhoto')}
+                                            </p>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleBeforePhotoChange}
+                                            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-primary-soft)] file:text-[color:var(--brand-primary)] hover:file:bg-[color:var(--brand-primary)] hover:file:text-white"
+                                        />
+                                    </div>
+                                    <div className="p-4 border-2 border-gray-200 rounded-xl">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">
+                                            {t('appointmentForm.labels.afterPhoto')}
+                                        </p>
+                                        {afterPhotoPreview ? (
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <Image
+                                                    src={afterPhotoPreview}
+                                                    alt="After"
+                                                    width={96}
+                                                    height={96}
+                                                    className="w-24 h-24 rounded-xl object-cover border-2 border-brand-accent"
+                                                    unoptimized
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemoveAfterPhoto}
+                                                    className="text-sm font-semibold text-red-600 hover:text-red-700"
+                                                >
+                                                    {t('appointmentForm.buttons.removePhoto')}
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-gray-500 mb-3">
+                                                {t('appointmentForm.helpers.afterPhoto')}
+                                            </p>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAfterPhotoChange}
+                                            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-accent-soft)] file:text-[color:var(--brand-accent)] hover:file:bg-[color:var(--brand-accent)] hover:file:text-white"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                     </div>
 
@@ -861,11 +1127,10 @@ export default function AppointmentForm({
                                         }
                                     }}
                                     disabled={isCompleted || !onMarkCompleted}
-                                    className={`w-full rounded-2xl border px-4 py-3 text-base font-semibold transition disabled:cursor-not-allowed ${
-                                        isCompleted
-                                            ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
-                                            : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                    }`}
+                                    className={`w-full rounded-2xl border px-4 py-3 text-base font-semibold transition disabled:cursor-not-allowed ${isCompleted
+                                        ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
+                                        : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                        }`}
                                 >
                                     {isCompleted
                                         ? t('appointmentForm.buttons.completed')

@@ -4,13 +4,14 @@
 // ============================================
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import {
   loadAppointments,
   createAppointment,
   updateAppointment,
   updateAppointmentStatus,
+  updateAppointmentPaymentStatus,
   deleteAppointment as deleteAppointmentService,
   filterAppointments
 } from '@/lib/appointmentService'
@@ -46,6 +47,7 @@ const AppointmentForm = dynamic(() => import('@/components/AppointmentForm'), {
 })
 
 export default function Home() {
+  const hasLoadedRef = useRef(false)
   const [appointments, setAppointments] = useState([])
   const [filteredAppointments, setFilteredAppointments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -81,6 +83,8 @@ export default function Home() {
 
   // Load appointments on mount
   useEffect(() => {
+    if (hasLoadedRef.current) return
+    hasLoadedRef.current = true
     fetchAppointments()
   }, [fetchAppointments])
 
@@ -214,6 +218,26 @@ export default function Home() {
     }
   }
 
+  async function handleTogglePayment(appointment) {
+    const nextStatus = appointment.payment_status === 'paid' ? 'unpaid' : 'paid'
+    const { error } = await updateAppointmentPaymentStatus(appointment.id, nextStatus)
+
+    if (error) {
+      alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
+    } else {
+      setAppointments((prev) =>
+        prev.map((apt) =>
+          apt.id === appointment.id ? { ...apt, payment_status: nextStatus } : apt
+        )
+      )
+      setFilteredAppointments((prev) =>
+        prev.map((apt) =>
+          apt.id === appointment.id ? { ...apt, payment_status: nextStatus } : apt
+        )
+      )
+    }
+  }
+
   async function handleDeleteAppointment(id) {
     if (!confirm(t('appointmentsPage.confirmDelete'))) return
 
@@ -250,17 +274,19 @@ export default function Home() {
   const pageContent = (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold text-gray-800">
           {t('appointmentsPage.headingWithCount', { count: displayedCount })}
         </h2>
+        <ViewToggle view={view} onViewChange={handleViewChange} />
       </div>
 
-      {/* View Toggle & Filters */}
-      <div className="bg-white rounded-lg shadow-md p-4 space-y-4">
-        <ViewToggle view={view} onViewChange={handleViewChange} />
-        {view === 'list' && <FilterButtons filter={filter} onFilterChange={setFilter} />}
-      </div>
+      {/* Filters */}
+      {view === 'list' && (
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <FilterButtons filter={filter} onFilterChange={setFilter} />
+        </div>
+      )}
 
       {/* Add Appointment Button - Only in List View */}
       {view === 'list' && (
@@ -295,6 +321,7 @@ export default function Home() {
           onComplete={handleMarkCompleted}
           onDelete={handleDeleteAppointment}
           onEdit={handleEditAppointment}
+          onTogglePayment={handleTogglePayment}
         />
       )}
     </div>

@@ -52,12 +52,6 @@ export default function PortalLanding({ account, isAuthenticated = false }) {
   const { t } = useTranslation()
   const background = account.brand_background || '#fdfcf9'
   const formattedPhone = formatPhone(account.support_phone)
-  const contactHref = formattedPhone
-    ? `https://wa.me/${formattedPhone}`
-    : `mailto:${account.support_email || 'contact@pet-grooming.app'}`
-  const contactLabel = formattedPhone
-    ? t('portal.landing.contactWhatsApp')
-    : t('portal.landing.contactTeam')
 
   const cta = isAuthenticated
     ? { href: '/appointments', label: t('portal.landing.ctaAuthenticated') }
@@ -69,7 +63,7 @@ export default function PortalLanding({ account, isAuthenticated = false }) {
     <div className="min-h-screen" style={{ backgroundColor: background }}>
       <div className="flex min-h-screen flex-col lg:flex-row">
         <section
-          className="flex flex-1 flex-col justify-center gap-6 px-6 py-14 text-white lg:px-12"
+          className="flex flex-1 flex-col justify-center gap-6 px-6 py-12 text-white sm:py-14 lg:px-12"
           style={gradientStyle(account)}
         >
           <div className="flex items-center gap-4">
@@ -79,7 +73,8 @@ export default function PortalLanding({ account, isAuthenticated = false }) {
                 alt={t('portal.landing.logoAlt', { name: account.name })}
                 width={64}
                 height={64}
-                className="h-16 w-16 rounded-full border-2 border-white/60 object-cover bg-white/20"
+                sizes="(max-width: 768px) 64px, 80px"
+                className="h-16 w-16 rounded-full border-2 border-white/60 object-cover bg-white/20 shadow-lg"
                 unoptimized
               />
             )}
@@ -87,51 +82,43 @@ export default function PortalLanding({ account, isAuthenticated = false }) {
               <p className="text-sm uppercase tracking-widest text-white/80">
                 {t('portal.landing.badge')}
               </p>
-              <h1 className="text-4xl font-bold lg:text-5xl">{account.name}</h1>
+              <h1 className="text-4xl font-bold leading-tight sm:text-5xl">{account.name}</h1>
             </div>
           </div>
-          <p className="text-base text-white/90 lg:text-lg">
+          <p className="max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg">
             {t('portal.landing.description', { name: account.name })}
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link
               href={cta.href}
-              className="rounded-full bg-white px-8 py-3 text-base font-semibold text-slate-900 shadow-lg transition hover:translate-y-0.5"
+              className="w-full rounded-full bg-white px-6 py-3 text-center text-base font-semibold text-slate-900 shadow-lg transition hover:translate-y-0.5 sm:w-auto sm:px-8"
             >
               {cta.label}
             </Link>
-            <a
-              href={contactHref}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-white/70 px-8 py-3 text-base font-semibold text-white/90 hover:bg-white/10"
-            >
-              {contactLabel}
-            </a>
           </div>
           <p className="text-xs uppercase tracking-[0.4em] text-white/70">
             {t('portal.landing.securityBadge', { name: account.name })}
           </p>
         </section>
         {isAuthenticated && (
-          <section className="flex flex-1 flex-col justify-center bg-white/90 px-6 py-14 lg:px-12">
+          <section className="flex flex-1 flex-col justify-center rounded-t-3xl bg-white px-6 py-10 shadow-inner sm:rounded-none sm:bg-white/90 sm:px-8 sm:py-12 lg:px-12">
             <div className="space-y-2 text-slate-800">
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 {t('portal.landing.nav.title')}
               </p>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                 {t('portal.landing.nav.subtitle')}
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-600 sm:text-base">
                 {t('portal.landing.nav.description')}
               </p>
             </div>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {availableNavCards.map((card) => (
                 <Link
                   key={card.key}
                   href={card.href}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 sm:p-5"
                 >
                   <div className="text-2xl">{card.icon}</div>
                   <h3 className="mt-3 text-lg font-semibold text-slate-900">

@@ -27,6 +27,7 @@ const DEFAULT_BRANDING = {
 }
 
 const emptyState = {
+  user: null,
   account: null,
   membership: null,
   memberships: [],
@@ -39,6 +40,7 @@ export function AccountProvider({ children }) {
   const [state, setState] = useState(emptyState)
   const [currentUserId, setCurrentUserId] = useState(null)
   const latestUserRef = useRef(null)
+  const lastFetchedUserRef = useRef(null)
 
   const isPlatformAdmin = useCallback((user) => {
     if (!user) return false
@@ -73,6 +75,7 @@ export function AccountProvider({ children }) {
     }
 
     setState({
+      user: latestUserRef.current,
       account: membership?.account || null,
       membership,
       memberships,
@@ -83,9 +86,10 @@ export function AccountProvider({ children }) {
   }, [])
 
   const fetchMemberships = useCallback(
-    async (userId, user) => {
+    async (userId, user, { force = false } = {}) => {
       if (!userId) {
         setState({
+          user: null,
           account: null,
           membership: null,
           memberships: [],
@@ -95,7 +99,13 @@ export function AccountProvider({ children }) {
         return
       }
 
-      setState((prev) => ({ ...prev, loading: true, error: null, authenticated: true }))
+      // Avoid duplicate fetches caused by React StrictMode double effects in dev
+      if (!force && lastFetchedUserRef.current === userId) {
+        return
+      }
+      lastFetchedUserRef.current = userId
+
+      setState((prev) => ({ ...prev, loading: true, error: null, authenticated: true, user }))
 
       const { data, error } = await supabase
         .from('account_members')
@@ -165,6 +175,7 @@ export function AccountProvider({ children }) {
       if (!user) {
         clearStoredAccountId()
         setState({
+          user: null,
           account: null,
           membership: null,
           memberships: [],
@@ -189,6 +200,7 @@ export function AccountProvider({ children }) {
       if (!user) {
         clearStoredAccountId()
         setState({
+          user: null,
           account: null,
           membership: null,
           memberships: [],
@@ -224,7 +236,7 @@ export function AccountProvider({ children }) {
 
   const refresh = useCallback(() => {
     if (!currentUserId) return
-    fetchMemberships(currentUserId, latestUserRef.current)
+    fetchMemberships(currentUserId, latestUserRef.current, { force: true })
   }, [currentUserId, fetchMemberships])
 
   useEffect(() => {

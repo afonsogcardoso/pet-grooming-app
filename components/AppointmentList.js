@@ -8,7 +8,7 @@
 import { useTranslation } from '@/components/TranslationProvider'
 import AppointmentCard from './AppointmentCard'
 
-export default function AppointmentList({ appointments, filter, onComplete, onDelete, onEdit }) {
+export default function AppointmentList({ appointments, filter, onComplete, onDelete, onEdit, onTogglePayment }) {
     const { t } = useTranslation()
     const filterLabels = {
         all: t('filterButtons.all'),
@@ -44,6 +44,7 @@ export default function AppointmentList({ appointments, filter, onComplete, onDe
                     onComplete={onComplete}
                     onDelete={onDelete}
                     onEdit={onEdit}
+                    onTogglePayment={onTogglePayment}
                 />
             ))}
         </div>

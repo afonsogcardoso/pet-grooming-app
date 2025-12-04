@@ -10,7 +10,7 @@ import { formatDate, formatTime } from '@/utils/dateUtils'
 import { getGoogleMapsLink, formatAddressForDisplay } from '@/utils/addressUtils'
 import { useTranslation } from '@/components/TranslationProvider'
 
-export default function AppointmentCard({ appointment, onComplete, onDelete, onEdit }) {
+export default function AppointmentCard({ appointment, onComplete, onDelete, onEdit, onTogglePayment }) {
     const { t, resolvedLocale } = useTranslation()
     const mapLabel = t('appointmentCard.addressLink')
     const fallbackAddress = t('appointmentCard.addressMissing')
@@ -23,17 +23,18 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
     const petBreed = appointment.pets?.breed
     const petPhoto = appointment.pets?.photo_url
     const serviceName = appointment.services?.name || t('appointmentCard.unknownService')
+    const paymentStatus = appointment.payment_status || 'unpaid'
 
     return (
         <div
-            className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${appointment.status === 'completed'
+            className={`bg-white rounded-lg shadow-md p-5 sm:p-6 border-l-4 ${appointment.status === 'completed'
                 ? 'border-brand-accent bg-brand-accent-soft'
                 : 'border-brand-primary'
                 }`}
         >
             <div className="space-y-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-start">
-                    <div className="flex items-start gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:items-start">
+                    <div className="flex flex-1 items-start gap-3 sm:gap-4">
                         {petPhoto && (
                             <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-brand-primary bg-brand-primary-soft flex-shrink-0 shadow-sm">
                                 <Image
@@ -43,17 +44,17 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                     })}
                                     width={80}
                                     height={80}
-                                    className="w-full h-full object-cover"
+                                    sizes="(max-width: 640px) 80px, 96px"
+                                    className="h-full w-full object-cover"
                                     loading="lazy"
                                     decoding="async"
-                                    sizes="80px"
                                     unoptimized
                                 />
                             </div>
                         )}
 
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
+                        <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <h3 className="text-xl font-bold text-gray-800">
                                     {customerName}
                                 </h3>
@@ -63,8 +64,30 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                     </span>
                                 )}
                             </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="inline-flex items-center gap-1 rounded-full border border-brand-primary bg-white px-3 py-1 text-xs font-semibold text-brand-primary shadow-sm">
+                                    📅 <span>{dateText}</span>
+                                </div>
+                                <div className="inline-flex items-center gap-1 rounded-full border border-brand-primary bg-white px-3 py-1 text-xs font-semibold text-brand-primary shadow-sm">
+                                    ⏱ <span>{timeText}</span>
+                                </div>
+                                <div
+                                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${
+                                        paymentStatus === 'paid'
+                                            ? 'border-green-200 bg-green-50 text-green-700'
+                                            : 'border-orange-200 bg-orange-100 text-orange-800'
+                                    }`}
+                                >
+                                    <span>{paymentStatus === 'paid' ? '💳' : '💸'}</span>
+                                    <span>
+                                        {paymentStatus === 'paid'
+                                            ? t('appointmentCard.payment.paid')
+                                            : t('appointmentCard.payment.unpaid')}
+                                    </span>
+                                </div>
+                            </div>
 
-                            <div className="text-gray-700 space-y-1 text-base mt-2">
+                            <div className="mt-1 space-y-1 text-sm text-gray-700 sm:text-base">
                                 <div className="flex items-center gap-2">
                                     <span className="font-bold">{t('appointmentCard.labels.pet')}:</span>
                                     <span className="font-medium">
@@ -82,7 +105,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                         <span className="font-bold">{t('appointmentCard.labels.phone')}:</span>
                                         <a
                                             href={`tel:${phoneNumber}`}
-                                            className="font-medium text-brand-primary hover:underline"
+                                            className="font-medium text-brand-primary underline-offset-4 hover:underline"
                                         >
                                             {phoneNumber}
                                         </a>
@@ -112,18 +135,18 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                 {appointment.notes && (
                                     <div className="mt-2 pt-2 border-t border-gray-200">
                                         <span className="font-bold">{t('appointmentCard.labels.notes')}:</span>
-                                        <p className="text-gray-700 mt-1 font-medium">{appointment.notes}</p>
+                                        <p className="mt-1 font-medium text-gray-700">{appointment.notes}</p>
                                     </div>
                                 )}
                                 {(appointment.before_photo_url || appointment.after_photo_url) && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                                    <div className="mt-3 space-y-2 border-t border-gray-200 pt-3">
                                         <span className="font-bold">
                                             {t('appointmentCard.labels.beforeAfter')}
                                         </span>
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                             {appointment.before_photo_url && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500 mb-1">
+                                                    <p className="mb-1 text-xs text-gray-500">
                                                         {t('appointmentCard.labels.before')}
                                                     </p>
                                                     <Image
@@ -131,17 +154,17 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                                         alt={t('appointmentCard.labels.before')}
                                                         width={120}
                                                         height={120}
-                                                        className="w-full h-24 object-cover rounded-lg border border-brand-primary"
+                                                        sizes="(max-width: 640px) 45vw, 120px"
+                                                        className="h-24 w-full rounded-lg border border-brand-primary object-cover"
                                                         loading="lazy"
                                                         decoding="async"
-                                                        sizes="120px"
                                                         unoptimized
                                                     />
                                                 </div>
                                             )}
                                             {appointment.after_photo_url && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500 mb-1">
+                                                    <p className="mb-1 text-xs text-gray-500">
                                                         {t('appointmentCard.labels.after')}
                                                     </p>
                                                     <Image
@@ -149,10 +172,10 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                                         alt={t('appointmentCard.labels.after')}
                                                         width={120}
                                                         height={120}
-                                                        className="w-full h-24 object-cover rounded-lg border border-brand-accent"
+                                                        sizes="(max-width: 640px) 45vw, 120px"
+                                                        className="h-24 w-full rounded-lg border border-brand-accent object-cover"
                                                         loading="lazy"
                                                         decoding="async"
-                                                        sizes="120px"
                                                         unoptimized
                                                     />
                                                 </div>
@@ -163,29 +186,34 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                             </div>
                         </div>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
-                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-primary text-brand-primary font-semibold bg-white shadow-sm">
-                            📅 <span>{dateText}</span>
-                        </div>
-                        <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-brand-primary text-brand-primary font-semibold bg-white shadow-sm">
-                            ⏱ <span>{timeText}</span>
-                        </div>
-                    </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 justify-end">
+                <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
                     <button
                         onClick={() => onEdit(appointment)}
-                        className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold border border-brand-primary text-brand-primary rounded-full bg-white hover:bg-brand-primary-soft transition"
+                        className="inline-flex items-center justify-center gap-1 rounded-full border border-brand-primary bg-white px-3 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary-soft sm:w-auto"
                     >
                         ✏️
                         <span className="hidden sm:inline">{t('appointmentCard.buttons.edit')}</span>
                     </button>
+                    {onTogglePayment && paymentStatus !== 'paid' && (
+                        <button
+                            onClick={() => onTogglePayment(appointment)}
+                            className="inline-flex items-center justify-center gap-1 rounded-full px-3 py-2 text-sm font-semibold transition sm:w-auto border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        >
+                            <span>💳</span>
+                            <span className="hidden sm:inline">
+                                {t('appointmentCard.buttons.markPaid')}
+                            </span>
+                            <span className="sm:hidden">
+                                {t('appointmentCard.buttons.markPaidShort')}
+                            </span>
+                        </button>
+                    )}
                     {appointment.status !== 'completed' && (
                         <button
                             onClick={() => onComplete(appointment.id)}
-                            className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-full bg-brand-accent text-brand-secondary hover:bg-brand-accent-dark hover:text-white transition"
+                            className="inline-flex items-center justify-center gap-1 rounded-full bg-brand-accent px-3 py-2 text-sm font-semibold text-brand-secondary transition hover:bg-brand-accent-dark hover:text-white sm:w-auto"
                         >
                             ✓
                             <span className="hidden sm:inline">{t('appointmentCard.buttons.complete')}</span>
@@ -193,7 +221,7 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                     )}
                     <button
                         onClick={() => onDelete(appointment.id)}
-                        className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-full border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition"
+                        className="inline-flex items-center justify-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100 sm:w-auto"
                     >
                         🗑
                         <span className="hidden sm:inline">{t('appointmentCard.buttons.delete')}</span>
