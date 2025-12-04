@@ -74,7 +74,9 @@
       "petPhotoAlt": "Photo of {{pet}}",
       "beforeAfter": "Before & After",
       "before": "Before",
-      "after": "After"
+      "after": "After",
+      "whatsappSent": "WhatsApp sent",
+      "confirmationOpened": "Client opened link"
     },
     "dateTime": "{{date}} at {{time}}",
     "buttons": {
@@ -117,7 +119,8 @@
       "address": "Address",
       "notes": "Notes",
       "payment": "Payment status",
-      "duration": "Duration"
+      "duration": "Duration",
+      "petPhoto": "Pet photo"
     },
     "durationMinutes": "{{duration}} minutes",
     "payment": {
@@ -137,6 +140,15 @@
         "line1": "Cancellations must be communicated at least 24h in advance.",
         "line2": "Same-day cancellations may incur a €20 service fee."
       }
+    },
+    "actions": {
+      "qr": "Show this QR at the venue",
+      "addToCalendar": "Add to calendar",
+      "addToCalendarHelper": "Download an .ics file and add it to your calendar app.",
+      "addToCalendarButton": "Add to calendar",
+      "photoError": "Failed to upload the photo. Try again.",
+      "photoEmpty": "Tap to upload a pet photo",
+      "photoPlaceholder": "Remove photo"
     }
   },
   "appointmentForm": {
@@ -175,6 +187,7 @@
       "selectService": "Select a service...",
       "selectTime": "Select a time...",
       "selectCustomerFirst": "Select a customer first",
+      "date": "YYYY-MM-DD",
       "address": "Address (optional)",
       "phone": "Will autofill from customer",
       "notes": "Any special requests or notes...",
@@ -211,6 +224,7 @@
       "add": "+ New",
       "save": "💾 Save Appointment",
       "update": "💾 Update Appointment",
+      "saving": "Saving...",
       "removePhoto": "Remove photo",
       "markCompleted": "✅ Mark as completed",
       "completed": "✅ Completed",
@@ -230,6 +244,12 @@
       "createPetError": "Error creating pet: {{message}}",
       "updateCustomerError": "Error updating customer: {{message}}",
       "newFlowHint": "Fill the form to create a new customer and pet."
+    },
+    "sharePreview": {
+      "title": "Review WhatsApp message",
+      "helper": "Confirm before sending to the client.",
+      "confirm": "Send via WhatsApp",
+      "cancel": "Close"
     }
   },
   "servicesForm": {

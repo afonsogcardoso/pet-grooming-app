@@ -15,7 +15,7 @@ const APPOINTMENT_CONFIRM_SELECT = `
   account_id,
   public_token,
   customers ( id, name, phone, address ),
-  pets ( id, name, breed ),
+  pets ( id, name, breed, photo_url ),
   services ( id, name ),
   accounts:accounts ( id, name, slug, portal_image_url, logo_url )
 `

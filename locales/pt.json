@@ -74,7 +74,9 @@
       "petPhotoAlt": "Fotografia de {{pet}}",
       "beforeAfter": "Antes e Depois",
       "before": "Antes",
-      "after": "Depois"
+      "after": "Depois",
+      "whatsappSent": "WhatsApp enviado",
+      "confirmationOpened": "Cliente abriu o link"
     },
     "dateTime": "{{date}} às {{time}}",
     "buttons": {
@@ -117,7 +119,8 @@
       "address": "Morada",
       "notes": "Notas",
       "payment": "Estado do pagamento",
-      "duration": "Duração"
+      "duration": "Duração",
+      "petPhoto": "Fotografia do pet"
     },
     "durationMinutes": "{{duration}} minutos",
     "payment": {
@@ -137,6 +140,15 @@
         "line1": "Os cancelamentos devem ser comunicados com, pelo menos, 24h de antecedência.",
         "line2": "Cancelamentos no próprio dia poderão estar sujeitos à taxa de serviço de 20€."
       }
+    },
+    "actions": {
+      "qr": "Mostre este QR no local",
+      "addToCalendar": "Adicionar ao calendário",
+      "addToCalendarHelper": "Faça download do ficheiro .ics e adicione ao seu calendário.",
+      "addToCalendarButton": "Adicionar ao calendário",
+      "photoError": "Falhou o envio da foto. Tente novamente.",
+      "photoEmpty": "Carregue aqui a fotografia do pet",
+      "photoPlaceholder": "Remover fotografia"
     }
   },
   "appointmentForm": {
@@ -175,6 +187,7 @@
       "selectService": "Escolhe um serviço...",
       "selectTime": "Escolhe uma hora...",
       "selectCustomerFirst": "Escolhe primeiro um cliente",
+      "date": "AAAA-MM-DD",
       "address": "Morada (opcional)",
       "phone": "Preenche automaticamente pelo cliente",
       "notes": "Instruções ou notas especiais...",
@@ -211,6 +224,7 @@
       "add": "+ Novo",
       "save": "💾 Guardar agendamento",
       "update": "💾 Atualizar agendamento",
+      "saving": "A gravar...",
       "removePhoto": "Remover foto",
       "markCompleted": "✅ Marcar como completo",
       "completed": "✅ Completo",
@@ -230,6 +244,12 @@
       "createPetError": "Erro a criar animal: {{message}}",
       "updateCustomerError": "Erro a atualizar cliente: {{message}}",
       "newFlowHint": "Preenche para criares um novo cliente e animal."
+    },
+    "sharePreview": {
+      "title": "Revê a mensagem de WhatsApp",
+      "helper": "Confirma antes de enviar ao cliente.",
+      "confirm": "Enviar por WhatsApp",
+      "cancel": "Fechar"
     }
   },
   "servicesForm": {

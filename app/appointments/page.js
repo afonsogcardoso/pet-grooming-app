@@ -13,13 +13,15 @@ import {
   updateAppointmentStatus,
   updateAppointmentPaymentStatus,
   deleteAppointment as deleteAppointmentService,
-  filterAppointments
+  filterAppointments,
+  markWhatsappSent
 } from '@/lib/appointmentService'
 import { supabase } from '@/lib/supabase'
 import ViewToggle from '@/components/ViewToggle'
 import FilterButtons from '@/components/FilterButtons'
 import { useTranslation } from '@/components/TranslationProvider'
 import { compressImage } from '@/utils/image'
+import styles from './appointments.module.css'
 import { formatDate, formatTime } from '@/utils/dateUtils'
 
 const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
@@ -58,6 +60,7 @@ export default function Home() {
   const [view, setView] = useState('calendar') // 'list' or 'calendar'
   const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
   const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
+  const [sharePreview, setSharePreview] = useState(null)
   const { t, resolvedLocale } = useTranslation()
 
   useEffect(() => {
@@ -100,6 +103,12 @@ export default function Home() {
       alert(t('appointmentForm.messages.noShareToken'))
       return
     }
+    const phoneNumber = appointment.customers?.phone || ''
+    const phoneDigits = phoneNumber.replace(/\D/g, '')
+    if (!phoneDigits) {
+      alert(t('appointmentForm.messages.selectCustomerFirst'))
+      return
+    }
 
     const dateText = formatDate(appointment.appointment_date, resolvedLocale)
     const timeText = formatTime(appointment.appointment_time, resolvedLocale)
@@ -108,8 +117,6 @@ export default function Home() {
     const petBreed = appointment.pets?.breed
     const serviceName = appointment.services?.name
     const address = appointment.customers?.address
-    const phoneNumber = appointment.customers?.phone || ''
-    const phoneDigits = phoneNumber.replace(/\D/g, '')
 
     const introMessage = customerName
       ? t('appointmentCard.share.messageWithName', {
@@ -134,11 +141,7 @@ export default function Home() {
     const messageBody = [introMessage, '', ...detailLines].join('\n')
 
     const waUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(messageBody)}`
-    if (forceRedirect) {
-      window.location.href = waUrl
-    } else {
-      window.open(waUrl, '_blank', 'noopener,noreferrer')
-    }
+    setSharePreview({ message: messageBody, waUrl, forceRedirect, id: appointment.id })
   }
 
   async function handleCreateAppointment(formData, media = {}, options = { sendWhatsapp: false }) {
@@ -378,14 +381,16 @@ export default function Home() {
 
       {/* List View */}
       {view === 'list' && (
-        <AppointmentList
-          appointments={filteredAppointments}
-          filter={filter}
-          onComplete={handleMarkCompleted}
-          onDelete={handleDeleteAppointment}
-          onEdit={handleEditAppointment}
-          onTogglePayment={handleTogglePayment}
-        />
+        <div className={styles.cardWrapper}>
+          <AppointmentList
+            appointments={filteredAppointments}
+            filter={filter}
+            onComplete={handleMarkCompleted}
+            onDelete={handleDeleteAppointment}
+            onEdit={handleEditAppointment}
+            onTogglePayment={handleTogglePayment}
+          />
+        </div>
       )}
     </div>
   )
@@ -393,6 +398,66 @@ export default function Home() {
   return (
     <>
       {pageContent}
+      {sharePreview && (
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 py-6">
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
+            <h3 className="text-xl font-bold text-slate-900">
+              {t('appointmentForm.sharePreview.title')}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {t('appointmentForm.sharePreview.helper')}
+            </p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <pre className="whitespace-pre-wrap text-sm text-slate-800">{sharePreview.message}</pre>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (sharePreview.forceRedirect) {
+                    window.location.href = sharePreview.waUrl
+                  } else {
+                    window.open(sharePreview.waUrl, '_blank', 'noopener,noreferrer')
+                  }
+                  if (sharePreview.id) {
+                    markWhatsappSent(sharePreview.id).catch(() => {})
+                  }
+                  setSharePreview(null)
+                }}
+                className="w-full rounded-xl bg-emerald-500 text-white font-semibold py-3 hover:bg-emerald-600 transition"
+              >
+                <span className="inline-flex items-center gap-2 justify-center">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 32 32"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="#25D366"
+                      d="M16 3C9.375 3 4 8.373 4 15c0 2.591.782 4.997 2.125 7.009L4 29l7.219-2.09C12.97 27.59 14.455 28 16 28c6.627 0 12-5.373 12-12S22.627 3 16 3Z"
+                    />
+                    <path
+                      fill="#fff"
+                      d="M23.484 20.398c-.299.846-1.45 1.545-2.367 1.75-.63.14-1.45.25-4.219-.903-3.538-1.466-5.807-5.063-5.983-5.303-.176-.24-1.426-1.903-1.426-3.63 0-1.726.904-2.572 1.226-2.93.322-.357.703-.446.937-.446.234 0 .468 0 .674.012.217.012.51-.082.798.61.299.716 1.017 2.476 1.108 2.656.09.18.15.39.03.63-.12.24-.18.39-.35.6-.18.216-.37.48-.53.645-.18.18-.37.375-.16.732.21.357.928 1.53 1.993 2.476 1.37 1.226 2.526 1.61 2.883 1.79.357.18.563.15.773-.09.21-.24.896-1.05 1.14-1.41.234-.36.48-.3.804-.18.323.12 2.06.97 2.414 1.144.357.18.59.27.674.42.083.15.083.87-.216 1.716Z"
+                    />
+                  </svg>
+                  {t('appointmentForm.sharePreview.confirm')}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSharePreview(null)}
+                className="w-full rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold py-3 hover:bg-slate-50 transition"
+              >
+                {t('appointmentForm.sharePreview.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Add/Edit Appointment Form Modal */}
       {showForm && (
         <div

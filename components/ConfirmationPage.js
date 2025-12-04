@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 import { formatDate, formatTime } from '@/utils/dateUtils'
+import ConfirmationPetPhoto from './ConfirmationPetPhoto'
+import { compressImage } from '@/utils/image'
 
 const InfoRow = ({ label, value, accent }) => {
   if (!value) return null
@@ -21,14 +23,25 @@ const InfoRow = ({ label, value, accent }) => {
 export default function ConfirmationPage({ appointment }) {
   const { t, resolvedLocale } = useTranslation()
   const [isMounted, setIsMounted] = useState(false)
+  const [confirmationUrl, setConfirmationUrl] = useState('')
+  const [petPhotoUrl, setPetPhotoUrl] = useState(appointment?.pets?.photo_url || '')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setConfirmationUrl(window.location.href)
+    }
+  }, [])
+
   const hasAppointment = Boolean(appointment)
   const customer = appointment?.customers?.name || ''
   const pet = appointment?.pets?.name || ''
+  const petPhoto = petPhotoUrl || appointment?.pets?.photo_url || ''
   const service = appointment?.services?.name || ''
   const address = appointment?.customers?.address || ''
   const notes = appointment?.notes || ''
@@ -58,6 +71,66 @@ export default function ConfirmationPage({ appointment }) {
     : t('confirmationPage.missing.generic')
   const addressValue = address || t('confirmationPage.missing.generic')
 
+  useEffect(() => {
+    if (!hasAppointment || !appointment?.id || !appointment?.public_token) return
+    // Fire-and-forget beacon to mark open
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon(
+        '/api/appointments/confirm-open',
+        new Blob([JSON.stringify({ id: appointment.id, token: appointment.public_token })], {
+          type: 'application/json'
+        })
+      )
+    } else {
+      fetch('/api/appointments/confirm-open', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: appointment.id, token: appointment.public_token })
+      }).catch(() => {})
+    }
+  }, [appointment, hasAppointment])
+
+  const handlePetPhotoUpload = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file || !appointment?.id || !appointment?.public_token) return
+    setUploadError('')
+    setUploading(true)
+    try {
+      const compressed = await compressImage(file, { maxSize: 800 })
+      const form = new FormData()
+      form.append('id', appointment.id)
+      form.append('token', appointment.public_token)
+      form.append('file', compressed)
+
+      const response = await fetch('/api/appointments/pet-photo', {
+        method: 'POST',
+        body: form
+      })
+      const result = await response.json()
+      if (!response.ok || !result?.ok) {
+        throw new Error(result?.error || 'upload_failed')
+      }
+      if (result.url) {
+        setPetPhotoUrl(result.url)
+      }
+    } catch (error) {
+      setUploadError(t('confirmationPage.actions.photoError'))
+      console.error('pet photo upload failed', error)
+    } finally {
+      setUploading(false)
+      event.target.value = ''
+    }
+  }
+
+  const handleAddToCalendar = () => {
+    if (!appointment?.id || !appointment?.public_token) return
+    const params = new URLSearchParams({
+      id: appointment.id,
+      token: appointment.public_token
+    })
+    window.location.href = `/api/appointments/ics?${params.toString()}`
+  }
+
   if (!hasAppointment) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-brand-primary-soft via-white to-brand-accent-soft px-4 py-10 text-slate-900">
@@ -81,6 +154,20 @@ export default function ConfirmationPage({ appointment }) {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-xl backdrop-blur">
+          <div className="mb-4">
+            <ConfirmationPetPhoto
+              photoUrl={petPhoto}
+              petName={pet}
+              placeholderEmpty={t('confirmationPage.actions.photoEmpty')}
+              removeLabel={t('confirmationPage.actions.photoPlaceholder')}
+              onUpload={handlePetPhotoUpload}
+              uploading={uploading}
+              error={uploadError}
+              onRemove={() => {
+                setPetPhotoUrl('')
+              }}
+            />
+          </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <InfoRow
               label={t('confirmationPage.labels.date')}
@@ -122,6 +209,22 @@ export default function ConfirmationPage({ appointment }) {
               <p className="font-medium leading-relaxed">{notes}</p>
             </div>
           )}
+
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+            <p className="text-sm font-semibold text-slate-800 mb-2">
+              {t('confirmationPage.actions.addToCalendar')}
+            </p>
+            <p className="text-xs text-slate-600 mb-3">
+              {t('confirmationPage.actions.addToCalendarHelper')}
+            </p>
+            <button
+              type="button"
+              onClick={handleAddToCalendar}
+              className="w-full rounded-xl bg-brand-primary text-white font-semibold py-3 hover:bg-brand-primary-dark transition"
+            >
+              {t('confirmationPage.actions.addToCalendarButton')}
+            </button>
+          </div>
 
           <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
             <p>✅ {t('confirmationPage.footer.confirmed')}</p>

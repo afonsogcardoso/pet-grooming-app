@@ -4,7 +4,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useId } from 'react'
 import {
     loadCustomers,
     loadPetsByCustomer,
@@ -19,11 +19,22 @@ import BreedSelect from '@/components/BreedSelect'
 
 const formatTimeValue = (value) => (value ? value.substring(0, 5) : '')
 
+const formatPhoneInput = (value) => {
+    if (!value) return ''
+    const trimmed = value.trim()
+    const hasPlus = trimmed.startsWith('+')
+    const digits = trimmed.replace(/\D/g, '')
+    const groups = digits.match(/.{1,3}/g) || []
+    const spaced = groups.join(' ')
+    return hasPlus ? `+${spaced}` : spaced
+}
+
 const buildInitialFormState = (data) => ({
     customer_id: data?.customer_id || '',
     pet_id: data?.pet_id || '',
     service_id: data?.service_id || data?.services?.id || '',
     phone: data?.customers?.phone || '',
+    nif: data?.customers?.nif || '',
     address: data?.customers?.address || '',
     appointment_date: data?.appointment_date || '',
     appointment_time: formatTimeValue(data?.appointment_time),
@@ -56,6 +67,7 @@ export default function AppointmentForm({
     const [customerFormData, setCustomerFormData] = useState({
         name: '',
         phone: '',
+        nif: '',
         email: '',
         address: '',
         notes: ''
@@ -83,6 +95,9 @@ export default function AppointmentForm({
     const searchDropdownTimeoutRef = useRef(null)
     const [creatingNew, setCreatingNew] = useState(false)
     const [sendWhatsappAfterSave, setSendWhatsappAfterSave] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const beforeUploadId = useId()
+    const afterUploadId = useId()
 
     const isEditing = Boolean(initialData?.id)
     const isCompleted = Boolean(initialData?.status === 'completed')
@@ -114,6 +129,17 @@ export default function AppointmentForm({
         () => customers.find((c) => c.id === formData.customer_id),
         [customers, formData.customer_id]
     )
+
+    const phoneDigits = (
+        creatingNew ? customerFormData.phone : selectedCustomer?.phone || formData.phone || initialData?.customers?.phone || ''
+    ).replace(
+        /\D/g,
+        ''
+    )
+    const photoPlaceholderClass =
+        'flex items-center justify-center text-xs text-slate-500 text-center px-3'
+    const canShare = Boolean(onShare && initialData?.public_token && phoneDigits.length > 0)
+    const canAutoSend = Boolean(phoneDigits.length > 0)
 
     const handleModeSwitch = (mode) => {
         setCreatingNew(mode === 'new')
@@ -279,6 +305,7 @@ export default function AppointmentForm({
             {
                 id: entry.customer_id,
                 phone: entry.customer_phone,
+                nif: entry.customer_nif,
                 address: entry.customer_address
             },
             { skipSearchUpdate: true }
@@ -310,6 +337,7 @@ export default function AppointmentForm({
             ...prev,
             customer_id: customerId,
             phone: customer?.phone || '',
+            nif: customer?.nif || '',
             address: customer?.address || '',
             pet_id: '' // Reset pet selection
         }))
@@ -460,6 +488,8 @@ export default function AppointmentForm({
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (isSubmitting) return
+        setIsSubmitting(true)
 
         let customerId = formData.customer_id || null
         let petId = formData.pet_id || null
@@ -473,6 +503,7 @@ export default function AppointmentForm({
             const { data: newCustomer, error: customerError } = await createCustomer({
                 name: customerFormData.name,
                 phone: customerFormData.phone,
+                nif: customerFormData.nif || null,
                 email: customerFormData.email || null,
                 address: customerFormData.address || '',
                 notes: customerFormData.notes || ''
@@ -507,10 +538,12 @@ export default function AppointmentForm({
         } else if (selectedCustomer) {
             const needsAddressUpdate = formData.address !== (selectedCustomer.address || '')
             const needsPhoneUpdate = formData.phone !== (selectedCustomer.phone || '')
-            if (needsAddressUpdate || needsPhoneUpdate) {
+            const needsNifUpdate = formData.nif !== (selectedCustomer.nif || '')
+            if (needsAddressUpdate || needsPhoneUpdate || needsNifUpdate) {
                 const updatePayload = {}
                 if (needsAddressUpdate) updatePayload.address = formData.address
                 if (needsPhoneUpdate) updatePayload.phone = formData.phone
+                if (needsNifUpdate) updatePayload.nif = formData.nif || null
 
                 const { error: updateError, data: updated } = await updateCustomer(selectedCustomer.id, updatePayload)
                 if (updateError) {
@@ -543,24 +576,28 @@ export default function AppointmentForm({
             payment_status: formData.payment_status || 'unpaid'
         }
 
-        onSubmit(
-            payload,
-            {
-                beforePhotoFile,
-                afterPhotoFile,
-                removeBeforePhoto,
-                removeAfterPhoto,
-                currentBeforePhotoUrl: initialData?.before_photo_url || null,
-                currentAfterPhotoUrl: initialData?.after_photo_url || null
-            },
-            {
-                sendWhatsapp: !isEditing && sendWhatsappAfterSave
-            }
-        )
+        try {
+            await onSubmit(
+                payload,
+                {
+                    beforePhotoFile,
+                    afterPhotoFile,
+                    removeBeforePhoto,
+                    removeAfterPhoto,
+                    currentBeforePhotoUrl: initialData?.before_photo_url || null,
+                    currentAfterPhotoUrl: initialData?.after_photo_url || null
+                },
+                {
+                    sendWhatsapp: !isEditing && sendWhatsappAfterSave && canAutoSend
+                }
+            )
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const handleShareClick = () => {
-        if (!onShare) return
+        if (!onShare || !canShare) return
         const appointmentForShare = {
             ...(initialData || {}),
             ...formData,
@@ -603,7 +640,8 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_date: e.target.value })
                                 }
-                                className="w-[150px] h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
+                                className="w-[150px] h-11 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
+                                placeholder={t('appointmentForm.placeholders.date')}
                             />
                         </div>
                         <div>
@@ -616,7 +654,7 @@ export default function AppointmentForm({
                                 onChange={(e) =>
                                     setFormData({ ...formData, appointment_time: e.target.value })
                                 }
-                                className="w-25 h-10 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
+                                className="w-25 h-11 px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm bg-white text-gray-900 font-medium min-w-[150px]"
                             >
                                 <option value="">{t('appointmentForm.placeholders.selectTime')}</option>
                                 {generateTimeSlots().map((time) => (
@@ -648,7 +686,7 @@ export default function AppointmentForm({
                                         required
                                         value={formData.service_id}
                                         onChange={(e) => handleServiceChange(e.target.value)}
-                                        className="flex-1 min-w-[150px] max-w-[200px] sm:max-w-none px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm sm:text-lg bg-white text-gray-900 font-medium"
+                                        className="flex-1 min-w-[150px] max-w-[200px] sm:max-w-none h-11 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-sm sm:text-lg bg-white text-gray-900 font-medium"
                                     >
                                         <option value="">{t('appointmentForm.placeholders.selectService')}</option>
                                         {services.map((service) => (
@@ -669,7 +707,7 @@ export default function AppointmentForm({
                                 required
                                 value={formData.duration}
                                 onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                                className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium"
+                                className="w-full h-11 px-3 sm:px-4 py-3 sm:py-4 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base sm:text-lg bg-white text-gray-900 font-medium min-w-[150px]"
                             >
                                 <option value="30">{t('appointmentForm.durationOptions.minutes30')}</option>
                                 <option value="60">{t('appointmentForm.durationOptions.hour')}</option>
@@ -679,28 +717,30 @@ export default function AppointmentForm({
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => handleModeSwitch('existing')}
-                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${!creatingNew
-                                    ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
-                                    }`}
-                            >
-                                {t('appointmentForm.buttons.searchExisting')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleModeSwitch('new')}
-                                className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${creatingNew
-                                    ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
-                                    }`}
-                            >
-                                {t('appointmentForm.buttons.newEntry')}
-                            </button>
-                        </div>
+                        {!isEditing && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleModeSwitch('existing')}
+                                    className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${!creatingNew
+                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                        }`}
+                                >
+                                    {t('appointmentForm.buttons.searchExisting')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleModeSwitch('new')}
+                                    className={`rounded-full border px-3 py-2 text-sm font-semibold transition ${creatingNew
+                                        ? 'border-brand-primary bg-brand-primary text-white shadow-brand-glow'
+                                        : 'border-gray-300 bg-white text-gray-700 hover:border-brand-primary/60 hover:text-brand-primary'
+                                        }`}
+                                >
+                                    {t('appointmentForm.buttons.newEntry')}
+                                </button>
+                            </div>
+                        )}
 
                         {!creatingNew ? (
                             <div>
@@ -793,10 +833,25 @@ export default function AppointmentForm({
                                         required
                                         value={customerFormData.phone}
                                         onChange={(e) =>
-                                            setCustomerFormData({ ...customerFormData, phone: e.target.value })
+                                            setCustomerFormData({
+                                                ...customerFormData,
+                                                phone: formatPhoneInput(e.target.value)
+                                            })
                                         }
                                         placeholder={t('customerForm.placeholders.phone')}
                                         className="w-full rounded-lg border-2 border-gray-400 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={customerFormData.nif}
+                                        onChange={(e) =>
+                                            setCustomerFormData({
+                                                ...customerFormData,
+                                                nif: e.target.value.trim()
+                                            })
+                                        }
+                                        placeholder={t('customerForm.placeholders.nif')}
+                                        className="w-full rounded-lg border-2 border-gray-200 px-3 py-2 text-sm bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
                                     />
                                     <input
                                         type="email"
@@ -928,9 +983,26 @@ export default function AppointmentForm({
                                             type="tel"
                                             value={formData.phone}
                                             onChange={(e) =>
-                                                setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    phone: formatPhoneInput(e.target.value),
+                                                }))
                                             }
                                             placeholder={t('appointmentForm.placeholders.phone')}
+                                            className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 text-sm sm:text-base bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
+                                        />
+                                    </div>
+                                    <div className="mt-2">
+                                        <label className="block text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
+                                            {t('customerForm.labels.nif')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.nif}
+                                            onChange={(e) =>
+                                                setFormData((prev) => ({ ...prev, nif: e.target.value.trim() }))
+                                            }
+                                            placeholder={t('customerForm.placeholders.nif')}
                                             className="w-full rounded-lg border-2 border-gray-300 px-3 py-2 text-sm sm:text-base bg-white text-gray-900 font-medium focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)]"
                                         />
                                     </div>
@@ -1045,74 +1117,86 @@ export default function AppointmentForm({
                                 <p className="text-sm font-bold text-gray-800">
                                     {t('appointmentForm.sections.beforeAfter')}
                                 </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 border-2 border-gray-200 rounded-xl">
-                                        <p className="text-sm font-semibold text-gray-700 mb-2">
-                                            {t('appointmentForm.labels.beforePhoto')}
-                                        </p>
-                                        {beforePhotoPreview ? (
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <Image
-                                                    src={beforePhotoPreview}
-                                                    alt="Before"
-                                                    width={96}
-                                                    height={96}
-                                                    className="w-24 h-24 rounded-xl object-cover border-2 border-brand-primary"
-                                                    unoptimized
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={handleRemoveBeforePhoto}
-                                                    className="text-sm font-semibold text-red-600 hover:text-red-700"
-                                                >
-                                                    {t('appointmentForm.buttons.removePhoto')}
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-gray-500 mb-3">
-                                                {t('appointmentForm.helpers.beforePhoto')}
-                                            </p>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleBeforePhotoChange}
-                                            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-primary-soft)] file:text-[color:var(--brand-primary)] hover:file:bg-[color:var(--brand-primary)] hover:file:text-white"
-                                        />
-                                    </div>
-                                    <div className="p-4 border-2 border-gray-200 rounded-xl">
-                                        <p className="text-sm font-semibold text-gray-700 mb-2">
-                                            {t('appointmentForm.labels.afterPhoto')}
-                                        </p>
-                                        {afterPhotoPreview ? (
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <Image
-                                                    src={afterPhotoPreview}
-                                                    alt="After"
-                                                    width={96}
-                                                    height={96}
-                                                    className="w-24 h-24 rounded-xl object-cover border-2 border-brand-accent"
-                                                    unoptimized
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={handleRemoveAfterPhoto}
-                                                    className="text-sm font-semibold text-red-600 hover:text-red-700"
-                                                >
-                                                    {t('appointmentForm.buttons.removePhoto')}
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-gray-500 mb-3">
-                                                {t('appointmentForm.helpers.afterPhoto')}
-                                            </p>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleAfterPhotoChange}
-                                            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[color:var(--brand-accent-soft)] file:text-[color:var(--brand-accent)] hover:file:bg-[color:var(--brand-accent)] hover:file:text-white"
-                                        />
+                                <div className="rounded-2xl border-2 border-gray-200 bg-white/80 p-4 shadow-sm">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <label
+                                                htmlFor={beforeUploadId}
+                                                className="block w-full max-w-[200px] aspect-square rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center cursor-pointer hover:border-brand-primary/70 transition mx-auto"
+                                            >
+                                                {beforePhotoPreview ? (
+                                                    <Image
+                                                        src={beforePhotoPreview}
+                                                        alt="Before"
+                                                        width={200}
+                                                        height={200}
+                                                        className="w-full h-full object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    <span className={photoPlaceholderClass}>
+                                                        {t('appointmentForm.helpers.beforePhoto')}
+                                                    </span>
+                                                )}
+                                            </label>
+                                            <input
+                                                id={beforeUploadId}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleBeforePhotoChange}
+                                                className="hidden"
+                                            />
+                                            {beforePhotoPreview && (
+                                                <div className="flex justify-start pl-[calc(50%-100px)] md:pl-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveBeforePhoto}
+                                                        className="inline-flex items-center gap-1 px-1 py-0.5 text-xs font-semibold text-gray-500 hover:text-gray-700 !text-[10px] !leading-tight"
+                                                    >
+                                                        ✕ {t('appointmentForm.buttons.removePhoto')}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label
+                                                htmlFor={afterUploadId}
+                                                className="block w-full max-w-[200px] aspect-square rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center cursor-pointer hover:border-brand-primary/70 transition mx-auto"
+                                            >
+                                                {afterPhotoPreview ? (
+                                                    <Image
+                                                        src={afterPhotoPreview}
+                                                        alt="After"
+                                                        width={200}
+                                                        height={200}
+                                                        className="w-full h-full object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    <span className={photoPlaceholderClass}>
+                                                        {t('appointmentForm.helpers.afterPhoto')}
+                                                    </span>
+                                                )}
+                                            </label>
+                                            <input
+                                                id={afterUploadId}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleAfterPhotoChange}
+                                                className="hidden"
+                                            />
+                                            {afterPhotoPreview && (
+                                                <div className="flex justify-start pl-[calc(50%-100px)] md:pl-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveAfterPhoto}
+                                                        className="inline-flex items-center gap-1 px-1 py-0.5 text-xs font-semibold text-gray-500 hover:text-gray-700 !text-[10px] !leading-tight"
+                                                    >
+                                                        ✕ {t('appointmentForm.buttons.removePhoto')}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1140,10 +1224,19 @@ export default function AppointmentForm({
                                 type="checkbox"
                                 checked={sendWhatsappAfterSave}
                                 onChange={(e) => setSendWhatsappAfterSave(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                                disabled={!canAutoSend}
+                                className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary disabled:cursor-not-allowed disabled:opacity-60"
                             />
-                            <label htmlFor="send-whatsapp" className="text-sm font-medium text-gray-800">
+                            <label
+                                htmlFor="send-whatsapp"
+                                className="text-sm font-medium text-gray-800"
+                            >
                                 {t('appointmentForm.fields.sendWhatsapp')}
+                                {!canAutoSend && (
+                                    <span className="ml-1 text-xs text-gray-500">
+                                        {t('appointmentForm.messages.selectCustomerFirst')}
+                                    </span>
+                                )}
                             </label>
                         </div>
                     )}
@@ -1151,9 +1244,15 @@ export default function AppointmentForm({
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                         <button
                             type="submit"
-                            className="w-full sm:flex-[0.6] btn-brand shadow-brand-glow py-4 px-6 text-xl"
+                            className="w-full sm:flex-[0.6] btn-brand shadow-brand-glow py-4 px-6 text-xl min-h-[44px] disabled:opacity-70 disabled:cursor-not-allowed"
+                            disabled={isSubmitting}
+                            aria-busy={isSubmitting}
                         >
-                            {isEditing ? t('appointmentForm.buttons.update') : t('appointmentForm.buttons.save')}
+                            {isSubmitting
+                                ? t('appointmentForm.buttons.saving')
+                                : isEditing
+                                    ? t('appointmentForm.buttons.update')
+                                    : t('appointmentForm.buttons.save')}
                         </button>
                         {isEditing && (
                             <div className="flex flex-col gap-2 sm:flex-row sm:flex-1">
@@ -1161,9 +1260,29 @@ export default function AppointmentForm({
                                     <button
                                         type="button"
                                         onClick={handleShareClick}
-                                        className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                                        className="w-full min-h-[44px] rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                                        disabled={!canShare || isSubmitting}
                                     >
-                                        🟢 {t('appointmentForm.buttons.share')}
+                                        <span className="inline-flex items-center gap-2">
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 32 32"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    fill="#25D366"
+                                                    d="M16 3C9.375 3 4 8.373 4 15c0 2.591.782 4.997 2.125 7.009L4 29l7.219-2.09C12.97 27.59 14.455 28 16 28c6.627 0 12-5.373 12-12S22.627 3 16 3Z"
+                                                />
+                                                <path
+                                                    fill="#fff"
+                                                    d="M23.484 20.398c-.299.846-1.45 1.545-2.367 1.75-.63.14-1.45.25-4.219-.903-3.538-1.466-5.807-5.063-5.983-5.303-.176-.24-1.426-1.903-1.426-3.63 0-1.726.904-2.572 1.226-2.93.322-.357.703-.446.937-.446.234 0 .468 0 .674.012.217.012.51-.082.798.61.299.716 1.017 2.476 1.108 2.656.09.18.15.39.03.63-.12.24-.18.39-.35.6-.18.216-.37.48-.53.645-.18.18-.37.375-.16.732.21.357.928 1.53 1.993 2.476 1.37 1.226 2.526 1.61 2.883 1.79.357.18.563.15.773-.09.21-.24.896-1.05 1.14-1.41.234-.36.48-.3.804-.18.323.12 2.06.97 2.414 1.144.357.18.59.27.674.42.083.15.083.87-.216 1.716Z"
+                                                />
+                                            </svg>
+                                            {t('appointmentForm.buttons.share')}
+                                        </span>
                                     </button>
                                 )}
                                 <button
@@ -1228,10 +1347,27 @@ export default function AppointmentForm({
                                         required
                                         value={customerFormData.phone}
                                         onChange={(e) =>
-                                            setCustomerFormData({ ...customerFormData, phone: e.target.value })
+                                            setCustomerFormData({
+                                                ...customerFormData,
+                                                phone: formatPhoneInput(e.target.value)
+                                            })
                                         }
                                         className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
                                         placeholder={t('customerForm.placeholders.phone')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-800 mb-2">
+                                        {t('customerForm.labels.nif')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={customerFormData.nif}
+                                        onChange={(e) =>
+                                            setCustomerFormData({ ...customerFormData, nif: e.target.value.trim() })
+                                        }
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-[color:var(--brand-primary)] focus:border-[color:var(--brand-primary)] text-base bg-white text-gray-900 font-medium"
+                                        placeholder={t('customerForm.placeholders.nif')}
                                     />
                                 </div>
                                 <div>
