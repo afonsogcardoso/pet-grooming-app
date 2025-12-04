@@ -124,14 +124,19 @@
       "paid": "Pago",
       "unpaid": "Por pagar"
     },
+    "notFound": "Não encontrámos esta marcação. Verifique o link ou peça-nos uma nova confirmação.",
     "missing": {
       "generic": "Não fornecido"
     },
     "footer": {
       "confirmed": "Tudo preparado para a sua visita.",
       "update": "Precisa de alterar? Responda à mensagem que recebeu.",
-      "note": "Esta página é só para si. Guarde-a para encontrar facilmente.",
-      "homeLink": "Voltar ao início"
+      "homeLink": "Voltar ao início",
+      "cancellation": {
+        "title": "POLÍTICA DE CANCELAMENTO",
+        "line1": "Os cancelamentos devem ser comunicados com, pelo menos, 24h de antecedência.",
+        "line2": "Cancelamentos no próprio dia poderão estar sujeitos à taxa de serviço de 20€."
+      }
     }
   },
   "appointmentForm": {

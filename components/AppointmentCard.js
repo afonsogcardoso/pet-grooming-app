@@ -28,19 +28,10 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
 
     const buildConfirmationUrl = () => {
         if (typeof window === 'undefined') return ''
+        if (!appointment?.id || !appointment?.public_token) return ''
         const url = new URL('/appointments/confirm', window.location.origin)
-        const setParam = (key, value) => {
-            if (value) url.searchParams.set(key, value)
-        }
-        setParam('c', customerName)
-        setParam('p', petName)
-        setParam('s', serviceName)
-        setParam('a', address)
-        setParam('n', appointment.notes)
-        setParam('u', appointment.duration)
-        setParam('pm', appointment.payment_status)
-        setParam('d', appointment.appointment_date)
-        setParam('t', appointment.appointment_time)
+        url.searchParams.set('id', appointment.id)
+        url.searchParams.set('token', appointment.public_token)
         return url.toString()
     }
 

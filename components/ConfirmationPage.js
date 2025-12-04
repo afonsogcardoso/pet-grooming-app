@@ -1,19 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '@/components/TranslationProvider'
 import { formatDate, formatTime } from '@/utils/dateUtils'
-
-const getParam = (params, keys, fallback = '') => {
-  if (!params) return fallback
-  const keyList = Array.isArray(keys) ? keys : [keys]
-  for (const key of keyList) {
-    const value = params.get(key)
-    if (value) return value
-  }
-  return fallback
-}
 
 const InfoRow = ({ label, value, accent }) => {
   if (!value) return null
@@ -29,19 +18,34 @@ const InfoRow = ({ label, value, accent }) => {
   )
 }
 
-export default function ConfirmationPage() {
+export default function ConfirmationPage({ appointment }) {
   const { t, resolvedLocale } = useTranslation()
-  const params = useSearchParams()
+  const [isMounted, setIsMounted] = useState(false)
 
-  const customer = getParam(params, ['customer', 'c'])
-  const pet = getParam(params, ['pet', 'p'])
-  const service = getParam(params, ['service', 's'])
-  const address = getParam(params, ['address', 'a'])
-  const notes = getParam(params, ['notes', 'n'])
-  const paymentStatus = getParam(params, ['payment', 'pm'], 'unpaid')
-  const duration = getParam(params, ['duration', 'u'])
-  const date = getParam(params, ['date', 'd'])
-  const time = getParam(params, ['time', 't'])
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!appointment) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-brand-primary-soft via-white to-brand-accent-soft px-4 py-10 text-slate-900">
+        <div className="mx-auto max-w-xl rounded-3xl border border-slate-200 bg-white/80 p-6 text-center shadow-xl backdrop-blur">
+          <h1 className="text-2xl font-bold text-slate-800">{t('confirmationPage.titleNoName')}</h1>
+          <p className="mt-2 text-slate-600">{t('confirmationPage.notFound')}</p>
+        </div>
+      </main>
+    )
+  }
+
+  const customer = appointment.customers?.name || ''
+  const pet = appointment.pets?.name || ''
+  const service = appointment.services?.name || ''
+  const address = appointment.customers?.address || ''
+  const notes = appointment.notes || ''
+  const paymentStatus = appointment.payment_status || 'unpaid'
+  const duration = appointment.duration
+  const date = appointment.appointment_date
+  const time = appointment.appointment_time
 
   const formattedDate = useMemo(() => formatDate(date, resolvedLocale), [date, resolvedLocale])
   const formattedTime = useMemo(() => formatTime(time, resolvedLocale), [time, resolvedLocale])
@@ -55,8 +59,8 @@ export default function ConfirmationPage() {
       ? t('confirmationPage.payment.paid')
       : t('confirmationPage.payment.unpaid')
 
-  const dateValue = formattedDate || t('confirmationPage.missing.generic')
-  const timeValue = formattedTime || t('confirmationPage.missing.generic')
+  const dateValue = (isMounted ? formattedDate : date) || t('confirmationPage.missing.generic')
+  const timeValue = (isMounted ? formattedTime : time) || t('confirmationPage.missing.generic')
   const serviceValue = service || t('confirmationPage.missing.generic')
   const petValue = pet || t('confirmationPage.missing.generic')
   const durationValue = duration
@@ -125,7 +129,15 @@ export default function ConfirmationPage() {
         </div>
 
         <div className="text-center text-xs text-slate-500">
-          <p>{t('confirmationPage.footer.note')}</p>
+          <div className="mt-3 inline-block text-left">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-600">
+              {t('confirmationPage.footer.cancellation.title')}
+            </p>
+            <ul className="mt-1 space-y-1 text-[11px] leading-snug text-slate-600">
+              <li>{t('confirmationPage.footer.cancellation.line1')}</li>
+              <li>{t('confirmationPage.footer.cancellation.line2')}</li>
+            </ul>
+          </div>
         </div>
       </div>
     </main>

@@ -124,14 +124,19 @@
       "paid": "Paid",
       "unpaid": "Unpaid"
     },
+    "notFound": "We could not find this booking. Check the link or ask us for a new confirmation.",
     "missing": {
       "generic": "Not provided"
     },
     "footer": {
       "confirmed": "Everything is set for your visit.",
       "update": "Need to change something? Reply to the message you received.",
-      "note": "This page is just for you. Save it so you can find it later.",
-      "homeLink": "Back to homepage"
+      "homeLink": "Back to homepage",
+      "cancellation": {
+        "title": "Cancellation policy",
+        "line1": "Cancellations must be communicated at least 24h in advance.",
+        "line2": "Same-day cancellations may incur a €20 service fee."
+      }
     }
   },
   "appointmentForm": {

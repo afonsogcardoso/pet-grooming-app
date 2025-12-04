@@ -64,6 +64,8 @@ export default function AppShell({ children }) {
   const isTenantPublicRoute = pathname?.startsWith('/portal/')
   const publicRoutes = ['/login', '/appointments/confirm']
   const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
+  const fullBleedPublicRoutes = ['/appointments/confirm']
+  const isFullBleedPublic = isPublicRoute && fullBleedPublicRoutes.some((route) => pathname?.startsWith(route))
   const isLoginRoute = pathname?.startsWith('/login')
   const isAdminRoute = pathname?.startsWith('/admin')
   const availableNavItems = navItems.filter((item) => {
@@ -74,6 +76,10 @@ export default function AppShell({ children }) {
   if (isAdminRoute) {
     // Admin shell has its own layout and guards
     return <>{children}</>
+  }
+
+  if (isFullBleedPublic) {
+    return <div className="min-h-screen brand-background">{children}</div>
   }
 
   if (isTenantPublicRoute) {
@@ -281,7 +287,13 @@ export default function AppShell({ children }) {
         />
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 sm:py-8 sm:pb-10">
+      <main
+        className={
+          isFullBleedPublic
+            ? 'min-h-screen'
+            : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 sm:py-8 sm:pb-10'
+        }
+      >
         {isPublicRoute ? children : <AccountGate>{children}</AccountGate>}
       </main>
 

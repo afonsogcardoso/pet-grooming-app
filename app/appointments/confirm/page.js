@@ -1,9 +1,24 @@
-import { headers } from 'next/headers'
 import ConfirmationPage from '@/components/ConfirmationPage'
-import { getPublicAccountBySlug } from '@/lib/publicAccounts'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+const APPOINTMENT_CONFIRM_SELECT = `
+  id,
+  appointment_date,
+  appointment_time,
+  duration,
+  notes,
+  status,
+  payment_status,
+  account_id,
+  public_token,
+  customers ( id, name, phone, address ),
+  pets ( id, name, breed ),
+  services ( id, name ),
+  accounts:accounts ( id, name, slug, portal_image_url, logo_url )
+`
 
 function buildAbsoluteUrl(path) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
@@ -15,30 +30,35 @@ function buildAbsoluteUrl(path) {
   return path
 }
 
-async function resolveAccount(slugFromQuery) {
-  const headerList = headers()
-  const slugFromHeader = headerList.get('x-account-slug')
+async function fetchAppointmentWithToken(id, token) {
+  if (!id || !token) return { appointment: null }
+  const { data, error } = await supabaseAdmin
+    .from('appointments')
+    .select(APPOINTMENT_CONFIRM_SELECT)
+    .eq('id', id)
+    .eq('public_token', token)
+    .maybeSingle()
 
-  const slug = slugFromHeader || slugFromQuery
-  if (!slug) return null
-
-  try {
-    return await getPublicAccountBySlug(slug)
-  } catch (error) {
-    console.error('Failed to load account for confirmation page', error)
-    return null
+  if (error) {
+    console.error('Failed to load appointment for confirmation', error)
   }
+
+  return { appointment: data || null }
 }
 
 export async function generateMetadata({ searchParams }) {
   const params = await searchParams
-  const slugFromQuery = params?.slug || params?.s || params?.workspace || null
-  const account = await resolveAccount(slugFromQuery)
+  const id = params?.id || null
+  const token = params?.token || null
+  const { appointment } = await fetchAppointmentWithToken(id, token)
 
   const title = 'Confirmação de reserva'
   const description = 'Veja os detalhes da sua marcação.'
 
-  const ogCandidate = account?.portal_image_url || account?.logo_url || null
+  const ogCandidate =
+    appointment?.accounts?.portal_image_url ||
+    appointment?.accounts?.logo_url ||
+    null
   const ogImage = buildAbsoluteUrl(ogCandidate)
 
   return {
@@ -49,6 +69,12 @@ export async function generateMetadata({ searchParams }) {
   }
 }
 
-export default function AppointmentConfirmationPage() {
-  return <ConfirmationPage />
+export default async function AppointmentConfirmationPage({ searchParams }) {
+  const params = await searchParams
+  const id = params?.id || null
+  const token = params?.token || null
+
+  const { appointment } = await fetchAppointmentWithToken(id, token)
+
+  return <ConfirmationPage appointment={appointment} />
 }
