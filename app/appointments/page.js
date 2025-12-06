@@ -31,6 +31,11 @@ const CalendarView = dynamic(() => import('@/components/CalendarView'), {
   loading: () => <LoadingCard labelKey="appointmentsPage.loaders.calendar" />
 })
 
+const CalendarViewMobile = dynamic(() => import('@/components/CalendarViewMobile'), {
+  ssr: false,
+  loading: () => <LoadingCard labelKey="appointmentsPage.loaders.calendar" />
+})
+
 const AppointmentList = dynamic(() => import('@/components/AppointmentList'), {
   loading: () => <LoadingCard labelKey="appointmentsPage.loaders.list" />
 })
@@ -409,24 +414,55 @@ export default function CompactAppointmentsPage() {
 
           <div className="flex-1 min-h-0" ref={calendarContainerRef}>
             {viewMode === 'calendar' ? (
-              <CalendarView
-                appointments={appointmentsToShow}
-                weekOffset={weekOffset}
-                onWeekChange={setWeekOffset}
-                onComplete={handleMarkCompleted}
-                onEdit={handleEditAppointment}
-                onCreateAtSlot={handleCreateAtSlot}
-                slotHeight={slotHeight}
-                slotGap={2}
-                timeColumnWidth={88}
-                showInstructions={false}
-                showLegend={false}
-                compactCards
-                showMonthNames
-                longMonthToolbar
-                showNavigation={false}
-                className="h-full flex flex-col"
-              />
+              <>
+                <div className="md:hidden space-y-3">
+                  <CalendarViewMobile
+                    appointments={appointmentsToShow}
+                    weekOffset={weekOffset}
+                    onWeekChange={setWeekOffset}
+                    onEdit={handleEditAppointment}
+                    onCreateAtSlot={handleCreateAtSlot}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingAppointment(null)
+                        setPrefilledData(null)
+                        setShowForm(true)
+                      }}
+                      className="flex-1 rounded-xl bg-brand-primary text-white text-sm font-semibold py-3 shadow-brand-glow"
+                    >
+                      {t('compactAppointmentsPage.actions.new')}
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className="rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 px-4 py-3"
+                    >
+                      {t('compactAppointmentsPage.views.list')}
+                    </button>
+                  </div>
+                </div>
+                <div className="hidden md:block h-full">
+                  <CalendarView
+                    appointments={appointmentsToShow}
+                    weekOffset={weekOffset}
+                    onWeekChange={setWeekOffset}
+                    onComplete={handleMarkCompleted}
+                    onEdit={handleEditAppointment}
+                    onCreateAtSlot={handleCreateAtSlot}
+                    slotHeight={slotHeight}
+                    slotGap={2}
+                    timeColumnWidth={88}
+                    showInstructions={false}
+                    showLegend={false}
+                    compactCards
+                    showMonthNames
+                    longMonthToolbar
+                    showNavigation={false}
+                    className="h-full flex flex-col"
+                  />
+                </div>
+              </>
             ) : (
               <div className="h-full overflow-auto rounded-xl border border-slate-200 bg-white">
                 <AppointmentList

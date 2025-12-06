@@ -9,6 +9,7 @@ import { useTranslation } from './TranslationProvider'
 import { supabase } from '@/lib/supabase'
 import { clearStoredAccountId } from '@/lib/accountHelpers'
 import { useAccount } from './AccountProvider'
+import AppShellMobile from './AppShellMobile'
 
 const navItems = [
   {
@@ -33,6 +34,29 @@ const navItems = [
   }
 ]
 
+const mobileNavItems = [
+  {
+    href: '/appointments',
+    labelKey: 'app.nav.appointments',
+    icon: '📅'
+  },
+  {
+    href: '/customers',
+    labelKey: 'app.nav.customers',
+    icon: '👥'
+  },
+  {
+    href: '/services',
+    labelKey: 'app.nav.services',
+    icon: '🧴'
+  },
+  {
+    href: '/profile',
+    labelKey: 'app.profile.viewProfile',
+    icon: '👤'
+  }
+]
+
 export default function AppShell({ children }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -46,6 +70,7 @@ export default function AppShell({ children }) {
   const [compactProfileMenuOpen, setCompactProfileMenuOpen] = useState(false)
   const profileMenuRef = useRef(null)
   const compactProfileMenuRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setMenuOpen(false)
@@ -82,6 +107,15 @@ export default function AppShell({ children }) {
     })
   }, [authenticated])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(max-width: 1024px)')
+    const handle = (event) => setIsMobile(event.matches)
+    setIsMobile(mq.matches)
+    mq.addEventListener('change', handle)
+    return () => mq.removeEventListener('change', handle)
+  }, [])
+
   const isTenantPublicRoute = pathname?.startsWith('/portal/')
   const publicRoutes = ['/login', '/appointments/confirm']
   const isPublicRoute = isTenantPublicRoute || publicRoutes.some((route) => pathname?.startsWith(route))
@@ -101,6 +135,18 @@ export default function AppShell({ children }) {
     if (item.href !== '/settings') return true
     return ['owner', 'admin', 'platform_admin'].includes(membership?.role)
   })
+  const mobileItems = mobileNavItems.filter((item) => item.href !== '/settings')
+
+  const handleLogout = async () => {
+    try {
+      await Promise.all([supabase.auth.signOut(), fetch('/api/auth/signout', { method: 'POST' })])
+    } catch (error) {
+      console.error('Failed to sign out completely', error)
+    } finally {
+      clearStoredAccountId()
+      router.push('/login')
+    }
+  }
 
   if (isAdminRoute) {
     // Admin shell has its own layout and guards
@@ -308,6 +354,24 @@ export default function AppShell({ children }) {
     )
   }
 
+  if (isMobile && authenticated && !isPublicRoute) {
+    return (
+      <AccountGate>
+        <AppShellMobile
+          account={account}
+          t={t}
+          profileAvatar={profileAvatar}
+          profileDisplayName={profileDisplayName}
+          pathname={pathname}
+          handleLogout={handleLogout}
+          mobileNavItems={mobileItems}
+        >
+          {children}
+        </AppShellMobile>
+      </AccountGate>
+    )
+  }
+
   return (
     <div className="min-h-screen brand-background">
       <AccountGate>
@@ -427,18 +491,7 @@ export default function AppShell({ children }) {
             </aside>
 
             <main className="relative flex-1 min-h-screen min-h-0 bg-transparent px-3 sm:px-6 py-4 lg:py-6 flex flex-col">
-              <div className="lg:hidden absolute left-2 top-2 z-30">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((prev) => !prev)}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-xl text-slate-600 shadow-md hover:text-slate-900"
-                  aria-expanded={menuOpen}
-                  aria-controls="compact-nav"
-                  aria-label={menuOpen ? t('app.nav.close') : t('app.nav.menu')}
-                >
-                  ☰
-                </button>
-              </div>
+              <div className="lg:hidden absolute left-2 top-2 z-30" />
               <div className="h-full">{children}</div>
               {authenticated && memberships?.length > 1 && (
                 <div className="mt-6 border-t border-slate-100 bg-white/80 px-4 py-3 text-sm text-slate-600 rounded-2xl shadow-sm">
