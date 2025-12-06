@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import { compressImage } from '@/utils/image'
 import { useTranslation } from '@/components/TranslationProvider'
 
@@ -82,9 +83,11 @@ export default function ProfileMetadataForm({
           aria-label={t('profile.form.avatarLabel')}
         >
           {avatarPreview ? (
-            <img
+            <Image
               src={avatarPreview}
               alt={t('profile.form.avatarLabel')}
+              width={64}
+              height={64}
               className="h-full w-full object-cover"
             />
           ) : (

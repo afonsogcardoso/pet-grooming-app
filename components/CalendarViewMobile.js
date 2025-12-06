@@ -39,7 +39,7 @@ export default function CalendarViewMobile({
       slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`)
     }
     return slots
-  }, [])
+  }, [START_TIME_MINUTES, END_TIME_MINUTES])
 
   const normalizeTimeToSlot = (time) => {
     if (!time) return null

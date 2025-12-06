@@ -16,6 +16,12 @@ function formatDate(value, locale, options = { dateStyle: 'medium' }) {
 
 export default function ProfilePageClient({ user, memberships = [] }) {
   const { t, resolvedLocale } = useTranslation()
+  const tabs = [
+    { id: 'profile', label: t('profile.tabs.profile') || 'Perfil' },
+    { id: 'security', label: t('profile.tabs.security') || 'Segurança' },
+    { id: 'memberships', label: t('profile.tabs.memberships') || 'Associações' }
+  ]
+  const [activeTab, setActiveTab] = useState('profile')
   const metadata = user?.user_metadata || {}
   const displayName = metadata.display_name || user?.email
   const phone = metadata.phone || '—'
@@ -36,13 +42,6 @@ export default function ProfilePageClient({ user, memberships = [] }) {
       </section>
     )
   }
-
-  const tabs = [
-    { id: 'profile', label: t('profile.tabs.profile') || 'Perfil' },
-    { id: 'security', label: t('profile.tabs.security') || 'Segurança' },
-    { id: 'memberships', label: t('profile.tabs.memberships') || 'Associações' }
-  ]
-  const [activeTab, setActiveTab] = useState('profile')
 
   return (
     <section className="space-y-4">
