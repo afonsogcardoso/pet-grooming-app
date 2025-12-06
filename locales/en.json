@@ -45,6 +45,35 @@
       "form": "Preparing form..."
     }
   },
+  "compactAppointmentsPage": {
+    "badge": "Compact view",
+    "title": "Full week, no scroll",
+    "count": "{{count}} bookings",
+    "viewLabel": "View",
+    "views": {
+      "calendar": "Calendar",
+      "list": "List"
+    },
+    "stats": {
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "unpaid": "Unpaid"
+    },
+    "actions": {
+      "new": "New booking",
+      "openClassic": "Open previous view"
+    },
+    "filters": {
+      "title": "Quick filter",
+      "helper": "Show only the appointments you need right now."
+    },
+    "calendar": {
+      "pill": "Weekly calendar",
+      "title": "Week without scroll",
+      "helper": "{{count}} bookings visible this week",
+      "week": "Navigation"
+    }
+  },
   "viewToggle": {
     "list": "List View",
     "calendar": "Week View"
@@ -623,10 +652,12 @@
     "previous": "Previous",
     "next": "Next",
     "today": "Back to This Week",
+    "currentWeek": "Current week",
     "instructions": "💡 Click an empty time slot to create a new appointment, or click an existing one to edit it",
     "timeColumn": "Time",
     "mapLink": "📍 Map",
     "add": "+ Add",
+    "overlap": "Overlap",
     "legend": {
       "scheduled": "Scheduled",
       "completed": "Completed",
@@ -646,6 +677,8 @@
       "phonePlaceholder": "(+351) ...",
       "localeLabel": "Language",
       "localeHelper": "Choose the default language for your account.",
+      "avatarLabel": "Profile photo",
+      "avatarHelper": "Click on the image to load a new one.",
       "localeOptions": {
         "pt": "Português (Portugal)",
         "en": "English"
@@ -681,6 +714,11 @@
       "requiresAuth": "You need to sign in to view your profile.",
       "sectionLabel": "Profile",
       "lastLogin": "Last login {{value}}"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "security": "Security",
+      "memberships": "Memberships"
     },
     "common": {
       "notAvailable": "—"
@@ -770,21 +808,21 @@
       },
       "securityBadge": "🔐 Secure portal • {{name}}",
       "nav": {
-      "title": "Quick navigation",
-      "subtitle": "Jump back into your workspace",
-      "description": "Access the main areas immediately after signing in.",
-      "appointments": {
-        "title": "Appointments",
-        "description": "View and manage your daily route."
-      },
-      "customers": {
-        "title": "Customers",
-        "description": "Update client details and pets in seconds."
-      },
-      "services": {
-        "title": "Services",
-        "description": "Review prices and durations for each service."
-      }
+        "title": "Quick navigation",
+        "subtitle": "Jump back into your workspace",
+        "description": "Access the main areas immediately after signing in.",
+        "appointments": {
+          "title": "Appointments",
+          "description": "View and manage your daily route."
+        },
+        "customers": {
+          "title": "Customers",
+          "description": "Update client details and pets in seconds."
+        },
+        "services": {
+          "title": "Services",
+          "description": "Review prices and durations for each service."
+        }
       }
     },
     "loginPage": {

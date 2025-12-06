@@ -38,6 +38,7 @@ const emptyState = {
 
 export function AccountProvider({ children }) {
   const [state, setState] = useState(emptyState)
+  const [authReady, setAuthReady] = useState(false)
   const [currentUserId, setCurrentUserId] = useState(null)
   const latestUserRef = useRef(null)
   const lastFetchedUserRef = useRef(null)
@@ -165,9 +166,10 @@ export function AccountProvider({ children }) {
   useEffect(() => {
     let isMounted = true
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthReady(true)
       if (!isMounted) return
-      const user = data?.user
+      const user = data?.session?.user || null
       const userId = user?.id || null
       latestUserRef.current = user
       setCurrentUserId(userId)
@@ -192,6 +194,7 @@ export function AccountProvider({ children }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthReady(true)
       const user = session?.user || null
       const userId = user?.id || null
       latestUserRef.current = user
@@ -276,10 +279,11 @@ export function AccountProvider({ children }) {
   const value = useMemo(
     () => ({
       ...state,
+      authReady,
       selectAccount,
       refresh
     }),
-    [state, selectAccount, refresh]
+    [state, authReady, selectAccount, refresh]
   )
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>

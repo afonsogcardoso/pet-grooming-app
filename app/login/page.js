@@ -16,19 +16,6 @@ export default function LoginPage() {
   const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    let isMounted = true
-    supabase.auth.getUser().then(({ data }) => {
-      if (!isMounted) return
-      if (data?.user) {
-        router.replace('/')
-      }
-    })
-    return () => {
-      isMounted = false
-    }
-  }, [router])
-
   const handleSubmit = async (event) => {
     event.preventDefault()
     setLoading(true)
@@ -76,7 +63,7 @@ export default function LoginPage() {
 
     setMessage(t('login.success'))
     setLoading(false)
-    router.replace('/')
+    router.replace('/appointments')
   }
 
   return (

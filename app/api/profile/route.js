@@ -18,7 +18,7 @@ export async function PATCH(request) {
   }
 
   const payload = await request.json().catch(() => null)
-  const { displayName, phone, locale } = payload || {}
+  const { displayName, phone, locale, avatarUrl } = payload || {}
 
   const metadataUpdates = {}
   if (displayName !== undefined) {
@@ -31,6 +31,9 @@ export async function PATCH(request) {
   if (locale !== undefined) {
     const normalized = ALLOWED_LOCALES.includes(locale) ? locale : null
     metadataUpdates.preferred_locale = normalized || null
+  }
+  if (avatarUrl !== undefined) {
+    metadataUpdates.avatar_url = avatarUrl || null
   }
 
   if (!Object.keys(metadataUpdates).length) {

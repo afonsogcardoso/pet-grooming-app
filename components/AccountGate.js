@@ -21,7 +21,8 @@ export default function AccountGate({ children }) {
     account,
     selectAccount,
     refresh,
-    authenticated
+    authenticated,
+    authReady
   } = useAccount()
 
   const membershipCards = useMemo(
@@ -62,10 +63,10 @@ export default function AccountGate({ children }) {
   )
 
   useEffect(() => {
-    if (!loading && !authenticated) {
+    if (authReady && !loading && !authenticated) {
       router.replace('/login')
     }
-  }, [authenticated, loading, router])
+  }, [authenticated, loading, authReady, router])
 
   if (!authenticated && !loading) {
     return null

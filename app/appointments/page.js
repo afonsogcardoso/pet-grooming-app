@@ -1,33 +1,24 @@
-// ============================================
-// FILE: app/page.js
-// Main page - Refactored with modular components
-// ============================================
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import {
   loadAppointments,
   createAppointment,
   updateAppointment,
   updateAppointmentStatus,
-  updateAppointmentPaymentStatus,
   deleteAppointment as deleteAppointmentService,
-  filterAppointments,
   markWhatsappSent
 } from '@/lib/appointmentService'
 import { supabase } from '@/lib/supabase'
-import ViewToggle from '@/components/ViewToggle'
-import FilterButtons from '@/components/FilterButtons'
 import { useTranslation } from '@/components/TranslationProvider'
 import { compressImage } from '@/utils/image'
-import styles from './appointments.module.css'
-import { formatDate, formatTime } from '@/utils/dateUtils'
+import { formatDate, formatTime, getWeekRangeText } from '@/utils/dateUtils'
 
 const APPOINTMENT_PHOTO_BUCKET = 'appointment-photos'
 
 const LoadingCard = ({ labelKey }) => {
-  const { t, resolvedLocale } = useTranslation()
+  const { t } = useTranslation()
   return (
     <div className="bg-white rounded-2xl shadow-md border border-brand-primary/20 p-6 text-center text-gray-500 animate-pulse">
       {t(labelKey)}
@@ -49,19 +40,28 @@ const AppointmentForm = dynamic(() => import('@/components/AppointmentForm'), {
   loading: () => <LoadingCard labelKey="appointmentsPage.loaders.form" />
 })
 
-export default function Home() {
+export default function CompactAppointmentsPage() {
   const hasLoadedRef = useRef(false)
+  const calendarContainerRef = useRef(null)
   const [appointments, setAppointments] = useState([])
-  const [filteredAppointments, setFilteredAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingAppointment, setEditingAppointment] = useState(null)
   const [prefilledData, setPrefilledData] = useState(null)
-  const [view, setView] = useState('calendar') // 'list' or 'calendar'
-  const [filter, setFilter] = useState('upcoming') // Default to 'upcoming'
-  const [weekOffset, setWeekOffset] = useState(0) // 0 = current week
+  const [weekOffset, setWeekOffset] = useState(0)
   const [sharePreview, setSharePreview] = useState(null)
+  const [slotHeight, setSlotHeight] = useState(32)
+  const [viewMode, setViewMode] = useState('calendar')
+  const [viewSelectorOpen, setViewSelectorOpen] = useState(false)
+  const viewSelectorRef = useRef(null)
   const { t, resolvedLocale } = useTranslation()
+
+  const slotsCount = useMemo(() => {
+    const start = 9 * 60
+    const end = 18 * 60
+    const interval = 30
+    return Math.floor((end - start) / interval) + 1
+  }, [])
 
   useEffect(() => {
     if (!showForm) return
@@ -85,18 +85,54 @@ export default function Home() {
     setLoading(false)
   }, [t])
 
-  // Load appointments on mount
   useEffect(() => {
     if (hasLoadedRef.current) return
     hasLoadedRef.current = true
     fetchAppointments()
   }, [fetchAppointments])
 
-  // Filter appointments whenever they change or filter changes
-  useEffect(() => {
-    const filtered = filterAppointments(appointments, filter)
-    setFilteredAppointments(filtered)
-  }, [appointments, filter])
+  const handleCreateAtSlot = (dateStr, time) => {
+    setPrefilledData({
+      appointment_date: dateStr,
+      appointment_time: time
+    })
+    setEditingAppointment(null)
+    setShowForm(true)
+  }
+
+  const handleEditAppointment = (appointment) => {
+    setEditingAppointment(appointment)
+    setShowForm(true)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingAppointment(null)
+    setPrefilledData(null)
+    setShowForm(false)
+  }
+
+  const handleMarkCompleted = async (appointmentId) => {
+    const { error } = await updateAppointmentStatus(appointmentId, 'completed')
+
+    if (error) {
+      alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
+    } else {
+      setAppointments((prev) =>
+        prev.map((apt) => (apt.id === appointmentId ? { ...apt, status: 'completed' } : apt))
+      )
+    }
+  }
+
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!confirm(t('appointmentsPage.confirmDelete'))) return
+    const { error } = await deleteAppointmentService(appointmentId)
+
+    if (error) {
+      alert(t('appointmentsPage.errors.delete', { message: error.message }))
+    } else {
+      setAppointments((prev) => prev.filter((apt) => apt.id !== appointmentId))
+    }
+  }
 
   const openWhatsAppForAppointment = (appointment, { forceRedirect = false } = {}) => {
     if (!appointment?.public_token || !appointment?.id) {
@@ -178,7 +214,6 @@ export default function Home() {
       const created = data?.[0] || null
 
       if (options?.sendWhatsapp && created?.id) {
-        // Fetch fresh data to ensure relations/public_token are present
         const { data: latest } = await loadAppointments()
         if (latest && Array.isArray(latest)) {
           setAppointments(latest)
@@ -198,134 +233,87 @@ export default function Home() {
 
   async function handleUpdateAppointment(formData, media = {}, _options = {}) {
     const payload = {
-      ...formData,
-      before_photo_url: editingAppointment?.before_photo_url || null,
-      after_photo_url: editingAppointment?.after_photo_url || null
+      ...formData
     }
 
     try {
       if (media.beforePhotoFile) {
         payload.before_photo_url = await uploadAppointmentPhoto(media.beforePhotoFile, 'before')
+      } else if (media.removeBeforePhoto) {
+        payload.before_photo_url = null
         if (media.currentBeforePhotoUrl) {
           await deleteAppointmentPhoto(media.currentBeforePhotoUrl)
         }
-      } else if (media.removeBeforePhoto && media.currentBeforePhotoUrl) {
-        payload.before_photo_url = null
-        await deleteAppointmentPhoto(media.currentBeforePhotoUrl)
       }
 
       if (media.afterPhotoFile) {
         payload.after_photo_url = await uploadAppointmentPhoto(media.afterPhotoFile, 'after')
+      } else if (media.removeAfterPhoto) {
+        payload.after_photo_url = null
         if (media.currentAfterPhotoUrl) {
           await deleteAppointmentPhoto(media.currentAfterPhotoUrl)
         }
-      } else if (media.removeAfterPhoto && media.currentAfterPhotoUrl) {
-        payload.after_photo_url = null
-        await deleteAppointmentPhoto(media.currentAfterPhotoUrl)
       }
     } catch (photoError) {
       alert(t('appointmentsPage.errors.photoUpload', { message: photoError.message }))
       return
     }
 
-    const { data, error } = await updateAppointment(editingAppointment.id, payload)
+    const { data, error } = await updateAppointment(payload)
 
     if (error) {
       alert(t('appointmentsPage.errors.update', { message: error.message }))
     } else {
-      // Refetch all appointments to get updated data with relations (customer address, etc.)
-      await fetchAppointments()
-      setEditingAppointment(null)
       setShowForm(false)
-    }
-  }
-
-  function handleEditAppointment(appointment) {
-    setEditingAppointment(appointment)
-    setShowForm(true)
-  }
-
-  function handleCancelEdit() {
-    setEditingAppointment(null)
-    setPrefilledData(null)
-    setShowForm(false)
-  }
-
-  function handleViewChange(newView) {
-    if (showForm || editingAppointment) {
-      if (confirm(t('appointmentsPage.confirmDiscard'))) {
-        handleCancelEdit()
-        setView(newView)
-      }
-    } else {
-      setView(newView)
-    }
-  }
-
-  function handleCreateAtSlot(date, time) {
-    setPrefilledData({
-      appointment_date: date,
-      appointment_time: time
-    })
-    setEditingAppointment(null)
-    setShowForm(true)
-  }
-
-  async function handleMarkCompleted(id) {
-    const { error } = await updateAppointmentStatus(id, 'completed')
-
-    if (error) {
-      alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
-    } else {
-      await fetchAppointments()
-      if (editingAppointment?.id === id) {
-        setEditingAppointment((prev) => (prev ? { ...prev, status: 'completed' } : prev))
-      }
-    }
-  }
-
-  async function handleTogglePayment(appointment) {
-    const nextStatus = appointment.payment_status === 'paid' ? 'unpaid' : 'paid'
-    const { error } = await updateAppointmentPaymentStatus(appointment.id, nextStatus)
-
-    if (error) {
-      alert(t('appointmentsPage.errors.updateStatus', { message: error.message }))
-    } else {
-      setAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === appointment.id ? { ...apt, payment_status: nextStatus } : apt
+      setEditingAppointment(null)
+      setPrefilledData(null)
+      if (data && Array.isArray(data)) {
+        setAppointments((prev) =>
+          prev.map((apt) => (apt.id === data[0].id ? { ...apt, ...data[0] } : apt))
         )
-      )
-      setFilteredAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === appointment.id ? { ...apt, payment_status: nextStatus } : apt
-        )
-      )
-    }
-  }
-
-  async function handleDeleteAppointment(id) {
-    if (!confirm(t('appointmentsPage.confirmDelete'))) return
-
-    const target = appointments.find((apt) => apt.id === id)
-    const { error } = await deleteAppointmentService(id)
-
-    if (error) {
-      alert(t('appointmentsPage.errors.delete', { message: error.message }))
-    } else {
-      if (target?.before_photo_url) {
-        await deleteAppointmentPhoto(target.before_photo_url)
-      }
-      if (target?.after_photo_url) {
-        await deleteAppointmentPhoto(target.after_photo_url)
-      }
-      setAppointments(appointments.filter((apt) => apt.id !== id))
-      if (editingAppointment?.id === id) {
-        setEditingAppointment(null)
-        setShowForm(false)
+      } else {
+        await fetchAppointments()
       }
     }
   }
+
+  const appointmentsToShow = appointments
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (viewSelectorRef.current && !viewSelectorRef.current.contains(event.target)) {
+        setViewSelectorOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const el = calendarContainerRef.current
+    if (!el) return
+
+    const computeHeight = () => {
+      const available = el.clientHeight || 0
+      if (available <= 0) return
+      const gap = 2
+      const calculated = Math.max(26, Math.floor((available - gap * (slotsCount + 1)) / slotsCount))
+      setSlotHeight(calculated)
+    }
+
+    computeHeight()
+    const resizeObserver = new ResizeObserver(() => computeHeight())
+    resizeObserver.observe(el)
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [slotsCount])
+
+  const viewOptions = [
+    { value: 'calendar', label: t('compactAppointmentsPage.views.calendar') },
+    { value: 'list', label: t('compactAppointmentsPage.views.list') }
+  ]
 
   if (loading) {
     return (
@@ -335,69 +323,126 @@ export default function Home() {
     )
   }
 
-  const displayedCount = view === 'list' ? filteredAppointments.length : appointments.length
-
-  const pageContent = (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold text-gray-800">
-          {t('appointmentsPage.headingWithCount', { count: displayedCount })}
-        </h2>
-        <ViewToggle view={view} onViewChange={handleViewChange} />
-      </div>
-
-      {/* Filters */}
-      {view === 'list' && (
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <FilterButtons filter={filter} onFilterChange={setFilter} />
-        </div>
-      )}
-
-      {/* Add Appointment Button - Only in List View */}
-      {view === 'list' && (
-        <div className="flex justify-center">
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn-brand shadow-brand-glow py-3 px-6 flex items-center gap-2"
-          >
-            <span className="text-xl">+</span>
-            <span>{t('appointmentsPage.newButton')}</span>
-          </button>
-        </div>
-      )}
-
-      {/* Calendar View */}
-      {view === 'calendar' && (
-        <CalendarView
-          appointments={appointments}
-          weekOffset={weekOffset}
-          onWeekChange={setWeekOffset}
-          onComplete={handleMarkCompleted}
-          onEdit={handleEditAppointment}
-          onCreateAtSlot={handleCreateAtSlot}
-        />
-      )}
-
-      {/* List View */}
-      {view === 'list' && (
-        <div className={styles.cardWrapper}>
-          <AppointmentList
-            appointments={filteredAppointments}
-            filter={filter}
-            onComplete={handleMarkCompleted}
-            onDelete={handleDeleteAppointment}
-            onEdit={handleEditAppointment}
-            onTogglePayment={handleTogglePayment}
-          />
-        </div>
-      )}
-    </div>
-  )
-
   return (
     <>
-      {pageContent}
+      <div className="flex flex-col flex-1 min-h-0 h-full">
+        <div className="flex-1 min-h-0 rounded-2xl border border-slate-200 bg-white/90 shadow-md p-3 sm:p-4 flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2" ref={viewSelectorRef}>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setViewSelectorOpen((prev) => !prev)}
+                  className="group inline-flex items-center gap-1 text-sm font-semibold text-brand-primary focus:outline-none"
+                >
+                  <span className="px-2 py-1 rounded-full bg-brand-primary/10 group-hover:bg-brand-primary/15 transition">
+                    {viewOptions.find((o) => o.value === viewMode)?.label}
+                  </span>
+                  <span className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">▾</span>
+                </button>
+                {viewSelectorOpen && (
+                  <div className="absolute z-20 mt-1 w-48 rounded-xl border border-slate-200 bg-white shadow-lg py-1">
+                    {viewOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setViewMode(option.value)
+                          setViewSelectorOpen(false)
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm font-semibold ${
+                          viewMode === option.value
+                            ? 'text-brand-primary bg-brand-primary/10'
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2 rounded-full bg-white border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700">
+                <span>{getWeekRangeText(weekOffset, resolvedLocale, { useLongMonth: true })}</span>
+                {weekOffset === 0 && <span className="text-brand-primary">· {t('calendar.currentWeek')}</span>}
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1">
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((prev) => prev - 1)}
+                  className="rounded-full px-2.5 py-1 text-sm font-semibold text-slate-700 hover:text-brand-primary"
+                  aria-label={t('calendar.previous')}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset(0)}
+                  className="rounded-full px-2.5 py-1 text-sm font-semibold text-slate-700 hover:text-brand-primary"
+                >
+                  {t('calendar.today')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWeekOffset((prev) => prev + 1)}
+                  className="rounded-full px-2.5 py-1 text-sm font-semibold text-slate-700 hover:text-brand-primary"
+                  aria-label={t('calendar.next')}
+                >
+                  →
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setEditingAppointment(null)
+                  setPrefilledData(null)
+                  setShowForm(true)
+                }}
+                className="btn-brand shadow-brand-glow py-2 px-4 flex items-center justify-center gap-2"
+              >
+                <span className="text-lg leading-none">+</span>
+                <span>{t('compactAppointmentsPage.actions.new')}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-0" ref={calendarContainerRef}>
+            {viewMode === 'calendar' ? (
+              <CalendarView
+                appointments={appointmentsToShow}
+                weekOffset={weekOffset}
+                onWeekChange={setWeekOffset}
+                onComplete={handleMarkCompleted}
+                onEdit={handleEditAppointment}
+                onCreateAtSlot={handleCreateAtSlot}
+                slotHeight={slotHeight}
+                slotGap={2}
+                timeColumnWidth={88}
+                showInstructions={false}
+                showLegend={false}
+                compactCards
+                showMonthNames
+                longMonthToolbar
+                showNavigation={false}
+                className="h-full flex flex-col"
+              />
+            ) : (
+              <div className="h-full overflow-auto rounded-xl border border-slate-200 bg-white">
+                <AppointmentList
+                  appointments={appointmentsToShow}
+                  filter="all"
+                  onComplete={handleMarkCompleted}
+                  onDelete={handleDeleteAppointment}
+                  onEdit={handleEditAppointment}
+                  onTogglePayment={() => {}}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {sharePreview && (
         <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 py-6">
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
@@ -458,14 +503,14 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* Add/Edit Appointment Form Modal */}
+
       {showForm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-brand-primary/10 sm:bg-brand-primary/20 backdrop-blur-none sm:backdrop-blur-md px-3 py-4 sm:px-10 sm:py-12 overflow-y-auto transition"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div className="w-full max-w-5xl bg-white rounded-3xl shadow-xl sm:shadow-2xl border border-brand-primary/30">
-            <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-8">
+            <div className="max-h-[85vh] overflow-y-auto p-4 sm:p-8">
               <AppointmentForm
                 onSubmit={editingAppointment ? handleUpdateAppointment : handleCreateAppointment}
                 onCancel={handleCancelEdit}
@@ -485,6 +530,7 @@ export default function Home() {
     </>
   )
 }
+
 function generatePhotoPath(tag) {
   const unique =
     typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}`

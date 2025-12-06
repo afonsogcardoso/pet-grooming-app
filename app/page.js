@@ -35,7 +35,7 @@ export default async function RootRedirect() {
   }
 
   if (!targetSlug) {
-    redirect('/login')
+    redirect('/appointments')
   }
 
   redirect(`/portal/${targetSlug}`)

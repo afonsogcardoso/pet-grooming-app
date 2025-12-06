@@ -63,14 +63,17 @@ export function getWeekDates(weekOffset = 0) {
 /**
  * Get formatted week range text
  * @param {number} weekOffset - Number of weeks to offset
+ * @param {Object} options
+ * @param {boolean} [options.useLongMonth=false] - Use full month name when true
  * @returns {string} Formatted range like "Jan 15 - Jan 21, 2024"
  */
-export function getWeekRangeText(weekOffset = 0, locale = 'en-US') {
+export function getWeekRangeText(weekOffset = 0, locale = 'en-US', { useLongMonth = false } = {}) {
   const week = getWeekDates(weekOffset)
   const start = week[0]
   const end = week[6]
-  const startStr = start.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
-  const endStr = end.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
+  const monthStyle = useLongMonth ? 'long' : 'short'
+  const startStr = start.toLocaleDateString(locale, { month: monthStyle, day: 'numeric' })
+  const endStr = end.toLocaleDateString(locale, { month: monthStyle, day: 'numeric', year: 'numeric' })
   return `${startStr} - ${endStr}`
 }
 
