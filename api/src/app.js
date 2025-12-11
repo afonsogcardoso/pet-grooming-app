@@ -114,6 +114,18 @@ async function isOriginAllowed(origin) {
   return isDomainAllowedInDb(hostname)
 }
 
+// Lightweight request logger for CORS debugging (safe to remove when stable)
+app.use((req, _res, next) => {
+  if (req.method === 'OPTIONS') {
+    console.log('[cors] preflight received', {
+      path: req.path,
+      origin: req.headers.origin,
+      host: req.headers.host
+    })
+  }
+  next()
+})
+
 app.use(
   cors({
     origin: async (origin, callback) => {
