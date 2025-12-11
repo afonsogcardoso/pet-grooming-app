@@ -23,6 +23,13 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
     const petBreed = appointment.pets?.breed
     const petPhoto = appointment.pets?.photo_url
     const serviceName = appointment.services?.name || t('appointmentCard.unknownService')
+    const servicePrice = appointment.services?.price
+    const servicePriceLabel =
+        servicePrice != null
+            ? new Intl.NumberFormat(resolvedLocale, { style: 'currency', currency: 'EUR' }).format(
+                  servicePrice
+              )
+            : null
     const paymentStatus = appointment.payment_status || 'unpaid'
     const phoneDigits = (phoneNumber || '').replace(/\D/g, '')
     const whatsappSentAt = appointment.whatsapp_sent_at
@@ -140,6 +147,12 @@ export default function AppointmentCard({ appointment, onComplete, onDelete, onE
                                 <div className="inline-flex items-center gap-1 rounded-full border border-brand-primary bg-white px-3 py-1 text-xs font-semibold text-brand-primary shadow-sm">
                                     ⏱ <span>{timeText}</span>
                                 </div>
+                                {servicePriceLabel && (
+                                    <div className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 shadow-sm">
+                                        <span>💰</span>
+                                        <span>{servicePriceLabel}</span>
+                                    </div>
+                                )}
                                 <div
                                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${
                                         paymentStatus === 'paid'
