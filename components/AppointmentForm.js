@@ -565,6 +565,7 @@ export default function AppointmentForm({
         }
 
         const payload = {
+            ...(isEditing && initialData?.id ? { id: initialData.id } : {}),
             customer_id: customerId,
             pet_id: petId,
             service_id: formData.service_id || null,

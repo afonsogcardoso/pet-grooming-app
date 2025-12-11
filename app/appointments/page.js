@@ -240,6 +240,12 @@ export default function CompactAppointmentsPage() {
     const payload = {
       ...formData
     }
+    const appointmentId = payload.id || editingAppointment?.id
+
+    if (!appointmentId) {
+      alert(t('appointmentsPage.errors.update', { message: 'Missing appointment id' }))
+      return
+    }
 
     try {
       if (media.beforePhotoFile) {
@@ -264,7 +270,8 @@ export default function CompactAppointmentsPage() {
       return
     }
 
-    const { data, error } = await updateAppointment(payload)
+    const { id: _ignored, ...updateData } = payload
+    const { data, error } = await updateAppointment(appointmentId, updateData)
 
     if (error) {
       alert(t('appointmentsPage.errors.update', { message: error.message }))
