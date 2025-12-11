@@ -46,6 +46,7 @@ async function isDomainAllowedInDb(hostname) {
 
   const cached = readCachedDomain(hostname)
   if (cached !== null) {
+    console.log('[cors] cache hit', { hostname, allowed: cached })
     return cached
   }
 
@@ -58,16 +59,17 @@ async function isDomainAllowedInDb(hostname) {
       .maybeSingle()
 
     if (error) {
-      console.error('[cors] domain lookup error', error)
+      console.error('[cors] domain lookup error', { hostname, error })
       cacheDomain(hostname, false)
       return false
     }
 
     const allowed = Boolean(data)
+    console.log('[cors] domain lookup', { hostname, allowed })
     cacheDomain(hostname, allowed)
     return allowed
   } catch (err) {
-    console.error('[cors] domain lookup exception', err)
+    console.error('[cors] domain lookup exception', { hostname, error: err })
     cacheDomain(hostname, false)
     return false
   }
@@ -98,6 +100,7 @@ function matchesAllowedList(origin) {
 
 async function isOriginAllowed(origin) {
   if (matchesAllowedList(origin)) {
+    console.log('[cors] allowed via list', { origin })
     return true
   }
 
@@ -117,11 +120,13 @@ app.use(
       try {
         const allowed = await isOriginAllowed(origin)
         if (allowed) {
+          console.log('[cors] origin allowed', { origin })
           return callback(null, true)
         }
+        console.warn('[cors] origin blocked', { origin })
         return callback(new Error('Not allowed by CORS'))
       } catch (error) {
-        console.error('[cors] unexpected error', error)
+        console.error('[cors] unexpected error', { origin, error })
         return callback(new Error('Not allowed by CORS'))
       }
     }
