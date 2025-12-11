@@ -15,9 +15,10 @@ router.get('/', async (req, res) => {
       appointment_date,
       appointment_time,
       duration,
+      payment_status,
       status,
       customers ( id, name, phone, address ),
-      services ( id, name ),
+      services ( id, name, price ),
       pets ( id, name, breed, photo_url )
     `
     )
