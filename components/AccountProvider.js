@@ -165,6 +165,7 @@ export function AccountProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true
+    const { data: refreshSubscription } = supabase.auth.startAutoRefresh()
 
     supabase.auth.getSession().then(({ data }) => {
       setAuthReady(true)
@@ -220,6 +221,8 @@ export function AccountProvider({ children }) {
     return () => {
       isMounted = false
       subscription.unsubscribe()
+      refreshSubscription?.subscription?.unsubscribe?.()
+      supabase.auth.stopAutoRefresh()
     }
   }, [fetchMemberships])
 
