@@ -7,6 +7,9 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "cors": "^2.8.5",
