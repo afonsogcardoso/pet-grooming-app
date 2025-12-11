@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
+import swaggerJsdoc from 'swagger-jsdoc'
+import swaggerUi from 'swagger-ui-express'
 import appointmentsRouter from './routes/appointments.js'
 import customersRouter from './routes/customers.js'
 import servicesRouter from './routes/services.js'
@@ -147,9 +149,52 @@ app.use(
 
 app.use(express.json())
 
-app.get('/health', (_req, res) => res.json({ ok: true }))
-app.use('/appointments', appointmentsRouter)
-app.use('/customers', customersRouter)
-app.use('/services', servicesRouter)
+// OpenAPI / Swagger setup (served at /docs and /docs.json)
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Pet Grooming API',
+    version: '1.0.0',
+    description: 'Endpoints for appointments, customers and services'
+  },
+  servers: [
+    {
+      url: `${(process.env.API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '')}/api/v1`
+    }
+  ],
+  components: {
+    schemas: {
+      Appointment: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          appointment_date: { type: 'string', format: 'date' },
+          appointment_time: { type: 'string', example: '14:30' },
+          duration: { type: 'integer' },
+          payment_status: { type: 'string', enum: ['paid', 'unpaid'] },
+          status: { type: 'string' },
+          customers: { type: 'object' },
+          services: { type: 'object' },
+          pets: { type: 'object' }
+        }
+      }
+    }
+  }
+}
+
+const swaggerOptions = {
+  definition: swaggerDefinition,
+  apis: [] // could be extended with JSDoc annotations for auto-generation
+}
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/docs.json', (_req, res) => res.json(swaggerSpec))
+
+// Versioned routes (add /api/v2 later if needed)
+app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
+app.use('/api/v1/appointments', appointmentsRouter)
+app.use('/api/v1/customers', customersRouter)
+app.use('/api/v1/services', servicesRouter)
 
 export default app
