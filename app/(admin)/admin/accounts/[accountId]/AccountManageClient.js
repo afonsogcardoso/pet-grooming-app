@@ -153,6 +153,21 @@ function ApiKeysPanel({ accountId, accountName }) {
     loadKeys(page)
   }
 
+  const deleteKey = async (id) => {
+    if (!confirm('Delete this revoked API key?')) return
+    const res = await fetch(`/api/admin/accounts/${accountId}/apikeys`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(body.error || 'Failed to delete key')
+      return
+    }
+    loadKeys(page)
+  }
+
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
       <div className="flex items-center justify-between">
@@ -269,14 +284,24 @@ function ApiKeysPanel({ accountId, accountName }) {
                   Created: {formatDate(key.created_at)} • Last used: {formatDate(key.last_used_at) || '—'}
                 </p>
               </div>
-              {key.status === 'active' && (
-                <button
-                  onClick={() => revokeKey(key.id)}
-                  className="self-start md:self-auto rounded-lg bg-rose-50 text-rose-700 border border-rose-200 px-3 py-2 text-sm font-semibold hover:bg-rose-100"
-                >
-                  Revoke
-                </button>
-              )}
+              <div className="flex gap-2">
+                {key.status === 'active' && (
+                  <button
+                    onClick={() => revokeKey(key.id)}
+                    className="self-start md:self-auto rounded-lg bg-rose-50 text-rose-700 border border-rose-200 px-3 py-2 text-sm font-semibold hover:bg-rose-100"
+                  >
+                    Revoke
+                  </button>
+                )}
+                {key.status === 'revoked' && (
+                  <button
+                    onClick={() => deleteKey(key.id)}
+                    className="self-start md:self-auto rounded-lg bg-slate-100 text-slate-700 border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-200"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>

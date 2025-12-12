@@ -118,6 +118,36 @@ export async function PATCH(request) {
   return NextResponse.json({ key: data })
 }
 
+export async function DELETE(request) {
+  const { error: authError } = await getAdminUser()
+  if (authError) return authError
+
+  const payload = await request.json().catch(() => null)
+  const { id } = payload || {}
+
+  if (!id) {
+    return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('api_keys')
+    .delete()
+    .eq('id', id)
+    .eq('status', 'revoked')
+    .select('id')
+    .maybeSingle()
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (!data) {
+    return NextResponse.json({ error: 'Key not found or not revoked' }, { status: 404 })
+  }
+
+  return NextResponse.json({ ok: true })
+}
+
 function clampPageSize(value) {
   if (!value || Number.isNaN(value)) return 20
   return Math.max(1, Math.min(value, MAX_PAGE_SIZE))

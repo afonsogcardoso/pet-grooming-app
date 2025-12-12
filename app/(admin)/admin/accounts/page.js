@@ -27,9 +27,7 @@ export default function AdminAccountsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const [toast, setToast] = useState(null)
-  const [selectedIds, setSelectedIds] = useState([])
   const [inlineUpdating, setInlineUpdating] = useState({})
-  const [bulkLoading, setBulkLoading] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -93,10 +91,6 @@ export default function AdminAccountsPage() {
     return () => clearTimeout(timeout)
   }, [toast])
 
-  useEffect(() => {
-    setSelectedIds((prev) => prev.filter((id) => accounts.some((account) => account.id === id)))
-  }, [accounts])
-
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total])
 
   const resolvedPlanOptions = useMemo(() => {
@@ -132,20 +126,6 @@ export default function AdminAccountsPage() {
     setPage(1)
     setReloadKey((prev) => prev + 1)
     setToast('Conta criada com sucesso. Seed inicial a correr em background.')
-  }
-
-  const toggleRowSelection = (accountId) => {
-    setSelectedIds((prev) =>
-      prev.includes(accountId) ? prev.filter((id) => id !== accountId) : [...prev, accountId]
-    )
-  }
-
-  const toggleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedIds(accounts.map((account) => account.id))
-    } else {
-      setSelectedIds([])
-    }
   }
 
   const updateAccountInline = async (accountId, updates, successMessage) => {
@@ -195,43 +175,21 @@ export default function AdminAccountsPage() {
       'Apagar este tenant vai remover todos os dados associados. Confirmas a ação?'
     )
     if (!confirmed) return
-    setSelectedIds([account.id])
-    await handleBulkAction('delete')
-  }
-
-  const handleBulkAction = async (action) => {
-    if (!selectedIds.length) return
-
-    if (action === 'delete') {
-      const confirmed = window.confirm(
-        'Apagar estes tenants remove todos os dados associados (clientes, marcações, membros). Queres continuar?'
-      )
-      if (!confirmed) return
-    }
-
-    setBulkLoading(true)
     setError(null)
     try {
       const response = await fetch('/api/admin/accounts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountIds: selectedIds, action })
+        body: JSON.stringify({ accountIds: [account.id], action: 'delete' })
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) {
-        throw new Error(body.error || 'Falha ao executar a ação.')
+        throw new Error(body.error || 'Falha ao apagar tenant.')
       }
-      let message = ''
-      if (action === 'archive') message = 'Contas arquivadas.'
-      if (action === 'restore') message = 'Contas restauradas.'
-      if (action === 'delete') message = 'Tenants apagados definitivamente.'
-      setToast(message)
-      setSelectedIds([])
+      setToast('Tenant apagado definitivamente.')
       setReloadKey((prev) => prev + 1)
-    } catch (bulkError) {
-      setError(bulkError.message)
-    } finally {
-      setBulkLoading(false)
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -292,7 +250,7 @@ export default function AdminAccountsPage() {
             <select
               value={filters.status}
               onChange={(event) => handleFilterChange('status', event.target.value)}
-              className="mt-2 rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-900 focus:border-slate-500 focus:outline-none"
+              className="mt-2 rounded-lg border border-slate-300 px-3 py-2 text-base font-semibold text-slate-900 focus:border-slate-500 focus:outline-none bg-white"
             >
               <option value="all">Todos</option>
               {resolvedStatusOptions.map((status) => (
@@ -319,39 +277,12 @@ export default function AdminAccountsPage() {
           </div>
         </form>
 
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
-          <p>
-            Selecionadas: <span className="font-semibold">{selectedIds.length}</span>
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => handleBulkAction('archive')}
-              disabled={!selectedIds.length || bulkLoading}
-              className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Arquivar selecionadas
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBulkAction('restore')}
-              disabled={!selectedIds.length || bulkLoading}
-              className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Restaurar selecionadas
-            </button>
-          </div>
-        </div>
-
         <AccountsTable
           loading={loading}
           accounts={accounts}
           error={error}
           page={page}
           totalPages={totalPages}
-          selectedIds={selectedIds}
-          onSelectRow={toggleRowSelection}
-          onSelectAll={toggleSelectAll}
           inlineUpdating={inlineUpdating}
           onPlanChange={handlePlanChange}
           onStatusToggle={handleStatusToggle}
@@ -377,9 +308,6 @@ function AccountsTable({
   error,
   page,
   totalPages,
-  selectedIds,
-  onSelectRow,
-  onSelectAll,
   inlineUpdating,
   onPlanChange,
   onStatusToggle,
@@ -411,42 +339,22 @@ function AccountsTable({
     )
   }
 
-  const allSelected = accounts.length > 0 && accounts.every((account) => selectedIds.includes(account.id))
-
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
         <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
           <tr>
-            <th className="px-4 py-3">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={(event) => onSelectAll(event.target.checked)}
-                aria-label="Selecionar todas as contas desta página"
-                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
-              />
-            </th>
             <th className="px-4 py-3">Conta</th>
             <th className="px-4 py-3">Slug</th>
             <th className="px-4 py-3">Plano</th>
             <th className="px-4 py-3">Estado</th>
             <th className="px-4 py-3">Criada em</th>
-            <th className="px-4 py-3">Equipa</th>
+            <th className="px-4 py-3">Gestão</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 bg-white">
           {accounts.map((account) => (
             <tr key={account.id} className="hover:bg-slate-50">
-              <td className="px-4 py-3">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(account.id)}
-                  onChange={() => onSelectRow(account.id)}
-                  aria-label={`Selecionar conta ${account.name}`}
-                  className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
-                />
-              </td>
               <td className="px-4 py-3">
                 <div className="font-semibold text-slate-900">{account.name || 'Sem nome'}</div>
                 <div className="text-xs text-slate-500">{account.id}</div>
@@ -489,12 +397,15 @@ function AccountsTable({
               </td>
               <td className="px-4 py-3 text-slate-600">{formatDate(account.created_at)}</td>
               <td className="px-4 py-3">
-                <Link
-                  href={`/admin/accounts/${account.id}`}
-                  className="text-sm font-semibold text-slate-700 underline-offset-2 hover:underline"
-                >
-                  Gerir tenant →
-                </Link>
+                <div className="flex flex-col gap-1 text-sm">
+                  <Link
+                    href={`/admin/accounts/${account.id}`}
+                    className="font-semibold text-slate-700 underline-offset-2 hover:underline"
+                  >
+                    Abrir gestão →
+                  </Link>
+                  <span className="text-xs text-slate-500">Equipa, chaves, manutenção, ambiente</span>
+                </div>
               </td>
             </tr>
           ))}
@@ -518,7 +429,7 @@ function Pagination({ page, totalPages, onChange, disabled }) {
           type="button"
           onClick={() => onChange(Math.max(1, page - 1))}
           disabled={disabled || page === 1}
-          className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70 disabled:text-slate-600"
         >
           Anterior
         </button>
@@ -526,7 +437,7 @@ function Pagination({ page, totalPages, onChange, disabled }) {
           type="button"
           onClick={() => onChange(Math.min(totalPages, page + 1))}
           disabled={disabled || page === totalPages}
-          className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-70 disabled:text-slate-600"
         >
           Seguinte
         </button>

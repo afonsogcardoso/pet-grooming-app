@@ -85,6 +85,21 @@ export default function ApiKeysClient({ currentUserEmail }) {
     fetchKeys(page)
   }
 
+  async function handleDelete(id) {
+    if (!confirm('Delete this revoked API key?')) return
+    const res = await fetch('/api/admin/apikeys', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(body.error || 'Failed to delete')
+      return
+    }
+    fetchKeys(page)
+  }
+
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -224,14 +239,24 @@ export default function ApiKeysClient({ currentUserEmail }) {
                   Created: {formatDate(key.created_at)} • Last used: {formatDate(key.last_used_at) || '—'}
                 </p>
               </div>
-              {key.status === 'active' && (
-                <button
-                  onClick={() => handleRevoke(key.id)}
-                  className="self-start md:self-auto rounded-lg bg-rose-50 text-rose-700 border border-rose-200 px-3 py-2 text-sm font-semibold hover:bg-rose-100"
-                >
-                  Revoke
-                </button>
-              )}
+              <div className="flex gap-2">
+                {key.status === 'active' && (
+                  <button
+                    onClick={() => handleRevoke(key.id)}
+                    className="self-start md:self-auto rounded-lg bg-rose-50 text-rose-700 border border-rose-200 px-3 py-2 text-sm font-semibold hover:bg-rose-100"
+                  >
+                    Revoke
+                  </button>
+                )}
+                {key.status === 'revoked' && (
+                  <button
+                    onClick={() => handleDelete(key.id)}
+                    className="self-start md:self-auto rounded-lg bg-slate-100 text-slate-700 border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-200"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
