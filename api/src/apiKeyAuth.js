@@ -5,13 +5,21 @@ const KEY_HEADER = 'x-api-key'
 const AUTH_HEADER = 'authorization'
 const PREFIX_LENGTH = 8
 
+function looksLikeJwt(token) {
+  return typeof token === 'string' && token.split('.').length === 3
+}
+
 function extractApiKey(req) {
   const headerKey = req.headers[KEY_HEADER]
   if (headerKey) return String(headerKey).trim()
 
   const auth = req.headers[AUTH_HEADER]
   if (auth && auth.startsWith('Bearer ')) {
-    return auth.slice('Bearer '.length).trim()
+    const bearerToken = auth.slice('Bearer '.length).trim()
+    // Let real JWT bearer tokens pass through to Supabase auth
+    if (!looksLikeJwt(bearerToken)) {
+      return bearerToken
+    }
   }
   return null
 }
