@@ -1,13 +1,14 @@
 import { Router } from 'express'
-import { getSupabaseClientWithAuth } from '../authClient.js'
+import { getSupabaseClientWithAuth, getSupabaseServiceRoleClient } from '../authClient.js'
 
 const router = Router()
 
 router.get('/', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('appointments')
     .select(
       `
@@ -26,6 +27,12 @@ router.get('/', async (req, res) => {
     .order('appointment_time', { ascending: true })
     .limit(200)
 
+  if (accountId) {
+    query = query.eq('account_id', accountId)
+  }
+
+  const { data, error } = await query
+
   if (error) {
     console.error('[api] appointments error', error)
     return res.status(500).json({ error: error.message })
@@ -35,9 +42,14 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
-  const payload = req.body || {}
+  const payload = { ...(req.body || {}) }
+
+  if (accountId) {
+    payload.account_id = accountId
+  }
 
   const { data, error } = await supabase.from('appointments').insert(payload).select()
 
@@ -50,7 +62,8 @@ router.post('/', async (req, res) => {
 })
 
 router.patch('/:id/status', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
   const { id } = req.params
   const { status } = req.body || {}
@@ -59,11 +72,12 @@ router.patch('/:id/status', async (req, res) => {
     return res.status(400).json({ error: 'Missing status' })
   }
 
-  const { data, error } = await supabase
-    .from('appointments')
-    .update({ status })
-    .eq('id', id)
-    .select()
+  let query = supabase.from('appointments').update({ status }).eq('id', id)
+  if (accountId) {
+    query = query.eq('account_id', accountId)
+  }
+
+  const { data, error } = await query.select()
 
   if (error) {
     console.error('[api] update appointment status error', error)

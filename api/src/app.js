@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 import swaggerJsdoc from 'swagger-jsdoc'
 import swaggerUi from 'swagger-ui-express'
+import { apiKeyAuth } from './apiKeyAuth.js'
 import appointmentsRouter from './routes/appointments.js'
 import customersRouter from './routes/customers.js'
 import servicesRouter from './routes/services.js'
@@ -48,7 +49,6 @@ async function isDomainAllowedInDb(hostname) {
 
   const cached = readCachedDomain(hostname)
   if (cached !== null) {
-    console.log('[cors] cache hit', { hostname, allowed: cached })
     return cached
   }
 
@@ -61,17 +61,14 @@ async function isDomainAllowedInDb(hostname) {
       .maybeSingle()
 
     if (error) {
-      console.error('[cors] domain lookup error', { hostname, error })
       cacheDomain(hostname, false)
       return false
     }
 
     const allowed = Boolean(data)
-    console.log('[cors] domain lookup', { hostname, allowed })
     cacheDomain(hostname, allowed)
     return allowed
-  } catch (err) {
-    console.error('[cors] domain lookup exception', { hostname, error: err })
+  } catch {
     cacheDomain(hostname, false)
     return false
   }
@@ -102,7 +99,6 @@ function matchesAllowedList(origin) {
 
 async function isOriginAllowed(origin) {
   if (matchesAllowedList(origin)) {
-    console.log('[cors] allowed via list', { origin })
     return true
   }
 
@@ -116,31 +112,16 @@ async function isOriginAllowed(origin) {
   return isDomainAllowedInDb(hostname)
 }
 
-// Lightweight request logger for CORS debugging (safe to remove when stable)
-app.use((req, _res, next) => {
-  if (req.method === 'OPTIONS') {
-    console.log('[cors] preflight received', {
-      path: req.path,
-      origin: req.headers.origin,
-      host: req.headers.host
-    })
-  }
-  next()
-})
-
 app.use(
   cors({
     origin: async (origin, callback) => {
       try {
         const allowed = await isOriginAllowed(origin)
         if (allowed) {
-          console.log('[cors] origin allowed', { origin })
           return callback(null, true)
         }
-        console.warn('[cors] origin blocked', { origin })
         return callback(new Error('Not allowed by CORS'))
       } catch (error) {
-        console.error('[cors] unexpected error', { origin, error })
         return callback(new Error('Not allowed by CORS'))
       }
     }
@@ -148,6 +129,7 @@ app.use(
 )
 
 app.use(express.json())
+app.use(apiKeyAuth)
 
 // OpenAPI / Swagger setup (served at /docs and /docs.json)
 const swaggerDefinition = {
@@ -163,6 +145,13 @@ const swaggerDefinition = {
     }
   ],
   components: {
+    securitySchemes: {
+      ApiKeyAuth: {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-api-key'
+      }
+    },
     schemas: {
       Appointment: {
         type: 'object',
@@ -177,6 +166,252 @@ const swaggerDefinition = {
           services: { type: 'object' },
           pets: { type: 'object' }
         }
+      },
+      Customer: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          phone: { type: 'string' },
+          address: { type: 'string' }
+        }
+      },
+      Service: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          default_duration: { type: 'integer' },
+          price: { type: 'number' },
+          active: { type: 'boolean' },
+          description: { type: 'string' }
+        }
+      }
+    }
+  },
+  paths: {
+    '/appointments': {
+      get: {
+        summary: 'List appointments',
+        security: [{ ApiKeyAuth: [] }],
+        responses: {
+          200: {
+            description: 'Array of appointments',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Appointment' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        summary: 'Create appointment',
+        security: [{ ApiKeyAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Appointment' }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Created appointment',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Appointment' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/appointments/{id}/status': {
+      patch: {
+        summary: 'Update appointment status',
+        security: [{ ApiKeyAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { status: { type: 'string' } }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Updated appointment',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Appointment' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/customers': {
+      get: {
+        summary: 'List customers',
+        security: [{ ApiKeyAuth: [] }],
+        responses: {
+          200: {
+            description: 'Array of customers',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Customer' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        summary: 'Create customer',
+        security: [{ ApiKeyAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Customer' }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Created customer'
+          }
+        }
+      }
+    },
+    '/customers/{id}': {
+      patch: {
+        summary: 'Update customer',
+        security: [{ ApiKeyAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Customer' }
+            }
+          }
+        },
+        responses: { 200: { description: 'Updated customer' } }
+      },
+      delete: {
+        summary: 'Delete customer',
+        security: [{ ApiKeyAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
+        ],
+        responses: { 200: { description: 'Deleted' } }
+      }
+    },
+    '/services': {
+      get: {
+        summary: 'List services',
+        security: [{ ApiKeyAuth: [] }],
+        responses: {
+          200: {
+            description: 'Array of services',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: { type: 'array', items: { $ref: '#/components/schemas/Service' } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        summary: 'Create service',
+        security: [{ ApiKeyAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Service' }
+            }
+          }
+        },
+        responses: { 201: { description: 'Created service' } }
+      }
+    },
+    '/services/{id}': {
+      patch: {
+        summary: 'Update service',
+        security: [{ ApiKeyAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Service' }
+            }
+          }
+        },
+        responses: { 200: { description: 'Updated service' } }
+      },
+      delete: {
+        summary: 'Delete service',
+        security: [{ ApiKeyAuth: [] }],
+        parameters: [
+          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
+        ],
+        responses: { 200: { description: 'Deleted service' } }
       }
     }
   }

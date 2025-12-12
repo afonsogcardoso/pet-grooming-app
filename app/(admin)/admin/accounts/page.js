@@ -490,10 +490,10 @@ function AccountsTable({
               <td className="px-4 py-3 text-slate-600">{formatDate(account.created_at)}</td>
               <td className="px-4 py-3">
                 <Link
-                  href={`/admin/accounts/${account.id}/members`}
+                  href={`/admin/accounts/${account.id}`}
                   className="text-sm font-semibold text-slate-700 underline-offset-2 hover:underline"
                 >
-                  Gerir equipa →
+                  Gerir tenant →
                 </Link>
               </td>
             </tr>

@@ -28,6 +28,12 @@ const NAV_ITEMS = [
     href: '/admin/domains'
   },
   {
+    label: 'API Keys',
+    description: 'Issue & revoke',
+    icon: '🔑',
+    href: '/admin/apikeys'
+  },
+  {
     label: 'Logs',
     description: 'Audit trail',
     icon: '📜',

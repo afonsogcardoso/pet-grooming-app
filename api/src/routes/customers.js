@@ -1,17 +1,22 @@
 import { Router } from 'express'
-import { getSupabaseClientWithAuth } from '../authClient.js'
+import { getSupabaseClientWithAuth, getSupabaseServiceRoleClient } from '../authClient.js'
 
 const router = Router()
 
 router.get('/', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
 
-  const { data, error } = await supabase
-    .from('customers')
-    .select('id,name,phone,email,address')
-    .order('name', { ascending: true })
-    .limit(200)
+  let query = supabase.from('customers').select('id,name,phone,email,address').order('name', {
+    ascending: true
+  })
+
+  if (accountId) {
+    query = query.eq('account_id', accountId)
+  }
+
+  const { data, error } = await query.limit(200)
 
   if (error) {
     console.error('[api] customers error', error)
@@ -22,9 +27,13 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
-  const payload = req.body || {}
+  const payload = { ...(req.body || {}) }
+  if (accountId) {
+    payload.account_id = accountId
+  }
 
   const { data, error } = await supabase.from('customers').insert([payload]).select()
 
@@ -37,12 +46,18 @@ router.post('/', async (req, res) => {
 })
 
 router.patch('/:id', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
   const { id } = req.params
   const payload = req.body || {}
 
-  const { data, error } = await supabase.from('customers').update(payload).eq('id', id).select()
+  let query = supabase.from('customers').update(payload).eq('id', id)
+  if (accountId) {
+    query = query.eq('account_id', accountId)
+  }
+
+  const { data, error } = await query.select()
 
   if (error) {
     console.error('[api] update customer error', error)
@@ -53,11 +68,17 @@ router.patch('/:id', async (req, res) => {
 })
 
 router.delete('/:id', async (req, res) => {
-  const supabase = getSupabaseClientWithAuth(req)
+  const accountId = req.accountId
+  const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
   const { id } = req.params
 
-  const { error } = await supabase.from('customers').delete().eq('id', id)
+  let query = supabase.from('customers').delete().eq('id', id)
+  if (accountId) {
+    query = query.eq('account_id', accountId)
+  }
+
+  const { error } = await query
 
   if (error) {
     console.error('[api] delete customer error', error)
