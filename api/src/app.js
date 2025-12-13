@@ -151,9 +151,39 @@ const swaggerDefinition = {
         type: 'apiKey',
         in: 'header',
         name: 'x-api-key'
+      },
+      SupabaseBearer: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Token de sessão obtido no /auth/login (Authorization: Bearer {token})'
       }
     },
     schemas: {
+      AuthLoginRequest: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: { type: 'string', format: 'email' },
+          password: { type: 'string', format: 'password' }
+        }
+      },
+      AuthLoginResponse: {
+        type: 'object',
+        properties: {
+          token: { type: 'string', description: 'access_token do Supabase' },
+          refreshToken: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+          name: { type: 'string', nullable: true }
+        }
+      },
+      UserProfile: {
+        type: 'object',
+        properties: {
+          email: { type: 'string', format: 'email' },
+          name: { type: 'string', nullable: true }
+        }
+      },
       Appointment: {
         type: 'object',
         properties: {
@@ -191,10 +221,51 @@ const swaggerDefinition = {
     }
   },
   paths: {
+    '/auth/login': {
+      post: {
+        summary: 'Autenticar utilizador',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/AuthLoginRequest' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Token de sessão',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthLoginResponse' }
+              }
+            }
+          },
+          401: { description: 'Credenciais inválidas' }
+        }
+      }
+    },
+    '/profile': {
+      get: {
+        summary: 'Perfil do utilizador autenticado',
+        security: [{ SupabaseBearer: [] }],
+        responses: {
+          200: {
+            description: 'Perfil',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UserProfile' }
+              }
+            }
+          },
+          401: { description: 'Não autenticado' }
+        }
+      }
+    },
     '/appointments': {
       get: {
         summary: 'List appointments',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         responses: {
           200: {
             description: 'Array of appointments',
@@ -216,7 +287,7 @@ const swaggerDefinition = {
       },
       post: {
         summary: 'Create appointment',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         requestBody: {
           required: true,
           content: {
@@ -248,7 +319,7 @@ const swaggerDefinition = {
     '/appointments/{id}/status': {
       patch: {
         summary: 'Update appointment status',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         parameters: [
           {
             in: 'path',
@@ -291,7 +362,7 @@ const swaggerDefinition = {
     '/customers': {
       get: {
         summary: 'List customers',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         responses: {
           200: {
             description: 'Array of customers',
@@ -313,7 +384,7 @@ const swaggerDefinition = {
       },
       post: {
         summary: 'Create customer',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         requestBody: {
           required: true,
           content: {
@@ -332,7 +403,7 @@ const swaggerDefinition = {
     '/customers/{id}': {
       patch: {
         summary: 'Update customer',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         parameters: [
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
         ],
@@ -348,7 +419,7 @@ const swaggerDefinition = {
       },
       delete: {
         summary: 'Delete customer',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         parameters: [
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
         ],
@@ -358,7 +429,7 @@ const swaggerDefinition = {
     '/services': {
       get: {
         summary: 'List services',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         responses: {
           200: {
             description: 'Array of services',
@@ -377,7 +448,7 @@ const swaggerDefinition = {
       },
       post: {
         summary: 'Create service',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         requestBody: {
           required: true,
           content: {
@@ -392,7 +463,7 @@ const swaggerDefinition = {
     '/services/{id}': {
       patch: {
         summary: 'Update service',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         parameters: [
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
         ],
@@ -408,7 +479,7 @@ const swaggerDefinition = {
       },
       delete: {
         summary: 'Delete service',
-        security: [{ ApiKeyAuth: [] }],
+        security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
         parameters: [
           { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
         ],
