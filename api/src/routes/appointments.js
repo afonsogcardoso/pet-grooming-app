@@ -29,7 +29,6 @@ router.get('/', async (req, res) => {
       pets ( id, name, breed, photo_url )
     `
     )
-    )
     .order('appointment_date', { ascending: true })
     .order('appointment_time', { ascending: true })
     .range(start, end)
