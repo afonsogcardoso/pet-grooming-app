@@ -424,8 +424,12 @@ const swaggerOptions = {
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-app.get('/docs.json', (_req, res) => res.json(swaggerSpec))
+// Serve Swagger under the API prefix so proxies that forward `/api/*` also expose the docs
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec))
+// Backwards compatibility: old /docs path now redirects to /api/docs
+app.get('/docs', (_req, res) => res.redirect(301, '/api/docs'))
+app.get('/docs.json', (_req, res) => res.redirect(301, '/api/docs.json'))
 
 // Versioned routes (add /api/v2 later if needed)
 app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
