@@ -8,8 +8,11 @@ router.get('/', async (req, res) => {
   const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
 
-  const { date_from: dateFrom, date_to: dateTo, limit: limitParam, status } = req.query
-  const limit = Math.min(Math.max(Number(limitParam) || 200, 1), 500)
+  const { date_from: dateFrom, date_to: dateTo, limit: limitParam, status, offset: offsetParam } = req.query
+  const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 500)
+  const offset = Math.max(Number(offsetParam) || 0, 0)
+  const start = offset
+  const end = offset + limit - 1
 
   let query = supabase
     .from('appointments')
@@ -26,9 +29,10 @@ router.get('/', async (req, res) => {
       pets ( id, name, breed, photo_url )
     `
     )
+    )
     .order('appointment_date', { ascending: true })
     .order('appointment_time', { ascending: true })
-    .limit(limit)
+    .range(start, end)
 
   if (accountId) {
     query = query.eq('account_id', accountId)
@@ -51,7 +55,9 @@ router.get('/', async (req, res) => {
     return res.status(500).json({ error: error.message })
   }
 
-  res.json({ data })
+  const nextOffset = data.length === limit ? offset + limit : null
+
+  res.json({ data, meta: { nextOffset } })
 })
 
 router.post('/', async (req, res) => {

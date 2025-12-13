@@ -17,14 +17,43 @@ const DEFAULT_BRANDING = {
   support_phone: null
 }
 
-router.get('/', async (req, res) => {
-  const accountId = req.accountId || req.query.accountId
-  if (!accountId) {
-    return res.json({ data: DEFAULT_BRANDING })
+function getBearer(req) {
+  const auth = req.headers.authorization || ''
+  if (typeof auth === 'string' && auth.startsWith('Bearer ')) {
+    return auth.slice('Bearer '.length)
   }
+  return null
+}
 
+async function resolveAccountId(req, supabaseAdmin) {
+  if (req.accountId) return req.accountId
+  if (!supabaseAdmin) return req.query.accountId || null
+
+  const token = getBearer(req)
+  if (!token) return req.query.accountId || null
+
+  const { data: userData } = await supabaseAdmin.auth.getUser(token)
+  const userId = userData?.user?.id
+  if (!userId) return req.query.accountId || null
+
+  const { data: membership } = await supabaseAdmin
+    .from('account_members')
+    .select('account_id')
+    .eq('user_id', userId)
+    .eq('status', 'accepted')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (membership?.account_id) return membership.account_id
+  return req.query.accountId || null
+}
+
+router.get('/', async (req, res) => {
   const supabase = getSupabaseServiceRoleClient()
-  if (!supabase) {
+  const accountId = await resolveAccountId(req, supabase)
+
+  if (!supabase || !accountId) {
     return res.json({ data: DEFAULT_BRANDING })
   }
 

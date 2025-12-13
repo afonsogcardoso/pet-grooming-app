@@ -272,6 +272,38 @@ const swaggerDefinition = {
       get: {
         summary: 'List appointments',
         security: [{ ApiKeyAuth: [] }, { SupabaseBearer: [] }],
+        parameters: [
+          {
+            in: 'query',
+            name: 'date_from',
+            schema: { type: 'string', format: 'date' },
+            description: 'Filtra a partir desta data (YYYY-MM-DD)'
+          },
+          {
+            in: 'query',
+            name: 'date_to',
+            schema: { type: 'string', format: 'date' },
+            description: 'Filtra até esta data (YYYY-MM-DD)'
+          },
+          {
+            in: 'query',
+            name: 'status',
+            schema: { type: 'string' },
+            description: 'Filtra por status'
+          },
+          {
+            in: 'query',
+            name: 'limit',
+            schema: { type: 'integer', minimum: 1, maximum: 500, default: 200 },
+            description: 'Limite de resultados'
+          },
+          {
+            in: 'query',
+            name: 'offset',
+            schema: { type: 'integer', minimum: 0, default: 0 },
+            description: 'Offset para paginação (skip)'
+          }
+        ],
         responses: {
           200: {
             description: 'Array of appointments',
@@ -283,6 +315,12 @@ const swaggerDefinition = {
                     data: {
                       type: 'array',
                       items: { $ref: '#/components/schemas/Appointment' }
+                    },
+                    meta: {
+                      type: 'object',
+                      properties: {
+                        nextOffset: { type: 'integer', nullable: true }
+                      }
                     }
                   }
                 }
@@ -313,6 +351,49 @@ const swaggerDefinition = {
                     data: {
                       type: 'array',
                       items: { $ref: '#/components/schemas/Appointment' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/branding': {
+      get: {
+        summary: 'Obter branding da conta',
+        parameters: [
+          {
+            in: 'query',
+            name: 'accountId',
+            schema: { type: 'string' },
+            description: 'ID da conta. Se omitido, tenta inferir pelo utilizador autenticado ou devolve o default.'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Branding',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    data: {
+                      type: 'object',
+                      properties: {
+                        account_name: { type: 'string' },
+                        brand_primary: { type: 'string' },
+                        brand_primary_soft: { type: 'string' },
+                        brand_accent: { type: 'string' },
+                        brand_accent_soft: { type: 'string' },
+                        brand_background: { type: 'string' },
+                        brand_gradient: { type: 'string', nullable: true },
+                        logo_url: { type: 'string', nullable: true },
+                        portal_image_url: { type: 'string', nullable: true },
+                        support_email: { type: 'string', nullable: true },
+                        support_phone: { type: 'string', nullable: true }
+                      }
                     }
                   }
                 }
