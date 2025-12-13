@@ -178,6 +178,13 @@ const swaggerDefinition = {
           displayName: { type: 'string', nullable: true }
         }
       },
+      AuthRefreshRequest: {
+        type: 'object',
+        required: ['refreshToken'],
+        properties: {
+          refreshToken: { type: 'string' }
+        }
+      },
       UserProfile: {
         type: 'object',
         properties: {
@@ -248,6 +255,30 @@ const swaggerDefinition = {
             }
           },
           401: { description: 'Credenciais inválidas' }
+        }
+      }
+    },
+    '/auth/refresh': {
+      post: {
+        summary: 'Obter novo access token',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/AuthRefreshRequest' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Novo token de sessão',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthLoginResponse' }
+              }
+            }
+          },
+          401: { description: 'Refresh inválido' }
         }
       }
     },

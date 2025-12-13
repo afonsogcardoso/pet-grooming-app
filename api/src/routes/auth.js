@@ -38,6 +38,29 @@ router.post('/auth/login', async (req, res) => {
   })
 })
 
+router.post('/auth/refresh', async (req, res) => {
+  const { refreshToken } = req.body || {}
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Refresh token obrigatório' })
+  }
+
+  const supabase = ensureSupabaseConfig(res)
+  if (!supabase) return
+
+  const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken })
+  if (error || !data?.session) {
+    return res.status(401).json({ error: error?.message || 'Refresh inválido' })
+  }
+
+  const { session, user } = data
+  return res.json({
+    token: session.access_token,
+    refreshToken: session.refresh_token,
+    email: user?.email,
+    displayName: user?.user_metadata?.display_name ?? user?.email ?? null
+  })
+})
+
 router.get('/profile', async (req, res) => {
   const supabase = getSupabaseClientWithAuth(req)
   if (!supabase) {
