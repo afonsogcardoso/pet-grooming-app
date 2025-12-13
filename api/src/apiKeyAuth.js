@@ -36,6 +36,11 @@ export async function apiKeyAuth(req, res, next) {
   // Allow OPTIONS to pass through quickly
   if (req.method === 'OPTIONS') return next()
 
+  // Skip auth for swagger docs and health checks
+  if (req.path?.startsWith('/docs') || req.path === '/api/v1/health') {
+    return next()
+  }
+
   const rawKey = extractApiKey(req)
   if (!rawKey) return next()
 

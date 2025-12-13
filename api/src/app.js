@@ -8,6 +8,7 @@ import { apiKeyAuth } from './apiKeyAuth.js'
 import appointmentsRouter from './routes/appointments.js'
 import customersRouter from './routes/customers.js'
 import servicesRouter from './routes/services.js'
+import authRouter from './routes/auth.js'
 
 dotenv.config()
 
@@ -428,6 +429,7 @@ app.get('/docs.json', (_req, res) => res.json(swaggerSpec))
 
 // Versioned routes (add /api/v2 later if needed)
 app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
+app.use('/api/v1', authRouter)
 app.use('/api/v1/appointments', appointmentsRouter)
 app.use('/api/v1/customers', customersRouter)
 app.use('/api/v1/services', servicesRouter)
