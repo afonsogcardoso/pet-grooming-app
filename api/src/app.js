@@ -9,6 +9,7 @@ import appointmentsRouter from './routes/appointments.js'
 import customersRouter from './routes/customers.js'
 import servicesRouter from './routes/services.js'
 import authRouter from './routes/auth.js'
+import brandingRouter from './routes/branding.js'
 
 dotenv.config()
 
@@ -513,5 +514,6 @@ app.use('/api/v1', authRouter)
 app.use('/api/v1/appointments', appointmentsRouter)
 app.use('/api/v1/customers', customersRouter)
 app.use('/api/v1/services', servicesRouter)
+app.use('/api/v1/branding', brandingRouter)
 
 export default app

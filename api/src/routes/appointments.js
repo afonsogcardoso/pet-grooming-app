@@ -8,6 +8,9 @@ router.get('/', async (req, res) => {
   const supabase = accountId ? getSupabaseServiceRoleClient() : getSupabaseClientWithAuth(req)
   if (!supabase) return res.status(401).json({ error: 'Unauthorized' })
 
+  const { date_from: dateFrom, date_to: dateTo, limit: limitParam, status } = req.query
+  const limit = Math.min(Math.max(Number(limitParam) || 200, 1), 500)
+
   let query = supabase
     .from('appointments')
     .select(
@@ -25,10 +28,20 @@ router.get('/', async (req, res) => {
     )
     .order('appointment_date', { ascending: true })
     .order('appointment_time', { ascending: true })
-    .limit(200)
+    .limit(limit)
 
   if (accountId) {
     query = query.eq('account_id', accountId)
+  }
+
+  if (dateFrom) {
+    query = query.gte('appointment_date', dateFrom)
+  }
+  if (dateTo) {
+    query = query.lte('appointment_date', dateTo)
+  }
+  if (status) {
+    query = query.eq('status', status)
   }
 
   const { data, error } = await query
