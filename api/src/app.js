@@ -174,14 +174,19 @@ const swaggerDefinition = {
           token: { type: 'string', description: 'access_token do Supabase' },
           refreshToken: { type: 'string' },
           email: { type: 'string', format: 'email' },
-          name: { type: 'string', nullable: true }
+          displayName: { type: 'string', nullable: true }
         }
       },
       UserProfile: {
         type: 'object',
         properties: {
           email: { type: 'string', format: 'email' },
-          name: { type: 'string', nullable: true }
+          displayName: { type: 'string', nullable: true },
+          phone: { type: 'string', nullable: true },
+          locale: { type: 'string', nullable: true, example: 'pt' },
+          avatarUrl: { type: 'string', nullable: true },
+          lastLoginAt: { type: 'string', format: 'date-time', nullable: true },
+          createdAt: { type: 'string', format: 'date-time', nullable: true }
         }
       },
       Appointment: {

@@ -34,7 +34,7 @@ router.post('/auth/login', async (req, res) => {
     token: session.access_token,
     refreshToken: session.refresh_token,
     email: user?.email,
-    name: user?.user_metadata?.full_name ?? null
+    displayName: user?.user_metadata?.display_name ?? user?.email ?? null
   })
 })
 
@@ -52,7 +52,12 @@ router.get('/profile', async (req, res) => {
   const user = data.user
   return res.json({
     email: user.email,
-    name: user.user_metadata?.full_name ?? null
+    displayName: user.user_metadata?.display_name ?? user.email ?? null,
+    phone: user.user_metadata?.phone ?? null,
+    locale: user.user_metadata?.preferred_locale ?? 'pt',
+    avatarUrl: user.user_metadata?.avatar_url ?? null,
+    lastLoginAt: user.last_sign_in_at ?? null,
+    createdAt: user.created_at ?? null
   })
 })
 
