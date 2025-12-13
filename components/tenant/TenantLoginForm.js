@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { setActiveAccountId } from '@/lib/accountHelpers'
 import { useTranslation } from '@/components/TranslationProvider'
+import { storeAuthTokens } from '@/lib/authTokens'
 
 export default function TenantLoginForm({ account }) {
   const router = useRouter()
@@ -23,40 +23,26 @@ export default function TenantLoginForm({ account }) {
     setError(null)
     setMessage(null)
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
+    const response = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password })
     })
+    const body = await response.json().catch(() => ({}))
 
-    if (authError) {
-      setError(authError.message)
+    if (!response.ok) {
+      setError(body?.error || t('portal.login.errors.invalid'))
       setLoading(false)
       return
     }
 
-    const session = data?.session
-    if (session) {
-      try {
-        await fetch('/api/auth/set-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token
-          })
-        })
-      } catch (setSessionError) {
-        console.error('Failed to sync Supabase session', setSessionError)
-      }
+    const token = body?.token
+    const refreshToken = body?.refreshToken
+    if (token) {
+      storeAuthTokens({ token, refreshToken })
     }
 
-    const accountId =
-      data?.user?.user_metadata?.account_id ||
-      data?.user?.app_metadata?.account_id ||
-      data?.user?.user_metadata?.account?.id ||
-      account.id
+    const accountId = body?.memberships?.[0]?.account_id || account.id
 
     if (accountId) {
       setActiveAccountId(accountId)

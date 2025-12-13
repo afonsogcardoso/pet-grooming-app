@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { redirect } from 'next/navigation'
 import AdminSidebar from './components/AdminSidebar'
 
 const NAV_ITEMS = [
@@ -43,12 +43,21 @@ const NAV_ITEMS = [
 
 export default async function AdminLayout({ children }) {
   const cookieStore = await cookies()
-  const supabase = createServerComponentClient({ cookies: () => cookieStore })
+  const token = readAccessToken(cookieStore)
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+  if (!token) {
+    redirect('/admin/login?adminError=no_session')
+  }
 
+  const profile = await fetchProfile(token)
+  if (!profile?.platformAdmin) {
+    redirect('/admin/login?adminError=forbidden')
+  }
+
+  const user = {
+    email: profile.email,
+    last_sign_in_at: profile.lastLoginAt
+  }
   const lastSignIn = user?.last_sign_in_at ? new Date(user.last_sign_in_at) : null
 
   return (
@@ -84,6 +93,42 @@ export default async function AdminLayout({ children }) {
       </div>
     </div>
   )
+}
+
+function readAccessToken(cookieStore) {
+  const projectRef = getProjectRef()
+  const projectCookie = projectRef ? `sb-${projectRef}-auth-token` : null
+  const token =
+    cookieStore.get('sb-access-token')?.value ||
+    (projectCookie ? cookieStore.get(projectCookie)?.value : null)
+  return token || null
+}
+
+function getProjectRef() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  try {
+    const host = new URL(url).hostname || ''
+    const parts = host.split('.')
+    return parts[0] || null
+  } catch {
+    return null
+  }
+}
+
+async function fetchProfile(token) {
+  const base = (process.env.API_BASE_URL || '').replace(/\/$/, '')
+  const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store'
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
 }
 
 function StatusBadge({ label, value, tone = 'slate' }) {

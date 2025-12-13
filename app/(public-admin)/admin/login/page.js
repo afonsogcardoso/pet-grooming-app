@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { storeAuthTokens, clearAuthTokens } from '@/lib/authTokens'
 
 const ADMIN_FLAG = 'platform_admin'
 
@@ -44,13 +44,16 @@ function AdminLoginContent() {
 
   useEffect(() => {
     let active = true
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return
-      const sessionUser = data?.user
-      if (sessionUser && isPlatformAdmin(sessionUser)) {
-        router.replace('/admin')
-      }
-    })
+    const token = getStoredAccessToken()
+    if (!token) return
+    fetchProfile(token)
+      .then((profile) => {
+        if (!active) return
+        if (profile?.platformAdmin) {
+          router.replace('/admin')
+        }
+      })
+      .catch(() => {})
     return () => {
       active = false
     }
@@ -62,39 +65,29 @@ function AdminLoginContent() {
     setError(null)
     setMessage(null)
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password
+    const response = await fetch('/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password })
     })
+    const body = await response.json().catch(() => ({}))
 
-    if (authError) {
-      setError(authError.message)
+    if (!response.ok) {
+      setError(body?.error || 'Credenciais inválidas')
       setLoading(false)
       return
     }
 
-    const session = data?.session
-    if (session) {
-      try {
-        await fetch('/api/auth/set-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            access_token: session.access_token,
-            refresh_token: session.refresh_token
-          })
-        })
-      } catch (syncError) {
-        console.error('Failed to sync admin session', syncError)
-      }
+    const token = body?.token
+    const refreshToken = body?.refreshToken
+    if (token) {
+      storeAuthTokens({ token, refreshToken })
     }
 
-    const user = data?.user || session?.user
-    if (!isPlatformAdmin(user)) {
+    const profile = token ? await fetchProfile(token) : null
+    if (!profile?.platformAdmin) {
       setError('Esta conta não tem acesso ao portal de admin.')
-      await supabase.auth.signOut()
+      clearAuthTokens()
       setLoading(false)
       return
     }
@@ -181,4 +174,32 @@ export default function AdminLoginPage() {
       <AdminLoginContent />
     </Suspense>
   )
+}
+
+function getStoredAccessToken() {
+  if (typeof window === 'undefined') return null
+  try {
+    return (
+      window.sessionStorage?.getItem('pg_access_token') ||
+      window.localStorage?.getItem('pg_access_token') ||
+      null
+    )
+  } catch {
+    return null
+  }
+}
+
+async function fetchProfile(token) {
+  const base = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
+  const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store'
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
 }

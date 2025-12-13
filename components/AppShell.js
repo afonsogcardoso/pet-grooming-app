@@ -6,10 +6,10 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import AccountGate from './AccountGate'
 import { useTranslation } from './TranslationProvider'
-import { supabase } from '@/lib/supabase'
 import { clearStoredAccountId } from '@/lib/accountHelpers'
 import { useAccount } from './AccountProvider'
 import AppShellMobile from './AppShellMobile'
+import { clearAuthTokens } from '@/lib/authTokens'
 
 const navItems = [
   {
@@ -98,14 +98,12 @@ export default function AppShell({ children }) {
       setFreshDisplayName(null)
       return
     }
-    supabase.auth.getUser().then(({ data }) => {
-      const meta = data?.user?.user_metadata || {}
-      const avatarUrl = meta.avatar_url || null
-      const nextDisplayName = meta.display_name || null
-      if (avatarUrl) setFreshAvatar(avatarUrl)
-      if (nextDisplayName) setFreshDisplayName(nextDisplayName)
-    })
-  }, [authenticated])
+    const meta = user?.user_metadata || {}
+    const avatarUrl = meta.avatar_url || null
+    const nextDisplayName = meta.display_name || user?.email || null
+    if (avatarUrl) setFreshAvatar(avatarUrl)
+    if (nextDisplayName) setFreshDisplayName(nextDisplayName)
+  }, [authenticated, user])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -139,11 +137,11 @@ export default function AppShell({ children }) {
 
   const handleLogout = async () => {
     try {
-      await Promise.all([supabase.auth.signOut(), fetch('/api/auth/signout', { method: 'POST' })])
     } catch (error) {
       console.error('Failed to sign out completely', error)
     } finally {
       clearStoredAccountId()
+      clearAuthTokens()
       router.push('/login')
     }
   }
@@ -256,14 +254,7 @@ export default function AppShell({ children }) {
                         type="button"
                         onClick={async () => {
                           setCompactProfileMenuOpen(false)
-                          try {
-                            await Promise.all([supabase.auth.signOut(), fetch('/api/auth/signout', { method: 'POST' })])
-                          } catch (error) {
-                            console.error('Failed to sign out completely', error)
-                          } finally {
-                            clearStoredAccountId()
-                            router.push('/login')
-                          }
+                          await handleLogout()
                         }}
                         className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 hover:bg-red-50"
                       >
@@ -462,14 +453,7 @@ export default function AppShell({ children }) {
                       type="button"
                       onClick={async () => {
                         setCompactProfileMenuOpen(false)
-                        try {
-                          await Promise.all([supabase.auth.signOut(), fetch('/api/auth/signout', { method: 'POST' })])
-                        } catch (error) {
-                          console.error('Failed to sign out completely', error)
-                        } finally {
-                          clearStoredAccountId()
-                          router.push('/login')
-                        }
+                        await handleLogout()
                       }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 hover:bg-red-50"
                     >
@@ -578,14 +562,7 @@ export default function AppShell({ children }) {
                   type="button"
                   onClick={async () => {
                     setMenuOpen(false)
-                    try {
-                      await Promise.all([supabase.auth.signOut(), fetch('/api/auth/signout', { method: 'POST' })])
-                    } catch (error) {
-                      console.error('Failed to sign out completely', error)
-                    } finally {
-                      clearStoredAccountId()
-                      router.push('/login')
-                    }
+                    await handleLogout()
                   }}
                   className="flex items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
                 >

@@ -1,8 +1,7 @@
 import { notFound } from 'next/navigation'
-import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { getPublicAccountBySlug } from '@/lib/publicAccounts'
 import PortalLanding from '@/components/portal/PortalLanding'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,10 +46,27 @@ export default async function BookingLandingPage({ params }) {
     notFound()
   }
   const cookieStore = await cookies()
-  const supabase = createServerComponentClient({ cookies: () => cookieStore })
-  const {
-    data: { session }
-  } = await supabase.auth.getSession()
+  const isAuthenticated = Boolean(readAccessToken(cookieStore))
 
-  return <PortalLanding account={account} isAuthenticated={!!session} />
+  return <PortalLanding account={account} isAuthenticated={isAuthenticated} />
+}
+
+function readAccessToken(cookieStore) {
+  const projectRef = getProjectRef()
+  const projectCookie = projectRef ? `sb-${projectRef}-auth-token` : null
+  const token =
+    cookieStore.get('sb-access-token')?.value ||
+    (projectCookie ? cookieStore.get(projectCookie)?.value : null)
+  return token || null
+}
+
+function getProjectRef() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  try {
+    const host = new URL(url).hostname || ''
+    const parts = host.split('.')
+    return parts[0] || null
+  } catch {
+    return null
+  }
 }

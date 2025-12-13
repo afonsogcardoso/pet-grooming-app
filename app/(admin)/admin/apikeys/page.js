@@ -1,15 +1,52 @@
 import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { redirect } from 'next/navigation'
 import ApiKeysClient from './ApiKeysClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ApiKeysPage() {
   const cookieStore = await cookies()
-  const supabase = createServerComponentClient({ cookies: () => cookieStore })
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+  const token = readAccessToken(cookieStore)
+  if (!token) redirect('/admin/login?adminError=no_session')
 
-  return <ApiKeysClient currentUserEmail={user?.email || ''} />
+  const profile = await fetchProfile(token)
+  if (!profile?.platformAdmin) redirect('/admin/login?adminError=forbidden')
+
+  return <ApiKeysClient currentUserEmail={profile?.email || ''} />
+}
+
+function readAccessToken(cookieStore) {
+  const projectRef = getProjectRef()
+  const projectCookie = projectRef ? `sb-${projectRef}-auth-token` : null
+  const token =
+    cookieStore.get('sb-access-token')?.value ||
+    (projectCookie ? cookieStore.get(projectCookie)?.value : null)
+  return token || null
+}
+
+function getProjectRef() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  try {
+    const host = new URL(url).hostname || ''
+    const parts = host.split('.')
+    return parts[0] || null
+  } catch {
+    return null
+  }
+}
+
+async function fetchProfile(token) {
+  const base = (process.env.API_BASE_URL || '').replace(/\/$/, '')
+  const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store'
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
 }

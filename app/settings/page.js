@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { useAccount } from '@/components/AccountProvider'
 import { useTranslation } from '@/components/TranslationProvider'
 import { compressImage } from '@/utils/image'
+import { getStoredAccessToken } from '@/lib/authTokens'
 
 const ROLE_OPTIONS = [
   { value: 'owner', labelKey: 'settings.members.roles.owner' },
@@ -80,10 +81,7 @@ export default function SettingsPage() {
     if (!account?.id) return
     setMembersLoading(true)
     setMembersError(null)
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
     const response = await fetch(`/api/account/members?accountId=${account.id}`, {
       headers: {
         Authorization: token ? `Bearer ${token}` : ''
@@ -106,12 +104,9 @@ export default function SettingsPage() {
     if (!account?.id) return
     setDomainsLoading(true)
     setDomainsError(null)
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
 
-    const response = await fetch(`/api/domains?accountId=${account.id}`, {
+    const response = await fetch(`/api/v1/domains?accountId=${account.id}`, {
       headers: {
         Authorization: token ? `Bearer ${token}` : ''
       }
@@ -203,10 +198,7 @@ export default function SettingsPage() {
     setInviteLoading(true)
     setInviteMessage(null)
 
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
 
     const response = await fetch('/api/account/members', {
       method: 'POST',
@@ -294,12 +286,9 @@ export default function SettingsPage() {
       return
     }
 
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
 
-    const response = await fetch('/api/domains', {
+    const response = await fetch('/api/v1/domains', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -339,12 +328,9 @@ export default function SettingsPage() {
     if (!confirmed) return
 
     setDomainMessage(null)
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
 
-    const response = await fetch('/api/domains', {
+    const response = await fetch('/api/v1/domains', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -391,12 +377,9 @@ export default function SettingsPage() {
     setVerifyingDomainId(domainId)
     setDomainMessage(null)
 
-    const {
-      data: { session }
-    } = await supabase.auth.getSession()
-    const token = session?.access_token
+    const token = getStoredAccessToken()
 
-    const response = await fetch('/api/domains/verify', {
+    const response = await fetch('/api/v1/domains/verify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

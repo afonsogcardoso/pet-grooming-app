@@ -6,13 +6,9 @@
 // ============================================
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import {
-  clearStoredAccountId,
-  getCurrentAccountId,
-  setActiveAccountId
-} from '@/lib/accountHelpers'
+import { clearStoredAccountId, setActiveAccountId } from '@/lib/accountHelpers'
 import { fetchAllActiveAccounts } from '@/lib/admin/accountFetcher'
+import { clearAuthTokens, getStoredAccessToken } from '@/lib/authTokens'
 
 const AccountContext = createContext(null)
 
@@ -39,27 +35,15 @@ const emptyState = {
 export function AccountProvider({ children }) {
   const [state, setState] = useState(emptyState)
   const [authReady, setAuthReady] = useState(false)
-  const [currentUserId, setCurrentUserId] = useState(null)
   const latestUserRef = useRef(null)
-  const lastFetchedUserRef = useRef(null)
 
   const isPlatformAdmin = useCallback((user) => {
     if (!user) return false
-    const metadata = user
-    return (
-      metadata?.user_metadata?.platform_admin ||
-      metadata?.app_metadata?.platform_admin ||
-      (metadata?.app_metadata?.roles || []).includes('platform_admin')
-    )
+    return Boolean(user.platformAdmin)
   }, [])
 
   const deriveActiveMembership = useCallback(async (memberships) => {
-    let preferredAccountId = null
-    try {
-      preferredAccountId = await getCurrentAccountId({ required: false })
-    } catch {
-      preferredAccountId = null
-    }
+    const preferredAccountId = getStoredAccountPreference()
 
     let membership = null
     if (preferredAccountId) {
@@ -86,145 +70,23 @@ export function AccountProvider({ children }) {
     })
   }, [])
 
-  const fetchMemberships = useCallback(
-    async (userId, user, { force = false } = {}) => {
-      if (!userId) {
-        setState({
-          user: null,
-          account: null,
-          membership: null,
-          memberships: [],
-          loading: false,
-          error: null
-        })
-        return
-      }
-
-      // Avoid duplicate fetches caused by React StrictMode double effects in dev
-      if (!force && lastFetchedUserRef.current === userId) {
-        return
-      }
-      lastFetchedUserRef.current = userId
-
-      setState((prev) => ({ ...prev, loading: true, error: null, authenticated: true, user }))
-
-      const { data, error } = await supabase
-        .from('account_members')
-        .select(
-          `
-          id,
-          account_id,
-          role,
-          status,
-          created_at,
-          account:accounts (
-            id,
-            name,
-            slug,
-            plan,
-            created_at,
-            updated_at,
-            logo_url,
-            support_email,
-            support_phone,
-            brand_primary,
-            brand_primary_soft,
-            brand_accent,
-            brand_accent_soft,
-            brand_background,
-            brand_gradient,
-            portal_image_url
-          )
-        `
-        )
-        .eq('user_id', userId)
-        .eq('status', 'accepted')
-        .order('created_at', { ascending: true })
-
-      if (error) {
-        setState((prev) => ({ ...prev, loading: false, error, authenticated: true }))
-        return
-      }
-
-      let result = data || []
-      const isPlatformAdminUser = isPlatformAdmin(user)
-
-      if (isPlatformAdminUser) {
-        try {
-          const extraAccounts = await fetchAllActiveAccounts()
-          result = mergeMembershipsWithAdminAccounts(result, extraAccounts)
-        } catch (adminError) {
-          console.error('Failed to fetch admin accounts', adminError)
-        }
-      }
-
-      await deriveActiveMembership(result)
-    },
-    [deriveActiveMembership, isPlatformAdmin]
-  )
+  const loadProfile = useProfileLoader({ setState, deriveActiveMembership, isPlatformAdmin, latestUserRef })
 
   useEffect(() => {
-    let isMounted = true
-    const { data: refreshSubscription } = supabase.auth.startAutoRefresh()
+    let cancelled = false
 
-    supabase.auth.getSession().then(({ data }) => {
-      setAuthReady(true)
-      if (!isMounted) return
-      const user = data?.session?.user || null
-      const userId = user?.id || null
-      latestUserRef.current = user
-      setCurrentUserId(userId)
-
-      if (!user) {
-        clearStoredAccountId()
-        setState({
-          user: null,
-          account: null,
-          membership: null,
-          memberships: [],
-          loading: false,
-          error: null,
-          authenticated: false
-        })
-        return
+    async function bootstrap() {
+      await loadProfile().catch(() => {})
+      if (!cancelled) {
+        setAuthReady(true)
       }
-
-      fetchMemberships(userId, user)
-    })
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthReady(true)
-      const user = session?.user || null
-      const userId = user?.id || null
-      latestUserRef.current = user
-      setCurrentUserId(userId)
-
-      if (!user) {
-        clearStoredAccountId()
-        setState({
-          user: null,
-          account: null,
-          membership: null,
-          memberships: [],
-          loading: false,
-          error: null,
-          authenticated: false
-        })
-        return
-      }
-
-      fetchMemberships(userId, user)
-    })
-
-    return () => {
-      isMounted = false
-      subscription.unsubscribe()
-      refreshSubscription?.subscription?.unsubscribe?.()
-      supabase.auth.stopAutoRefresh()
     }
-  }, [fetchMemberships])
+
+    bootstrap()
+    return () => {
+      cancelled = true
+    }
+  }, [loadProfile])
 
   const selectAccount = useCallback((accountId) => {
     if (!accountId) return
@@ -241,9 +103,8 @@ export function AccountProvider({ children }) {
   }, [])
 
   const refresh = useCallback(() => {
-    if (!currentUserId) return
-    fetchMemberships(currentUserId, latestUserRef.current, { force: true })
-  }, [currentUserId, fetchMemberships])
+    loadProfile()
+  }, [loadProfile])
 
   useEffect(() => {
     if (typeof document === 'undefined') return
@@ -290,6 +151,81 @@ export function AccountProvider({ children }) {
   )
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>
+}
+
+function getStoredAccountPreference() {
+  if (typeof window === 'undefined') return null
+  try {
+    return (
+      window.sessionStorage?.getItem('activeAccountId') ||
+      window.localStorage?.getItem('activeAccountId') ||
+      null
+    )
+  } catch {
+    return null
+  }
+}
+
+async function fetchProfile(token) {
+  const base = (process.env.API_BASE_URL || '').replace(/\/$/, '')
+  const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      cache: 'no-store'
+    })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
+function setUnauthenticatedState(setStateFn) {
+  clearStoredAccountId()
+  clearAuthTokens()
+  setStateFn({
+    user: null,
+    account: null,
+    membership: null,
+    memberships: [],
+    loading: false,
+    error: null,
+    authenticated: false
+  })
+}
+
+function useProfileLoader({ setState, deriveActiveMembership, isPlatformAdmin, latestUserRef }) {
+  return useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }))
+    const token = getStoredAccessToken()
+    if (!token) {
+      setUnauthenticatedState(setState)
+      return
+    }
+
+    const profile = await fetchProfile(token)
+    if (!profile) {
+      setUnauthenticatedState(setState)
+      return
+    }
+
+    latestUserRef.current = profile
+    let memberships = profile.memberships || []
+
+    if (isPlatformAdmin(profile)) {
+      try {
+        const extraAccounts = await fetchAllActiveAccounts()
+        memberships = mergeMembershipsWithAdminAccounts(memberships, extraAccounts)
+      } catch (adminError) {
+        console.error('Failed to fetch admin accounts', adminError)
+      }
+    }
+
+    await deriveActiveMembership(memberships)
+  }, [deriveActiveMembership, isPlatformAdmin, setState])
 }
 
 function mergeMembershipsWithAdminAccounts(existing, adminAccounts) {

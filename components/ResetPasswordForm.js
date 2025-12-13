@@ -26,7 +26,7 @@ export default function ResetPasswordForm() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/profile/reset-password', {
+      const response = await fetch('/api/v1/profile/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword: password })

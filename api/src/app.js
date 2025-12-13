@@ -10,6 +10,8 @@ import customersRouter from './routes/customers.js'
 import servicesRouter from './routes/services.js'
 import authRouter from './routes/auth.js'
 import brandingRouter from './routes/branding.js'
+import domainsRouter from './routes/domains.js'
+import profileRouter from './routes/profile.js'
 
 dotenv.config()
 
@@ -624,6 +626,8 @@ app.get('/docs.json', (_req, res) => res.redirect(301, '/api/docs.json'))
 app.get('/api/v1/health', (_req, res) => res.json({ ok: true }))
 app.use('/api/v1', authRouter)
 app.use('/api/v1/appointments', appointmentsRouter)
+app.use('/api/v1/profile', profileRouter)
+app.use('/api/v1/domains', domainsRouter)
 app.use('/api/v1/customers', customersRouter)
 app.use('/api/v1/services', servicesRouter)
 app.use('/api/v1/branding', brandingRouter)

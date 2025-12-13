@@ -22,6 +22,22 @@ if (supabaseHost) {
 const nextConfig = {
   images: {
     remotePatterns
+  },
+  async rewrites() {
+    const baseUrl = process.env.API_BASE_URL || ''
+    const normalized = baseUrl.replace(/\/$/, '')
+
+    if (!normalized) {
+      console.warn('API_BASE_URL is not set; skipping /api rewrites')
+      return []
+    }
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${normalized}/api/:path*`
+      }
+    ]
   }
 }
 

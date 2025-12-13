@@ -1,30 +1,78 @@
-import { cookies } from 'next/headers'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { redirect } from 'next/navigation'
 import ProfilePageClient from '@/components/ProfilePageClient'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ProfilePage() {
   const cookieStore = await cookies()
-  const supabase = createServerComponentClient({ cookies: () => cookieStore })
+  const token = readAccessToken(cookieStore)
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+  if (!token) {
+    redirect('/login')
+  }
 
-  const { data: memberships } = await supabase
-    .from('account_members')
-    .select(
-      `
-      account_id,
-      role,
-      status,
-      created_at,
-      account:accounts (id, name, slug, plan)
-    `
-    )
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
+  const profile = await fetchProfile(token)
+  if (!profile) {
+    redirect('/login')
+  }
 
-  return <ProfilePageClient user={user} memberships={memberships || []} />
+  const user = mapProfileToUser(profile)
+  const memberships = profile.memberships || []
+
+  return <ProfilePageClient user={user} memberships={memberships} />
+}
+
+function getProjectRef() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  try {
+    const host = new URL(url).hostname || ''
+    const parts = host.split('.')
+    return parts[0] || null
+  } catch {
+    return null
+  }
+}
+
+function readAccessToken(cookieStore) {
+  const projectRef = getProjectRef()
+  const projectCookie = projectRef ? `sb-${projectRef}-auth-token` : null
+  const token =
+    cookieStore.get('sb-access-token')?.value ||
+    (projectCookie ? cookieStore.get(projectCookie)?.value : null)
+  return token || null
+}
+
+async function fetchProfile(token) {
+  const base = (process.env.API_BASE_URL || '').replace(/\/$/, '')
+  const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    cache: 'no-store'
+  }).catch(() => null)
+
+  if (!response || !response.ok) {
+    return null
+  }
+
+  const body = await response.json().catch(() => null)
+  return body || null
+}
+
+function mapProfileToUser(profile) {
+  return {
+    id: profile.id || null,
+    email: profile.email || null,
+    created_at: profile.createdAt || null,
+    last_sign_in_at: profile.lastLoginAt || null,
+    user_metadata: {
+      display_name: profile.displayName || null,
+      phone: profile.phone || null,
+      preferred_locale: profile.locale || null,
+      avatar_url: profile.avatarUrl || null
+    }
+  }
 }

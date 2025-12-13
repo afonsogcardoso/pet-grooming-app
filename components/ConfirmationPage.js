@@ -76,13 +76,13 @@ export default function ConfirmationPage({ appointment }) {
     // Fire-and-forget beacon to mark open
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       navigator.sendBeacon(
-        '/api/appointments/confirm-open',
+        '/api/v1/appointments/confirm-open',
         new Blob([JSON.stringify({ id: appointment.id, token: appointment.public_token })], {
           type: 'application/json'
         })
       )
     } else {
-      fetch('/api/appointments/confirm-open', {
+      fetch('/api/v1/appointments/confirm-open', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: appointment.id, token: appointment.public_token })
@@ -102,7 +102,7 @@ export default function ConfirmationPage({ appointment }) {
       form.append('token', appointment.public_token)
       form.append('file', compressed)
 
-      const response = await fetch('/api/appointments/pet-photo', {
+      const response = await fetch('/api/v1/appointments/pet-photo', {
         method: 'POST',
         body: form
       })
@@ -128,7 +128,7 @@ export default function ConfirmationPage({ appointment }) {
       id: appointment.id,
       token: appointment.public_token
     })
-    window.location.href = `/api/appointments/ics?${params.toString()}`
+    window.location.href = `/api/v1/appointments/ics?${params.toString()}`
   }
 
   if (!hasAppointment) {

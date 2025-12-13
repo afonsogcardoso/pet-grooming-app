@@ -73,14 +73,42 @@ router.get('/profile', async (req, res) => {
   }
 
   const user = data.user
+  const roles = user?.app_metadata?.roles || []
+  const platformAdmin =
+    Boolean(user?.user_metadata?.platform_admin) ||
+    Boolean(user?.app_metadata?.platform_admin) ||
+    roles.includes('platform_admin')
+
+  const { data: memberships, error: membershipError } = await supabase
+    .from('account_members')
+    .select(
+      `
+      account_id,
+      role,
+      status,
+      created_at,
+      account:accounts (id, name, slug, plan)
+    `
+    )
+    .eq('user_id', user.id)
+    .eq('status', 'accepted')
+    .order('created_at', { ascending: true })
+
+  if (membershipError) {
+    console.error('profile memberships error', membershipError)
+  }
+
   return res.json({
+    id: user.id,
     email: user.email,
     displayName: user.user_metadata?.display_name ?? user.email ?? null,
     phone: user.user_metadata?.phone ?? null,
     locale: user.user_metadata?.preferred_locale ?? 'pt',
     avatarUrl: user.user_metadata?.avatar_url ?? null,
     lastLoginAt: user.last_sign_in_at ?? null,
-    createdAt: user.created_at ?? null
+    createdAt: user.created_at ?? null,
+    memberships: memberships || [],
+    platformAdmin
   })
 })
 

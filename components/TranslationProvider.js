@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import en from '@/locales/en.json'
 import pt from '@/locales/pt.json'
-import { supabase } from '@/lib/supabase'
+import { getStoredAccessToken } from '@/lib/authTokens'
 
 const translations = { en, pt }
 const localeMap = { en: 'en-US', pt: 'pt-PT' }
@@ -37,11 +37,25 @@ export function TranslationProvider({ children }) {
         return
       }
 
-      const { data } = await supabase.auth.getUser().catch(() => ({ data: null }))
-      if (!active) return
-      const preferred = data?.user?.user_metadata?.preferred_locale
-      if (preferred && translations[preferred]) {
-        setLocale(preferred)
+      const token = getStoredAccessToken()
+      if (!token) return
+
+      try {
+        const base = (process.env.API_BASE_URL || '').replace(/\/$/, '')
+        const url = base ? `${base}/api/v1/profile` : '/api/v1/profile'
+        const response = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: 'no-store'
+        })
+        if (!response.ok) return
+        const profile = await response.json()
+        if (!active) return
+        const preferred = profile?.locale
+        if (preferred && translations[preferred]) {
+          setLocale(preferred)
+        }
+      } catch {
+        // ignore
       }
     }
     loadPreferredLocale()

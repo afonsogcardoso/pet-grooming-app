@@ -41,7 +41,7 @@ export default function ProfileMetadataForm({
       if (avatarFile) {
         const formData = new FormData()
         formData.append('file', avatarFile)
-        const uploadResp = await fetch('/api/profile/avatar', { method: 'POST', body: formData })
+        const uploadResp = await fetch('/api/v1/profile/avatar', { method: 'POST', body: formData })
         const uploadBody = await uploadResp.json().catch(() => ({}))
         if (!uploadResp.ok) {
           throw new Error(uploadBody.error || t('profile.form.errors.update'))
@@ -49,7 +49,7 @@ export default function ProfileMetadataForm({
         uploadedAvatarUrl = uploadBody.url || ''
       }
 
-      const response = await fetch('/api/profile', {
+      const response = await fetch('/api/v1/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, avatarUrl: uploadedAvatarUrl })
